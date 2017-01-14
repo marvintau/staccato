@@ -66,6 +66,14 @@
 	    return React.createElement(component, param, children);
 	};
 
+	var SectionElem = function SectionElem(sectionName, key, children) {
+	    return Elem('div', {
+	        key: key,
+	        id: sectionName,
+	        className: sectionName
+	    }, children);
+	};
+
 	var Draw = function Draw(component, param, children, to) {
 	    _reactDom2.default.render(Elem(component, param, children), document.getElementById(to));
 	};
@@ -79,7 +87,8 @@
 	        var _this = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
 	        _this.state = {
-	            value: "test text"
+	            value: "test text",
+	            sections: []
 	        };
 	        return _this;
 	    }
@@ -88,25 +97,35 @@
 	        key: 'handleChange',
 	        value: function handleChange(event) {
 
-	            var sectionFinder = /(\w+)\s*:\s*\{([^:]*)\}\s*/g;
+	            var sectionFinder = /\s+(\w+)\s*:\s*\{([^:]*)\}/g;
 
 	            var text = event.target.value;
 
 	            var matched = void 0,
-	                sections = [];
+	                newSections = [];
 	            while (matched = sectionFinder.exec(text)) {
-	                sections.push({ name: matched[1], body: matched[2] });
+	                newSections.push({ name: matched[1], body: matched[2] });
 	            }
 
 	            this.setState(function (previousState) {
-	                previousState.value = text;
-
-	                for (var i = 0; i < sections.length; i++) {
-	                    previousState[sections[i].name] = sections[i].body;
-	                }
-
-	                return previousState;
+	                return {
+	                    value: text,
+	                    sections: newSections
+	                };
 	            });
+	        }
+	    }, {
+	        key: 'sectionElems',
+	        value: function sectionElems() {
+	            var elems = [];
+
+	            for (var i = 0; i < this.state.sections.length; i++) {
+	                elems.push(SectionElem(this.state.sections[i].name, i, this.state.sections[i].body));
+	            }
+
+	            console.log(elems);
+
+	            return elems;
 	        }
 	    }, {
 	        key: 'render',
@@ -136,7 +155,7 @@
 	                md: 6,
 	                id: 'preview',
 	                className: 'preview'
-	            }, Elem('div', { id: 'page', className: 'page' }, '' + this.state.value));
+	            }, Elem('div', { id: 'page', className: 'page' }, this.sectionElems()));
 
 	            var row = Elem(_reactBootstrap.Row, null, [editorWrapper, preview]);
 

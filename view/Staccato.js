@@ -7,6 +7,14 @@ let Elem = function(component, param, children){
     return React.createElement(component, param, children)
 }
 
+let SectionElem = function(sectionName, key, children){
+    return Elem('div', {
+        key : key,
+        id : sectionName,
+        className : sectionName
+    }, children)
+}
+
 let Draw = function(component, param, children, to){
     ReactDOM.render( Elem(component, param, children), document.getElementById(to)
     )
@@ -18,30 +26,39 @@ class Container extends React.Component {
         super(props);
         this.state = {
             value: "test text",
+            sections : []
         };
     }
 
     handleChange(event) {
 
-        let sectionFinder = /(\w+)\s*:\s*\{([^:]*)\}\s*/g;
+        let sectionFinder = /\s+(\w+)\s*:\s*\{([^:]*)\}/g;
 
         let text = event.target.value;
 
-        let matched, sections = [];
+        let matched, newSections = [];
         while (matched = sectionFinder.exec(text)){
-            sections.push({name : matched[1], body : matched[2]})
+            newSections.push({name : matched[1], body : matched[2]})
         }
 
-        this.setState((previousState) => {
-            previousState.value = text;
-
-            for (var i = 0; i < sections.length; i++) {
-                previousState[sections[i].name] = sections[i].body
-            }
-
-            return previousState;
-        });
+        this.setState((previousState) => ({
+            value : text,
+            sections : newSections
+        }));
     }
+
+    sectionElems(){
+        let elems = [];
+
+        for (var i = 0; i < this.state.sections.length; i++) {
+            elems.push(SectionElem(this.state.sections[i].name, i, this.state.sections[i].body));
+        }
+
+        console.log(elems)
+
+        return elems;
+    }
+
 
     render() {
 
@@ -61,12 +78,12 @@ class Container extends React.Component {
             className:"editing-wrapper"
         }, editor)
 
-        const preview = Elem(Col, {
+        let preview = Elem(Col, {
             key : 'viewer',
             md  :  6,
             id  : 'preview',
             className:'preview',
-        }, Elem('div', {id:'page', className:'page'}, `${this.state.value}`))
+        }, Elem('div', {id:'page', className:'page'}, this.sectionElems()))
 
         const row = Elem(Row, null,
             [editorWrapper, preview]
