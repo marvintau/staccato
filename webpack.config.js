@@ -2,9 +2,7 @@
 module.exports = {
     entry: "./view/Staccato.js",
     output: {
-        filename: 'staccato-bundle.js', //this is the default name, so you can skip it
-        //at this directory our bundle file will be available
-        //make sure port 8090 is used when launching webpack-dev-server
+        filename: 'staccato-bundle.js',
         publicPath: 'http://localhost:8090/assets'
     },
     module: {
@@ -16,6 +14,10 @@ module.exports = {
               query: {
                 presets: ['es2015']
               }
+            },
+            {
+              test: /\.pegjs$/,
+              loader: 'pegjs-loader'
             },
             { test: /\.css$/, loader: "style!css" },
             { test: /\.(png|jpg)$/, loader: 'url-loader' }

@@ -2,6 +2,7 @@ import ReactDOM from 'react-dom';
 
 import { Row, Col, Button } from 'react-bootstrap';
 
+import {parse} from './StaccatoParser.pegjs';
 
 let Elem = function(component, param, children){
     return React.createElement(component, param, children)
@@ -16,8 +17,33 @@ let SectionElem = function(sectionName, key, children){
 }
 
 let Draw = function(component, param, children, to){
-    ReactDOM.render( Elem(component, param, children), document.getElementById(to)
-    )
+    ReactDOM.render( Elem(component, param, children), document.getElementById(to))
+}
+
+
+class Score extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            notes : parse(this.props.text)
+        }
+    }
+
+    render() {
+        console.log(this.state.notes)
+        let notes = this.state.notes.map(note => Elem(Note, {className:"note", note : note.pitch}, null));
+        return Elem('div', null, notes);
+    }
+}
+
+class Note extends React.Component{
+    constructor(props){
+        super(props);
+    }
+
+    render(){
+        return Elem('span', {}, this.props.note);
+    }
 }
 
 class Container extends React.Component {
@@ -51,10 +77,14 @@ class Container extends React.Component {
         let elems = [];
 
         for (var i = 0; i < this.state.sections.length; i++) {
-            elems.push(SectionElem(this.state.sections[i].name, i, this.state.sections[i].body));
-        }
+            if(this.state.sections[i].name != "score"){
+                elems.push(SectionElem(this.state.sections[i].name, i, this.state.sections[i].body));
+            } else {
+                let scoreElem = Elem(Score, {text:this.state.sections[i].body}, null);
+                elems.push(SectionElem(this.state.sections[i].name, i, scoreElem));
+            }
 
-        console.log(elems)
+        }
 
         return elems;
     }
