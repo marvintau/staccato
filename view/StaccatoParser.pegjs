@@ -22,7 +22,7 @@
 
 
 Notes "notes"
-  = first:Note rest:(_ Note)* {
+  = _ first:Note rest:(_ Note)* _{
 
       var all = [first];
 
@@ -38,7 +38,7 @@ HalfedNote "duration"
 
         return {
         	notes : [half(first), half(next)],
-            conn : []
+            conn : ["halfed"]
         }
     }
   / "(" _ first:Note _ next:Note _ last:Note _ ")" {
@@ -52,11 +52,13 @@ HalfedNote "duration"
 DottedNote "dotted"
   = "." first:FixedNote _ next:FixedNote{
   		first.duration *= 1.5;
+        first.dotted = true;
         next.duration *= 0.5;
+        next.conn.push("halfed");
 
         return {
         	notes : [first, next],
-            conn : ["dotted"]
+            conn : []
         }
     }
 
@@ -75,13 +77,15 @@ Note "note"
 FixedNote "fixed"
   = "/" note:ModifiedPitch _ {
         note.duration = 1;
-        note.conn = ["open"];
+        note.upperConn = "open";
+        note.conn = []
         return note;
     }
 
   / note:ModifiedPitch "\\" _ {
         note.duration = 1;
-        note.conn = ["close"];
+        note.upperConn = "close";
+        note.conn = []
         return note;
     }
   / note:ModifiedPitch _ {

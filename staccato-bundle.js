@@ -56,6 +56,10 @@
 
 	var _StaccatoParser = __webpack_require__(430);
 
+	var _What_A_Friend = __webpack_require__(431);
+
+	var _What_A_Friend2 = _interopRequireDefault(_What_A_Friend);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -80,6 +84,123 @@
 	    _reactDom2.default.render(Elem(component, param, children), document.getElementById(to));
 	};
 
+	var IndexNote = function IndexNote(notes) {
+	    return notes.map(function (elem, index) {
+	        elem.index = index;
+	        return elem;
+	    });
+	};
+
+	var GetAccidentals = function GetAccidentals(notes) {
+	    var res = [];
+	    notes.forEach(function (note) {
+	        note.accidental && res.push({ index: note.index, accidental: note.accidental });
+	    });
+	    return res;
+	};
+
+	var GetConnectionRanges = function GetConnectionRanges(notes) {
+	    var res = [];
+	    notes.forEach(function (note) {
+
+	        // inserting the first opening connection point
+	        res.length == 0 && note.upperConn == "open" && res.push({ start: note.index });
+
+	        // if res.last exists, and has found another opening
+	        // connection, push a new element. illegally successive
+	        // opennings will be omitted.
+	        res.length > 0 && res[res.length - 1].end && note.upperConn == "open" && res.push({ start: note.index });
+
+	        // if res.last.end is not being assigned, assign
+	        // it with the first found closing. The following
+	        // closings will be omitted.
+
+	        if (res.length > 0 && !res[res.length - 1].end && note.upperConn == "close") {
+	            res[res.length - 1].end = note.index;
+	        }
+	    });
+
+	    return res;
+	};
+
+	var GetUnderbarRanges = function GetUnderbarRanges(notes) {
+
+	    var curr = [];
+	    var res = [];
+
+	    notes.forEach(function (note) {
+
+	        for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
+
+	            // condition of rewriting current underbar:
+	            // curr[i] exists, and have same type with note.conn[i]
+	            if (curr[i] && curr[i].type == note.conn[i]) {
+
+	                curr[i].end = note.index;
+	            } else {
+
+	                // if curr[i] exists, but note.conn[i] doesn't exist,
+	                // or has different type to curr[i], the current bar
+	                // is done.
+	                curr[i] && res.push(curr[i]);
+
+	                // if note.conn[i] exists, but curr[i] could be either
+	                // not created or finished, assign it with a new object.
+	                // if not, then rewrite as undefined.
+	                curr[i] = note.conn[i] ? { start: note.index, end: note.index, level: i, type: note.conn[i] } : undefined;
+	            }
+	        }
+	    });
+
+	    // console.log(JSON.stringify(res));
+	    return res;
+	};
+
+	var GetOctaves = function GetOctaves(notes) {
+
+	    var res = [];
+
+	    notes.forEach(function (note) {
+	        note.octave && res.push({ index: note.index, octave: note.octave });
+	    });
+
+	    return res;
+	};
+
+	var GetDurationOnly = function GetDurationOnly(notes) {
+	    return notes.map(function (note) {
+	        return { "pitch": note.pitch, "index": note.index, "duration": note.duration };
+	    });
+	};
+
+	var GroupByMeasure = function GroupByMeasure(notes) {
+	    var initial = [[]];
+	    initial[0].duration = 0;
+
+	    return notes.reduce(function (measures, note) {
+	        if (measures[measures.length - 1].duration < 4) {
+	            measures[measures.length - 1].push(note);
+	            measures[measures.length - 1].duration += note.duration;
+	        } else {
+	            measures.push([note]);
+	            measures[measures.length - 1].duration = note.duration;
+	        }
+	        return measures;
+	    }, initial);
+	};
+
+	var ScoreModel = function ScoreModel(notes) {
+
+	    var indexed = IndexNote(notes);
+
+	    return {
+	        measures: GroupByMeasure(GetDurationOnly(indexed)),
+	        underbars: GetUnderbarRanges(indexed),
+	        accidentals: GetAccidentals(indexed),
+	        connects: GetConnectionRanges(indexed)
+	    };
+	};
+
 	var Score = function (_React$Component) {
 	    _inherits(Score, _React$Component);
 
@@ -97,9 +218,11 @@
 	    _createClass(Score, [{
 	        key: 'render',
 	        value: function render() {
-	            console.log(this.state.notes);
-	            var notes = this.state.notes.map(function (note) {
-	                return Elem(Note, { className: "note", note: note.pitch }, null);
+
+	            console.log(JSON.stringify(ScoreModel(this.state.notes)));
+
+	            var notes = this.state.notes.map(function (note, index) {
+	                return Elem(Note, { className: "note", key: index, note: note.pitch }, null);
 	            });
 	            return Elem('div', null, notes);
 	        }
@@ -190,7 +313,7 @@
 	                rows: 20,
 	                placeholder: 'yep',
 	                spellCheck: 'false',
-	                // value       : this.state.value
+	                value: _What_A_Friend2.default,
 	                onChange: function onChange(event) {
 	                    return _this4.handleChange(event);
 	                }
@@ -40636,7 +40759,7 @@
 
 	                return {
 	                	notes : [half(first), half(next)],
-	                    conn : []
+	                    conn : ["halfed"]
 	                }
 	            },
 	        peg$c8 = function(first, next, last) {
@@ -40651,11 +40774,13 @@
 	        peg$c11 = peg$literalExpectation(".", false),
 	        peg$c12 = function(first, next) {
 	          		first.duration *= 1.5;
+	                first.dotted = true;
 	                next.duration *= 0.5;
+	                next.conn.push("halfed");
 
 	                return {
 	                	notes : [first, next],
-	                    conn : ["dotted"]
+	                    conn : []
 	                }
 	            },
 	        peg$c13 = peg$otherExpectation("note"),
@@ -40676,14 +40801,16 @@
 	        peg$c21 = peg$literalExpectation("/", false),
 	        peg$c22 = function(note) {
 	                note.duration = 1;
-	                note.conn = ["open"];
+	                note.upperConn = "open";
+	                note.conn = []
 	                return note;
 	            },
 	        peg$c23 = "\\",
 	        peg$c24 = peg$literalExpectation("\\", false),
 	        peg$c25 = function(note) {
 	                note.duration = 1;
-	                note.conn = ["close"];
+	                note.upperConn = "close";
+	                note.conn = []
 	                return note;
 	            },
 	        peg$c26 = function(note) {
@@ -40876,50 +41003,62 @@
 	    }
 
 	    function peg$parseNotes() {
-	      var s0, s1, s2, s3, s4, s5;
+	      var s0, s1, s2, s3, s4, s5, s6;
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
-	      s1 = peg$parseNote();
+	      s1 = peg$parse_();
 	      if (s1 !== peg$FAILED) {
-	        s2 = [];
-	        s3 = peg$currPos;
-	        s4 = peg$parse_();
-	        if (s4 !== peg$FAILED) {
-	          s5 = peg$parseNote();
+	        s2 = peg$parseNote();
+	        if (s2 !== peg$FAILED) {
+	          s3 = [];
+	          s4 = peg$currPos;
+	          s5 = peg$parse_();
 	          if (s5 !== peg$FAILED) {
-	            s4 = [s4, s5];
-	            s3 = s4;
-	          } else {
-	            peg$currPos = s3;
-	            s3 = peg$FAILED;
-	          }
-	        } else {
-	          peg$currPos = s3;
-	          s3 = peg$FAILED;
-	        }
-	        while (s3 !== peg$FAILED) {
-	          s2.push(s3);
-	          s3 = peg$currPos;
-	          s4 = peg$parse_();
-	          if (s4 !== peg$FAILED) {
-	            s5 = peg$parseNote();
-	            if (s5 !== peg$FAILED) {
-	              s4 = [s4, s5];
-	              s3 = s4;
+	            s6 = peg$parseNote();
+	            if (s6 !== peg$FAILED) {
+	              s5 = [s5, s6];
+	              s4 = s5;
 	            } else {
-	              peg$currPos = s3;
-	              s3 = peg$FAILED;
+	              peg$currPos = s4;
+	              s4 = peg$FAILED;
 	            }
 	          } else {
-	            peg$currPos = s3;
-	            s3 = peg$FAILED;
+	            peg$currPos = s4;
+	            s4 = peg$FAILED;
 	          }
-	        }
-	        if (s2 !== peg$FAILED) {
-	          peg$savedPos = s0;
-	          s1 = peg$c1(s1, s2);
-	          s0 = s1;
+	          while (s4 !== peg$FAILED) {
+	            s3.push(s4);
+	            s4 = peg$currPos;
+	            s5 = peg$parse_();
+	            if (s5 !== peg$FAILED) {
+	              s6 = peg$parseNote();
+	              if (s6 !== peg$FAILED) {
+	                s5 = [s5, s6];
+	                s4 = s5;
+	              } else {
+	                peg$currPos = s4;
+	                s4 = peg$FAILED;
+	              }
+	            } else {
+	              peg$currPos = s4;
+	              s4 = peg$FAILED;
+	            }
+	          }
+	          if (s3 !== peg$FAILED) {
+	            s4 = peg$parse_();
+	            if (s4 !== peg$FAILED) {
+	              peg$savedPos = s0;
+	              s1 = peg$c1(s2, s3);
+	              s0 = s1;
+	            } else {
+	              peg$currPos = s0;
+	              s0 = peg$FAILED;
+	            }
+	          } else {
+	            peg$currPos = s0;
+	            s0 = peg$FAILED;
+	          }
 	        } else {
 	          peg$currPos = s0;
 	          s0 = peg$FAILED;
@@ -41564,6 +41703,12 @@
 	    parse:       peg$parse
 	  };
 	})();
+
+/***/ },
+/* 431 */
+/***/ function(module, exports) {
+
+	module.exports = "\ntitle : {\n耶 稣 恩 友\n}\n\nsubtitle : {\nWhat a friend we have in jesus\n}\n\nlyrics : {\nScriven 1855\n}\n\ncomposer: {\nConverse 1868\n}\n\nbeats: {\n1=F   4/4\n}\n\nscore : {\n.5  5 (6 (5 5)) (3 /1) 1\\ - 6,1 - .5,1 1 (3 1) (5 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n.2 #1 (2 3) (4 2) 3 - 5   - .6   6 (5 3) (4 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n}\n"
 
 /***/ }
 /******/ ]);

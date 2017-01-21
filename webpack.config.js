@@ -20,7 +20,11 @@ module.exports = {
               loader: 'pegjs-loader'
             },
             { test: /\.css$/, loader: "style!css" },
-            { test: /\.(png|jpg)$/, loader: 'url-loader' }
+            { test: /\.(png|jpg)$/, loader: 'url-loader' },
+            {
+                test: /\.txt$/,
+                loader: 'raw-loader'
+            }
         ]
     },
     externals: {
