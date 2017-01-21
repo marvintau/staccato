@@ -128,27 +128,47 @@
 	    var curr = [];
 	    var res = [];
 
+	    var currDuration = 0;
+
 	    notes.forEach(function (note) {
 
-	        for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
+	        if (currDuration < 4) {
 
-	            // condition of rewriting current underbar:
-	            // curr[i] exists, and have same type with note.conn[i]
-	            if (curr[i] && curr[i].type == note.conn[i]) {
+	            currDuration += note.duration;
 
-	                curr[i].end = note.index;
-	            } else {
+	            for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
 
-	                // if curr[i] exists, but note.conn[i] doesn't exist,
-	                // or has different type to curr[i], the current bar
-	                // is done.
-	                curr[i] && res.push(curr[i]);
+	                // condition of rewriting current underbar:
+	                // curr[i] exists, and have same type with note.conn[i],
+	                if (curr[i] && curr[i].type == note.conn[i]) {
 
-	                // if note.conn[i] exists, but curr[i] could be either
-	                // not created or finished, assign it with a new object.
-	                // if not, then rewrite as undefined.
-	                curr[i] = note.conn[i] ? { start: note.index, end: note.index, level: i, type: note.conn[i] } : undefined;
+	                    curr[i].end = note.index;
+	                } else {
+
+	                    // if curr[i] exists, but note.conn[i] doesn't exist,
+	                    // or has different type to curr[i], the current bar
+	                    // is done.
+	                    curr[i] && res.push(curr[i]);
+
+	                    // if note.conn[i] exists, but curr[i] could be either
+	                    // not created or finished, assign it with a new object.
+	                    // if not, then rewrite as undefined.
+	                    curr[i] = note.conn[i] ? { start: note.index, end: note.index, level: i, type: note.conn[i] } : undefined;
+	                }
 	            }
+	        } else {
+
+	            // if the current measure has been filled up, then
+	            // push all existing elements into res, and empty
+	            // the curr. So that we can seperate all underbars
+	            // belonging to different measures.
+	            currDuration = 0;
+
+	            for (var i = 0; i < curr.length; i++) {
+	                curr[i] && res.push(curr[i]);
+	            }
+
+	            curr = [];
 	        }
 	    });
 
@@ -173,17 +193,17 @@
 	    });
 	};
 
-	var GroupByMeasure = function GroupByMeasure(notes) {
+	var GroupByLength = function GroupByLength(notes, length) {
 	    var initial = [[]];
-	    initial[0].duration = 0;
+	    var duration = 0;
 
 	    return notes.reduce(function (measures, note) {
-	        if (measures[measures.length - 1].duration < 4) {
+	        if (duration < length) {
 	            measures[measures.length - 1].push(note);
-	            measures[measures.length - 1].duration += note.duration;
+	            duration += note.duration;
 	        } else {
 	            measures.push([note]);
-	            measures[measures.length - 1].duration = note.duration;
+	            duration = note.duration;
 	        }
 	        return measures;
 	    }, initial);
@@ -194,7 +214,7 @@
 	    var indexed = IndexNote(notes);
 
 	    return {
-	        measures: GroupByMeasure(GetDurationOnly(indexed)),
+	        measures: GroupByLength(GetDurationOnly(indexed), 4),
 	        underbars: GetUnderbarRanges(indexed),
 	        accidentals: GetAccidentals(indexed),
 	        connects: GetConnectionRanges(indexed)
@@ -207,32 +227,87 @@
 	    function Score(props) {
 	        _classCallCheck(this, Score);
 
-	        var _this = _possibleConstructorReturn(this, (Score.__proto__ || Object.getPrototypeOf(Score)).call(this, props));
-
-	        _this.state = {
-	            notes: (0, _StaccatoParser.parse)(_this.props.text)
-	        };
-	        return _this;
+	        return _possibleConstructorReturn(this, (Score.__proto__ || Object.getPrototypeOf(Score)).call(this, props));
 	    }
 
 	    _createClass(Score, [{
 	        key: 'render',
 	        value: function render() {
 
-	            console.log(JSON.stringify(ScoreModel(this.state.notes)));
+	            var scoreModel = ScoreModel((0, _StaccatoParser.parse)(this.props.text));
 
-	            var notes = this.state.notes.map(function (note, index) {
-	                return Elem(Note, { className: "note", key: index, note: note.pitch }, null);
+	            var measureElems = scoreModel.measures.map(function (measure, index) {
+	                return Elem(Measure, { key: index, measure: measure }, null);
 	            });
-	            return Elem('div', null, notes);
+
+	            return Elem('div', null, measureElems);
 	        }
 	    }]);
 
 	    return Score;
 	}(React.Component);
 
-	var Note = function (_React$Component2) {
-	    _inherits(Note, _React$Component2);
+	var Measure = function (_React$Component2) {
+	    _inherits(Measure, _React$Component2);
+
+	    function Measure(props) {
+	        _classCallCheck(this, Measure);
+
+	        return _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
+	    }
+
+	    _createClass(Measure, [{
+	        key: 'render',
+	        value: function render() {
+	            // console.log(JSON.stringify(GroupByLength(this.props.measure, 1)));
+
+	            var extendedMeasures = [];
+	            this.props.measure.forEach(function (note) {
+	                if (note.duration > 1) {
+	                    extendedMeasures.push({ pitch: note.pitch, duration: 1 });
+	                    for (var i = 1; i < note.duration; i++) {
+	                        extendedMeasures.push({ pitch: "-", duration: 1 });
+	                    }
+	                } else {
+	                    extendedMeasures.push(note);
+	                }
+	            });
+
+	            var beatElems = GroupByLength(extendedMeasures, 1).map(function (beat, index) {
+	                return Elem(Beat, { key: index, beat: beat }, null);
+	            });
+	            return Elem('span', { className: "measure" }, beatElems);
+	        }
+	    }]);
+
+	    return Measure;
+	}(React.Component);
+
+	var Beat = function (_React$Component3) {
+	    _inherits(Beat, _React$Component3);
+
+	    function Beat(props) {
+	        _classCallCheck(this, Beat);
+
+	        return _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
+	    }
+
+	    _createClass(Beat, [{
+	        key: 'render',
+	        value: function render() {
+	            // console.log(JSON.stringify(this.props.beat));
+	            var noteElems = this.props.beat.map(function (note, index) {
+	                return Elem(Note, { key: index, note: note }, null);
+	            });
+	            return Elem('span', { className: "beat" }, noteElems);
+	        }
+	    }]);
+
+	    return Beat;
+	}(React.Component);
+
+	var Note = function (_React$Component4) {
+	    _inherits(Note, _React$Component4);
 
 	    function Note(props) {
 	        _classCallCheck(this, Note);
@@ -243,26 +318,26 @@
 	    _createClass(Note, [{
 	        key: 'render',
 	        value: function render() {
-	            return Elem('span', {}, this.props.note);
+	            return Elem('span', { className: "note" }, this.props.note.pitch);
 	        }
 	    }]);
 
 	    return Note;
 	}(React.Component);
 
-	var Container = function (_React$Component3) {
-	    _inherits(Container, _React$Component3);
+	var Container = function (_React$Component5) {
+	    _inherits(Container, _React$Component5);
 
 	    function Container(props) {
 	        _classCallCheck(this, Container);
 
-	        var _this3 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
+	        var _this5 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
-	        _this3.state = {
+	        _this5.state = {
 	            value: "test text",
 	            sections: []
 	        };
-	        return _this3;
+	        return _this5;
 	    }
 
 	    _createClass(Container, [{
@@ -305,7 +380,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this4 = this;
+	            var _this6 = this;
 
 	            var editor = Elem('textarea', {
 	                id: 'editor',
@@ -315,7 +390,7 @@
 	                spellCheck: 'false',
 	                value: _What_A_Friend2.default,
 	                onChange: function onChange(event) {
-	                    return _this4.handleChange(event);
+	                    return _this6.handleChange(event);
 	                }
 	            });
 
@@ -40758,14 +40833,14 @@
 	        peg$c7 = function(first, next) {
 
 	                return {
-	                	notes : [half(first), half(next)],
+	                	notes : [half(first, false), half(next, false)],
 	                    conn : ["halfed"]
 	                }
 	            },
 	        peg$c8 = function(first, next, last) {
 
 	            	return {
-	                	notes : [half(first), half(next), half(last)],
+	                	notes : [half(first, true), half(next, true), half(last, true)],
 	                    conn : ["triple"]
 	                }
 	            },
@@ -40773,9 +40848,9 @@
 	        peg$c10 = ".",
 	        peg$c11 = peg$literalExpectation(".", false),
 	        peg$c12 = function(first, next) {
-	          		first.duration *= 1.5;
+	          // 		first.duration *= 1.5;
 	                first.dotted = true;
-	                next.duration *= 0.5;
+	                // next.duration *= 0.5;
 	                next.conn.push("halfed");
 
 	                return {
@@ -41666,12 +41741,12 @@
 	            )}, [])
 	        };
 
-	      const half = note => {
+	      const half = (note, isTriple) => {
 	      	if(note.duration){
-	        	note.duration /= 2
+	        	note.duration /= isTriple ? 3 : 2
 	        } else {
 	        	for(let i = 0; i < note.notes.length; i++){
-	            	note.notes[i].duration /= 2
+	            	note.notes[i].duration /= isTriple ? 3 : 2
 	            }
 	        }
 
@@ -41708,7 +41783,7 @@
 /* 431 */
 /***/ function(module, exports) {
 
-	module.exports = "\ntitle : {\n耶 稣 恩 友\n}\n\nsubtitle : {\nWhat a friend we have in jesus\n}\n\nlyrics : {\nScriven 1855\n}\n\ncomposer: {\nConverse 1868\n}\n\nbeats: {\n1=F   4/4\n}\n\nscore : {\n.5  5 (6 (5 5)) (3 /1) 1\\ - 6,1 - .5,1 1 (3 1) (5 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n.2 #1 (2 3) (4 2) 3 - 5   - .6   6 (5 3) (4 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n}\n"
+	module.exports = "\ntitle : {\n耶 稣 恩 友\n}\n\nsubtitle : {\nWhat a friend we have in jesus\n}\n\nlyrics : {\nScriven 1855\n}\n\ncomposer: {\nConverse 1868\n}\n\nbeats: {\n1=F   4/4\n}\n\nscore : {\n.5  5 (6 5) (3 /1) 1\\ - 6,1 - .5,1 1 (3 1) (5 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n.2 #1 (2 3) (4 2) 3 - 5   - .6   6 (5 3) (4 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n}\n"
 
 /***/ }
 /******/ ]);

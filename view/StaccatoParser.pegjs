@@ -7,12 +7,12 @@
         )}, [])
     };
 
-  const half = note => {
+  const half = (note, isTriple) => {
   	if(note.duration){
-    	note.duration /= 2
+    	note.duration /= isTriple ? 3 : 2
     } else {
     	for(let i = 0; i < note.notes.length; i++){
-        	note.notes[i].duration /= 2
+        	note.notes[i].duration /= isTriple ? 3 : 2
         }
     }
 
@@ -37,23 +37,23 @@ HalfedNote "duration"
   = "(" _  first:Note _ next:Note _ ")" {
 
         return {
-        	notes : [half(first), half(next)],
+        	notes : [half(first, false), half(next, false)],
             conn : ["halfed"]
         }
     }
   / "(" _ first:Note _ next:Note _ last:Note _ ")" {
 
     	return {
-        	notes : [half(first), half(next), half(last)],
+        	notes : [half(first, true), half(next, true), half(last, true)],
             conn : ["triple"]
         }
     }
 
 DottedNote "dotted"
   = "." first:FixedNote _ next:FixedNote{
-  		first.duration *= 1.5;
+  // 		first.duration *= 1.5;
         first.dotted = true;
-        next.duration *= 0.5;
+        // next.duration *= 0.5;
         next.conn.push("halfed");
 
         return {
