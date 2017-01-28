@@ -1,6 +1,6 @@
 {
   const FlattenScore = (scoreObject, conn) =>{
-    return scoreObject.reduce((list, elem) => {
+    return scoreObject.reduce((list, elem, index) => {
         return list.concat( elem.notes ?
             FlattenScore(elem.notes, elem.conn.concat(conn)) :
             (elem.conn ? Object.assign(elem, {"conn" : elem.conn.concat(conn)}) : Object.assign(elem, {"conn" : conn}))
@@ -18,6 +18,129 @@
 
     return note
   }
+
+  const IndexNote = function(notes){
+      return notes.map(function(elem, index){
+          elem.index = index;
+          return elem;
+      })
+  }
+
+  const ScoreModel = function(indexed){
+
+      return {
+          measures : GetDurationOnly(indexed),
+          underbars : GetUnderbarRanges(indexed),
+          accidentals : GetAccidentals(indexed),
+          connects : GetConnectionRanges(indexed)
+      }
+  }
+
+  let GetDurationOnly = function(notes){
+      return notes.map(note => {return {"pitch" : note.pitch, "index" : note.index, "duration":note.duration}});
+  }
+
+  let GetOctaves = function(notes){
+
+      let res = [];
+
+      notes.forEach(function(note){
+          note.octave && res.push({index: note.index, octave:note.octave});
+      })
+
+      return res;
+  }
+
+  let GetUnderbarRanges = function(notes){
+
+      let curr =[];
+      let res  =[];
+
+      let currDuration = 0;
+
+      notes.forEach(function(note){
+
+          if(currDuration < 4){
+
+              currDuration += note.duration;
+
+              for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
+
+                  // condition of rewriting current underbar:
+                  // curr[i] exists, and have same type with note.conn[i],
+                  if(curr[i] && curr[i].type == note.conn[i]){
+
+                      curr[i].end = note.index;
+
+
+                  } else {
+
+                      // if curr[i] exists, but note.conn[i] doesn't exist,
+                      // or has different type to curr[i], the current bar
+                      // is done.
+                      curr[i] && res.push(curr[i]);
+
+                      // if note.conn[i] exists, but curr[i] could be either
+                      // not created or finished, assign it with a new object.
+                      // if not, then rewrite as undefined.
+                      curr[i] = note.conn[i] ? {start:note.index, end:note.index, level:i, type:note.conn[i]} : undefined;
+                  }
+              }
+          } else {
+
+              // if the current measure has been filled up, then
+              // push all existing elements into res, and empty
+              // the curr. So that we can seperate all underbars
+              // belonging to different measures.
+              currDuration = 0;
+
+              for (var i = 0; i < curr.length; i++) {
+                  curr[i] && res.push(curr[i]);
+              }
+
+              curr = [];
+          }
+
+      })
+
+      // console.log(JSON.stringify(res));
+      return res;
+  }
+
+
+  let GetConnectionRanges = function(notes){
+      let res = [];
+      notes.forEach(function(note){
+
+          // inserting the first opening connection point
+          (res.length==0 && note.upperConn == "open") && res.push({start:note.index});
+
+          // if res.last exists, and has found another opening
+          // connection, push a new element. illegally successive
+          // opennings will be omitted.
+          (res.length>0 && res[res.length - 1].end && note.upperConn == "open") && res.push({start:note.index});
+
+          // if res.last.end is not being assigned, assign
+          // it with the first found closing. The following
+          // closings will be omitted.
+
+          if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
+              res[res.length-1].end = note.index
+          }
+
+      })
+
+      return res;
+  }
+
+  let GetAccidentals = function(notes){
+      let res = [];
+      notes.forEach(function(note){
+          note.accidental && res.push({index : note.index, accidental : note.accidental});
+      })
+      return res;
+  }
+
 }
 
 
@@ -30,7 +153,7 @@ Notes "notes"
           all.push(rest[i][1]);
         }
 
-        return FlattenScore(all,[])
+        return ScoreModel(IndexNote(FlattenScore(all,[])))
     }
 
 HalfedNote "duration"

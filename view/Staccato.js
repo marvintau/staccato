@@ -1,3 +1,4 @@
+import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { Row, Col, Button } from 'react-bootstrap';
@@ -22,117 +23,6 @@ let Draw = function(component, param, children, to){
     ReactDOM.render( Elem(component, param, children), document.getElementById(to))
 }
 
-let IndexNote = function(notes){
-    return notes.map(function(elem, index){
-        elem.index = index;
-        return elem;
-    })
-}
-
-let GetAccidentals = function(notes){
-    let res = [];
-    notes.forEach(function(note){
-        note.accidental && res.push({index : note.index, accidental : note.accidental});
-    })
-    return res;
-}
-
-let GetConnectionRanges = function(notes){
-    let res = [];
-    notes.forEach(function(note){
-
-        // inserting the first opening connection point
-        (res.length==0 && note.upperConn == "open") && res.push({start:note.index});
-
-        // if res.last exists, and has found another opening
-        // connection, push a new element. illegally successive
-        // opennings will be omitted.
-        (res.length>0 && res[res.length - 1].end && note.upperConn == "open") && res.push({start:note.index});
-
-        // if res.last.end is not being assigned, assign
-        // it with the first found closing. The following
-        // closings will be omitted.
-
-        if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
-            res[res.length-1].end = note.index
-        }
-
-    })
-
-    return res;
-}
-
-let GetUnderbarRanges = function(notes){
-
-    let curr =[];
-    let res  =[];
-
-    let currDuration = 0;
-
-    notes.forEach(function(note){
-
-        if(currDuration < 4){
-
-            currDuration += note.duration;
-
-            for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
-
-                // condition of rewriting current underbar:
-                // curr[i] exists, and have same type with note.conn[i],
-                if(curr[i] && curr[i].type == note.conn[i]){
-
-                    curr[i].end = note.index;
-
-
-                } else {
-
-                    // if curr[i] exists, but note.conn[i] doesn't exist,
-                    // or has different type to curr[i], the current bar
-                    // is done.
-                    curr[i] && res.push(curr[i]);
-
-                    // if note.conn[i] exists, but curr[i] could be either
-                    // not created or finished, assign it with a new object.
-                    // if not, then rewrite as undefined.
-                    curr[i] = note.conn[i] ? {start:note.index, end:note.index, level:i, type:note.conn[i]} : undefined;
-                }
-            }
-        } else {
-
-            // if the current measure has been filled up, then
-            // push all existing elements into res, and empty
-            // the curr. So that we can seperate all underbars
-            // belonging to different measures.
-            currDuration = 0;
-
-            for (var i = 0; i < curr.length; i++) {
-                curr[i] && res.push(curr[i]);
-            }
-
-            curr = [];
-        }
-
-    })
-
-    // console.log(JSON.stringify(res));
-    return res;
-}
-
-let GetOctaves = function(notes){
-
-    let res = [];
-
-    notes.forEach(function(note){
-        note.octave && res.push({index: note.index, octave:note.octave});
-    })
-
-    return res;
-}
-
-let GetDurationOnly = function(notes){
-    return notes.map(note => {return {"pitch" : note.pitch, "index" : note.index, "duration":note.duration}});
-}
-
 let GroupByLength = function(notes, length) {
     let initial = [[]];
     let duration = 0;
@@ -149,43 +39,17 @@ let GroupByLength = function(notes, length) {
     }, initial);
 }
 
-let ScoreModel = function(notes){
-
-    let indexed = IndexNote(notes);
-
-    return {
-        measures : GroupByLength(GetDurationOnly(indexed), 4),
-        underbars : GetUnderbarRanges(indexed),
-        accidentals : GetAccidentals(indexed),
-        connects : GetConnectionRanges(indexed)
-    }
-}
 
 class Score extends React.Component{
     constructor(props){
         super(props);
     }
 
-    render() {
-
-        let scoreModel = ScoreModel(parse(this.props.text));
-
-        let measureElems = scoreModel.measures.map((measure, index) => Elem(Measure, {key:index, measure:measure}, null));
-
-        return Elem('div', null, measureElems);
-    }
-}
-
-class Measure extends React.Component{
-    constructor(props){
-        super(props);
-    }
-
-    render() {
-        // console.log(JSON.stringify(GroupByLength(this.props.measure, 1)));
+    MeasureElems(){
 
         let extendedMeasures = []
-        this.props.measure.forEach(function(note){
+
+        this.props.measures.forEach(function(note){
             if(note.duration > 1){
                 extendedMeasures.push({pitch: note.pitch, duration: 1});
                 for(let i = 1; i < note.duration; i++){
@@ -196,8 +60,29 @@ class Measure extends React.Component{
             }
         });
 
-        let beatElems = GroupByLength(extendedMeasures, 1).map((beat, index) => Elem(Beat, {key:index, beat : beat}, null));
-        return Elem('span', {className:"measure"}, beatElems);
+        return GroupByLength(extendedMeasures, 4).map((measure,index) =>Elem(Measure, {measure: measure, key:index}));
+    }
+
+    render() {
+        return Elem('div', {className:"score"}, this.MeasureElems());
+    }
+}
+
+class Measure extends React.Component{
+    constructor(props){
+        super(props);
+    }
+
+    BeatElems(){
+        return GroupByLength(this.props.measure, 1).map((beat, index)=>Elem(Beat, {beat:beat, key:index}));
+    }
+
+    render() {
+        return Elem('div', {className:"measure"}, this.BeatElems());
+    }
+
+    componentDidMount(){
+        // (this.props.children.map(elem => elem.props.children.map(elem => console.log(ReactDOM.findDOMNode(elem)))));
     }
 }
 
@@ -206,20 +91,41 @@ class Beat extends React.Component{
         super(props);
     }
 
-    render() {
-        // console.log(JSON.stringify(this.props.beat));
-        let noteElems = this.props.beat.map((note, index) => Elem(Note, {key:index, note:note}, null));
-        return Elem('span', {className: "beat"}, noteElems);
+    NoteElems(){
+        return this.props.beat.map((note, index)=>Elem(Note, {ref:"note", key:index, note:note}));
     }
+
+    render() {
+        return Elem('span', {className: "beat"}, this.NoteElems());
+    }
+
+    componentDidMount(){
+        console.log(this.refs);
+    }
+
 }
 
 class Note extends React.Component{
     constructor(props){
         super(props);
+        this.state = {
+            left  : 0,
+            right : 0
+        }
     }
 
     render(){
-        return Elem('span', {className:"note"}, this.props.note.pitch);
+        return Elem('span', {ref:"note", className:"note"}, this.props.note.pitch);
+    }
+
+    componentDidMount(){
+        var elemNode = ReactDOM.findDOMNode(this);
+        var style = elemNode.getBoundingClientRect();
+
+        this.setState({
+            left : style.left,
+            right : style.right
+        })
     }
 }
 
@@ -228,7 +134,7 @@ class Container extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            value: "test text",
+            value: scoreText,
             sections : []
         };
     }
@@ -239,6 +145,7 @@ class Container extends React.Component {
 
         let text = event.target.value;
 
+        let model;
         let matched, newSections = [];
         while (matched = sectionFinder.exec(text)){
             newSections.push({name : matched[1], body : matched[2]})
@@ -257,8 +164,19 @@ class Container extends React.Component {
             if(this.state.sections[i].name != "score"){
                 elems.push(SectionElem(this.state.sections[i].name, i, this.state.sections[i].body));
             } else {
-                let scoreElem = Elem(Score, {text:this.state.sections[i].body}, null);
-                elems.push(SectionElem(this.state.sections[i].name, i, scoreElem));
+
+                try {
+                    let scoreModel = parse(this.state.sections[i].body);
+                    elems.push(
+                        SectionElem(this.state.sections[i].name, i, Elem(Score, {measures:scoreModel.measures}))
+                    );
+                } catch (error){
+                    console.log(error);
+                    elems.push(
+                        SectionElem(this.state.sections[i].name, i, Elem(Score, {}, [this.state.sections[i].body]))
+                    );
+                }
+
             }
 
         }
@@ -275,7 +193,7 @@ class Container extends React.Component {
             rows      : 20,
             placeholder : 'yep',
             spellCheck  : 'false',
-            value       : scoreText,
+            value       : this.state.value,
             onChange    : (event) => this.handleChange(event)
         })
 
@@ -292,7 +210,7 @@ class Container extends React.Component {
             className:'preview',
         }, Elem('div', {id:'page', className:'page'}, this.sectionElems()))
 
-        const row = Elem(Row, null,
+        const row = Elem(Row, {},
             [editorWrapper, preview]
         );
 
@@ -300,4 +218,4 @@ class Container extends React.Component {
     }
 }
 
-Draw(Container, null, "null", 'container');
+Draw(Container, {}, "null", 'container');
