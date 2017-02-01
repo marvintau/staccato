@@ -1,21 +1,14 @@
 {
-  const FlattenScore = (scoreObject, conn) =>{
+  const FlattenScore = (scoreObject, durationFactor, conn) =>{
     return scoreObject.reduce((list, elem, index) => {
         return list.concat( elem.notes ?
-            FlattenScore(elem.notes, elem.conn.concat(conn)) :
-            (elem.conn ? Object.assign(elem, {"conn" : elem.conn.concat(conn)}) : Object.assign(elem, {"conn" : conn}))
+            FlattenScore(elem.notes, elem.factor * durationFactor, elem.conn.concat(conn)) :
+            (elem.conn ? Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : elem.conn.concat(conn)}) : Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : conn}))
         )}, [])
     };
 
   const half = (note, isTriple) => {
-  	if(note.duration){
-    	note.duration /= isTriple ? 3 : 2
-    } else {
-    	for(let i = 0; i < note.notes.length; i++){
-        	note.notes[i].duration /= isTriple ? 3 : 2
-        }
-    }
-
+    	note.duration = isTriple ? 3 : 2
     return note
   }
 
@@ -28,16 +21,27 @@
 
   const ScoreModel = function(indexed){
 
+      console.log(JSON.stringify(indexed));
+
       return {
           measures : GetDurationOnly(indexed),
           underbars : GetUnderbarRanges(indexed),
           accidentals : GetAccidentals(indexed),
-          connects : GetConnectionRanges(indexed)
+          connects : GetConnectionRanges(indexed),
+          octaves : GetOctaves(indexed)
       }
   }
 
   let GetDurationOnly = function(notes){
-      return notes.map(note => {return {"pitch" : note.pitch, "index" : note.index, "duration":note.duration}});
+      return notes.map(note => (
+          {
+              "pitch" : note.pitch,
+              "index" : note.index,
+              "duration":note.duration,
+              "dotted":note.dotted,
+              "octave":note.octave
+          }
+      ));
   }
 
   let GetOctaves = function(notes){
@@ -45,7 +49,7 @@
       let res = [];
 
       notes.forEach(function(note){
-          note.octave && res.push({index: note.index, octave:note.octave});
+          note.octave && res.push({index: note.index, octave:note.octave, underbars:note.conn.length});
       })
 
       return res;
@@ -60,9 +64,7 @@
 
       notes.forEach(function(note){
 
-          if(currDuration < 4){
-
-              currDuration += note.duration;
+          if(currDuration <= 1){
 
               for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
 
@@ -71,7 +73,6 @@
                   if(curr[i] && curr[i].type == note.conn[i]){
 
                       curr[i].end = note.index;
-
 
                   } else {
 
@@ -86,24 +87,26 @@
                       curr[i] = note.conn[i] ? {start:note.index, end:note.index, level:i, type:note.conn[i]} : undefined;
                   }
               }
-          } else {
+
+              currDuration += note.duration;
+          }
+          if(currDuration >= 1) {
 
               // if the current measure has been filled up, then
               // push all existing elements into res, and empty
               // the curr. So that we can seperate all underbars
               // belonging to different measures.
-              currDuration = 0;
 
               for (var i = 0; i < curr.length; i++) {
                   curr[i] && res.push(curr[i]);
               }
 
+              currDuration = 0;
               curr = [];
           }
 
       })
 
-      // console.log(JSON.stringify(res));
       return res;
   }
 
@@ -153,34 +156,37 @@ Notes "notes"
           all.push(rest[i][1]);
         }
 
-        return ScoreModel(IndexNote(FlattenScore(all,[])))
+        return ScoreModel(IndexNote(FlattenScore(all, 1,[])))
     }
 
 HalfedNote "duration"
   = "(" _  first:Note _ next:Note _ ")" {
 
         return {
-        	notes : [half(first, false), half(next, false)],
+        	notes : [first, next],
+            factor : 2,
             conn : ["halfed"]
         }
     }
   / "(" _ first:Note _ next:Note _ last:Note _ ")" {
 
     	return {
-        	notes : [half(first, true), half(next, true), half(last, true)],
+        	notes : [first, next, last],
+            factor : 3,
             conn : ["triple"]
         }
     }
 
 DottedNote "dotted"
-  = "." first:FixedNote _ next:FixedNote{
-  // 		first.duration *= 1.5;
+  = "." first:FixedNote _ next:FixedNote {
+
         first.dotted = true;
-        // next.duration *= 0.5;
+
         next.conn.push("halfed");
 
         return {
         	notes : [first, next],
+            factor : 1,
             conn : []
         }
     }

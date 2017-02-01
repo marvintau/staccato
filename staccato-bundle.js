@@ -64,6 +64,10 @@
 
 	var _What_A_Friend2 = _interopRequireDefault(_What_A_Friend);
 
+	var _reactSidebar = __webpack_require__(432);
+
+	var _reactSidebar2 = _interopRequireDefault(_reactSidebar);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -79,6 +83,7 @@
 	var SectionElem = function SectionElem(sectionName, key, children) {
 	    return Elem('div', {
 	        key: key,
+	        ref: sectionName,
 	        id: sectionName,
 	        className: sectionName
 	    }, children);
@@ -104,60 +109,89 @@
 	    }, initial);
 	};
 
-	var Score = function (_React$Component) {
-	    _inherits(Score, _React$Component);
+	var Vertbar = function (_React$Component) {
+	    _inherits(Vertbar, _React$Component);
 
-	    function Score(props) {
-	        _classCallCheck(this, Score);
+	    function Vertbar(props) {
+	        _classCallCheck(this, Vertbar);
 
-	        return _possibleConstructorReturn(this, (Score.__proto__ || Object.getPrototypeOf(Score)).call(this, props));
+	        return _possibleConstructorReturn(this, (Vertbar.__proto__ || Object.getPrototypeOf(Vertbar)).call(this, props));
 	    }
 
-	    _createClass(Score, [{
-	        key: 'MeasureElems',
-	        value: function MeasureElems() {
-
-	            var extendedMeasures = [];
-
-	            this.props.measures.forEach(function (note) {
-	                if (note.duration > 1) {
-	                    extendedMeasures.push({ pitch: note.pitch, duration: 1 });
-	                    for (var i = 1; i < note.duration; i++) {
-	                        extendedMeasures.push({ pitch: "-", duration: 1 });
-	                    }
-	                } else {
-	                    extendedMeasures.push(note);
-	                }
-	            });
-
-	            return GroupByLength(extendedMeasures, 4).map(function (measure, index) {
-	                return Elem(Measure, { measure: measure, key: index });
-	            });
-	        }
-	    }, {
+	    _createClass(Vertbar, [{
 	        key: 'render',
 	        value: function render() {
-	            return Elem('div', { className: "score" }, this.MeasureElems());
+	            return Elem('div', { className: "vertbar" });
 	        }
 	    }]);
 
-	    return Score;
+	    return Vertbar;
 	}(_react2.default.Component);
 
-	var Measure = function (_React$Component2) {
-	    _inherits(Measure, _React$Component2);
+	var Finalbar = function (_React$Component2) {
+	    _inherits(Finalbar, _React$Component2);
+
+	    function Finalbar(props) {
+	        _classCallCheck(this, Finalbar);
+
+	        return _possibleConstructorReturn(this, (Finalbar.__proto__ || Object.getPrototypeOf(Finalbar)).call(this, props));
+	    }
+
+	    _createClass(Finalbar, [{
+	        key: 'render',
+	        value: function render() {
+	            return Elem('div', { className: "finalbar" });
+	        }
+	    }]);
+
+	    return Finalbar;
+	}(_react2.default.Component);
+
+	var Underbar = function (_React$Component3) {
+	    _inherits(Underbar, _React$Component3);
+
+	    function Underbar(props) {
+	        _classCallCheck(this, Underbar);
+
+	        return _possibleConstructorReturn(this, (Underbar.__proto__ || Object.getPrototypeOf(Underbar)).call(this, props));
+	    }
+
+	    _createClass(Underbar, [{
+	        key: 'render',
+	        value: function render() {
+
+	            var style = {
+	                left: this.props.left,
+	                width: this.props.width,
+	                top: this.props.top
+	            };
+
+	            return Elem('div', { style: style, className: "underbar" });
+	        }
+	    }]);
+
+	    return Underbar;
+	}(_react2.default.Component);
+
+	var Measure = function (_React$Component4) {
+	    _inherits(Measure, _React$Component4);
 
 	    function Measure(props) {
 	        _classCallCheck(this, Measure);
 
-	        return _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
+	        var _this4 = _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
+
+	        _this4.state = {
+	            measure: GroupByLength(_this4.props.measure, 1)
+	        };
+	        return _this4;
 	    }
 
 	    _createClass(Measure, [{
 	        key: 'BeatElems',
 	        value: function BeatElems() {
-	            return GroupByLength(this.props.measure, 1).map(function (beat, index) {
-	                return Elem(Beat, { beat: beat, key: index });
+	            return this.state.measure.map(function (beat, index) {
+	                return Elem(Beat, { ref: index, beat: beat, key: index });
 	            });
 	        }
 	    }, {
@@ -167,16 +201,14 @@
 	        }
 	    }, {
 	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-	            // (this.props.children.map(elem => elem.props.children.map(elem => console.log(ReactDOM.findDOMNode(elem)))));
-	        }
+	        value: function componentDidMount() {}
 	    }]);
 
 	    return Measure;
 	}(_react2.default.Component);
 
-	var Beat = function (_React$Component3) {
-	    _inherits(Beat, _React$Component3);
+	var Beat = function (_React$Component5) {
+	    _inherits(Beat, _React$Component5);
 
 	    function Beat(props) {
 	        _classCallCheck(this, Beat);
@@ -188,7 +220,7 @@
 	        key: 'NoteElems',
 	        value: function NoteElems() {
 	            return this.props.beat.map(function (note, index) {
-	                return Elem(Note, { ref: "note", key: index, note: note });
+	                return Elem(Note, { ref: index, key: index, note: note });
 	            });
 	        }
 	    }, {
@@ -198,72 +230,213 @@
 	        }
 	    }, {
 	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-	            console.log(this.refs);
-	        }
+	        value: function componentDidMount() {}
 	    }]);
 
 	    return Beat;
 	}(_react2.default.Component);
 
-	var Note = function (_React$Component4) {
-	    _inherits(Note, _React$Component4);
+	var Note = function (_React$Component6) {
+	    _inherits(Note, _React$Component6);
 
 	    function Note(props) {
 	        _classCallCheck(this, Note);
 
-	        var _this4 = _possibleConstructorReturn(this, (Note.__proto__ || Object.getPrototypeOf(Note)).call(this, props));
+	        var _this6 = _possibleConstructorReturn(this, (Note.__proto__ || Object.getPrototypeOf(Note)).call(this, props));
 
-	        _this4.state = {
-	            left: 0,
-	            right: 0
-	        };
-	        return _this4;
+	        _this6.box = { left: 0, right: 0 };
+	        return _this6;
 	    }
 
 	    _createClass(Note, [{
 	        key: 'render',
 	        value: function render() {
-	            return Elem('span', { ref: "note", className: "note" }, this.props.note.pitch);
+	            return Elem('span', { ref: "note", className: "note" }, this.props.note.pitch + (this.props.note.dotted ? "·" : ""));
 	        }
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            var elemNode = _reactDom2.default.findDOMNode(this);
-	            var style = elemNode.getBoundingClientRect();
+	            var style = this.refs.note.getBoundingClientRect();
 
-	            this.setState({
-	                left: style.left,
-	                right: style.right
-	            });
+	            this.box = { left: style.left, right: style.right, bottom: style.bottom };
 	        }
 	    }]);
 
 	    return Note;
 	}(_react2.default.Component);
 
-	var Container = function (_React$Component5) {
-	    _inherits(Container, _React$Component5);
+	var OctaveDot = function (_React$Component7) {
+	    _inherits(OctaveDot, _React$Component7);
+
+	    function OctaveDot(props) {
+	        _classCallCheck(this, OctaveDot);
+
+	        return _possibleConstructorReturn(this, (OctaveDot.__proto__ || Object.getPrototypeOf(OctaveDot)).call(this, props));
+	    }
+
+	    _createClass(OctaveDot, [{
+	        key: 'render',
+	        value: function render() {
+	            return Elem('span', { className: "octaveDot" }, "·");
+	        }
+	    }]);
+
+	    return OctaveDot;
+	}(_react2.default.Component);
+
+	var Score = function (_React$Component8) {
+	    _inherits(Score, _React$Component8);
+
+	    function Score(props) {
+	        _classCallCheck(this, Score);
+
+	        var _this8 = _possibleConstructorReturn(this, (Score.__proto__ || Object.getPrototypeOf(Score)).call(this, props));
+
+	        _this8.state = {
+	            underbarPoses: _this8.props.underbars.map(function (elem) {
+	                return { left: 0, width: 0, top: 0 };
+	            }),
+	            octavePoses: _this8.props.octaves.map(function (elem) {
+	                top: 0;
+	            }),
+	            measures: _this8.GetExtendedMeasures()
+	        };
+	        return _this8;
+	    }
+
+	    _createClass(Score, [{
+	        key: 'handleResize',
+	        value: function handleResize() {
+	            this.setState(function (previousState) {
+	                return {
+	                    underbarPoses: previousState.underbarPoses,
+	                    measures: previousState.measures
+	                };
+	            });
+	        }
+	    }, {
+	        key: 'GetNotePoses',
+	        value: function GetNotePoses() {
+	            var notePosTable = {};
+
+	            for (var ithMeasure in this.refs) {
+	                for (var ithBeat in this.refs[ithMeasure].refs) {
+	                    for (var ithNote in this.refs[ithMeasure].refs[ithBeat].refs) {
+	                        var elem = this.refs[ithMeasure].refs[ithBeat].refs[ithNote];
+	                        if (elem.props.note.index) {
+	                            notePosTable[elem.props.note.index] = { left: elem.box.left, right: elem.box.right, bottom: elem.box.bottom };
+	                        }
+	                    }
+	                }
+	            }
+
+	            return notePosTable;
+	        }
+	    }, {
+	        key: 'GetExtendedMeasures',
+	        value: function GetExtendedMeasures() {
+	            var extendedMeasures = [];
+
+	            this.props.measures.forEach(function (note) {
+	                if (note.duration > 1) {
+	                    extendedMeasures.push({ pitch: note.pitch, duration: 1, index: null });
+	                    for (var i = 1; i < note.duration; i++) {
+	                        extendedMeasures.push({ pitch: "–", duration: 1, index: null });
+	                    }
+	                } else {
+	                    extendedMeasures.push(note);
+	                }
+	            });
+
+	            return GroupByLength(extendedMeasures, 4);
+	        }
+	    }, {
+	        key: 'MeasureElems',
+	        value: function MeasureElems() {
+
+	            return [].concat(this.state.measures.map(function (measure, index) {
+	                return [Elem(Measure, { ref: "measure-" + index, measure: measure, key: 2 * index }), Elem(Vertbar, { key: 2 * index + 1 })];
+	            })).concat(Elem(Finalbar, { key: 205 }));
+	        }
+	    }, {
+	        key: 'UnderbarElems',
+	        value: function UnderbarElems(keyOffset) {
+	            // the changing of state in componentDidMount will cause a rerendering.
+	            // that's why we need to store the underbar position in local state.
+
+	            return this.state.underbarPoses.map(function (elem, index) {
+	                return Elem(Underbar, { key: index + keyOffset, ref: "bar-" + index, left: elem.left, width: elem.width, top: elem.top });
+	            });
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+
+	            var measureElems = this.MeasureElems();
+
+	            var totalElems = [].concat(measureElems).concat(this.UnderbarElems(measureElems.length));
+
+	            return Elem('div', { ref: "score", className: "score" }, totalElems);
+	        }
+	    }, {
+	        key: 'GetUnderbarPoses',
+	        value: function GetUnderbarPoses() {
+	            var _this9 = this;
+
+	            var notePosTable = this.GetNotePoses();
+
+	            var scorePos = this.refs.score.getBoundingClientRect();
+	            // console.log(this.props.top)
+	            // by subtracting the score position from the underbar position,
+	            // we made the new undarbar position relative to score element.
+	            return this.props.underbars.map(function (elem) {
+	                return {
+	                    left: notePosTable[elem.start].left - scorePos.left,
+	                    width: notePosTable[elem.end].right - notePosTable[elem.start].left,
+	                    top: notePosTable[elem.start].bottom + elem.level * 3 + _this9.props.top - scorePos.top - 15 };
+	            });
+	        }
+	    }, {
+	        key: 'GetOctavePoses',
+	        value: function GetOctavePoses() {}
+	    }, {
+	        key: 'componentDidUpdate',
+	        value: function componentDidUpdate(prevProps, prevState) {
+
+	            // setting underbar position
+	            if (prevProps.top != this.props.top) {
+
+	                this.setState({
+	                    measures: prevState.measures,
+	                    underbarPoses: this.GetUnderbarPoses()
+	                });
+	            }
+	        }
+	    }]);
+
+	    return Score;
+	}(_react2.default.Component);
+
+	var Container = function (_React$Component9) {
+	    _inherits(Container, _React$Component9);
 
 	    function Container(props) {
 	        _classCallCheck(this, Container);
 
-	        var _this5 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
+	        var _this10 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
-	        _this5.state = {
+	        _this10.state = {
+	            scoreTop: 0,
 	            value: _What_A_Friend2.default,
-	            sections: []
+	            sections: _this10.GetSections(_What_A_Friend2.default)
 	        };
-	        return _this5;
+	        return _this10;
 	    }
 
 	    _createClass(Container, [{
-	        key: 'handleChange',
-	        value: function handleChange(event) {
-
+	        key: 'GetSections',
+	        value: function GetSections(text) {
 	            var sectionFinder = /\s+(\w+)\s*:\s*\{([^:]*)\}/g;
-
-	            var text = event.target.value;
 
 	            var model = void 0;
 	            var matched = void 0,
@@ -271,11 +444,22 @@
 	            while (matched = sectionFinder.exec(text)) {
 	                newSections.push({ name: matched[1], body: matched[2] });
 	            }
+	            return newSections;
+	        }
+	    }, {
+	        key: 'handleChange',
+	        value: function handleChange(event) {
+	            var _this11 = this;
+
+	            event.persist();
+
+	            var val = event.target.value;
 
 	            this.setState(function (previousState) {
 	                return {
-	                    value: text,
-	                    sections: newSections
+	                    scoreTop: previousState.scoreTop,
+	                    value: val,
+	                    sections: _this11.GetSections(val)
 	                };
 	            });
 	        }
@@ -291,7 +475,15 @@
 
 	                    try {
 	                        var scoreModel = (0, _StaccatoParser.parse)(this.state.sections[i].body);
-	                        elems.push(SectionElem(this.state.sections[i].name, i, Elem(Score, { measures: scoreModel.measures })));
+
+	                        // console.log(JSON.stringify(scoreModel.octaves))
+
+	                        elems.push(SectionElem(this.state.sections[i].name, i, Elem(Score, {
+	                            top: this.state.scoreTop,
+	                            measures: scoreModel.measures,
+	                            underbars: scoreModel.underbars,
+	                            octaves: scoreModel.octaves
+	                        })));
 	                    } catch (error) {
 	                        console.log(error);
 	                        elems.push(SectionElem(this.state.sections[i].name, i, Elem(Score, {}, [this.state.sections[i].body])));
@@ -304,7 +496,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this6 = this;
+	            var _this12 = this;
 
 	            var editor = Elem('textarea', {
 	                id: 'editor',
@@ -314,7 +506,7 @@
 	                spellCheck: 'false',
 	                value: this.state.value,
 	                onChange: function onChange(event) {
-	                    return _this6.handleChange(event);
+	                    return _this12.handleChange(event);
 	                }
 	            });
 
@@ -329,11 +521,28 @@
 	                md: 6,
 	                id: 'preview',
 	                className: 'preview'
-	            }, Elem('div', { id: 'page', className: 'page' }, this.sectionElems()));
+	            }, Elem('div', { ref: "preview", id: 'page', className: 'page' }, this.sectionElems()));
 
 	            var row = Elem(_reactBootstrap.Row, {}, [editorWrapper, preview]);
 
 	            return row;
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            var top = 0;
+	            top += this.refs.title.getBoundingClientRect().height;
+	            top += this.refs.subtitle.getBoundingClientRect().height;
+	            top += this.refs.composer.getBoundingClientRect().height;
+	            top += this.refs.beats.getBoundingClientRect().height;
+
+	            this.setState(function (previousState) {
+	                return {
+	                    scoreTop: top,
+	                    value: previousState.text,
+	                    sections: previousState.sections
+	                };
+	            });
 	        }
 	    }]);
 
@@ -40750,7 +40959,7 @@
 	                  all.push(rest[i][1]);
 	                }
 
-	                return ScoreModel(IndexNote(FlattenScore(all,[])))
+	                return ScoreModel(IndexNote(FlattenScore(all, 1,[])))
 	            },
 	        peg$c2 = peg$otherExpectation("duration"),
 	        peg$c3 = "(",
@@ -40760,14 +40969,16 @@
 	        peg$c7 = function(first, next) {
 
 	                return {
-	                	notes : [half(first, false), half(next, false)],
+	                	notes : [first, next],
+	                    factor : 2,
 	                    conn : ["halfed"]
 	                }
 	            },
 	        peg$c8 = function(first, next, last) {
 
 	            	return {
-	                	notes : [half(first, true), half(next, true), half(last, true)],
+	                	notes : [first, next, last],
+	                    factor : 3,
 	                    conn : ["triple"]
 	                }
 	            },
@@ -40775,13 +40986,14 @@
 	        peg$c10 = ".",
 	        peg$c11 = peg$literalExpectation(".", false),
 	        peg$c12 = function(first, next) {
-	          // 		first.duration *= 1.5;
+
 	                first.dotted = true;
-	                // next.duration *= 0.5;
+
 	                next.conn.push("halfed");
 
 	                return {
 	                	notes : [first, next],
+	                    factor : 1,
 	                    conn : []
 	                }
 	            },
@@ -41660,23 +41872,16 @@
 	    }
 
 
-	      const FlattenScore = (scoreObject, conn) =>{
+	      const FlattenScore = (scoreObject, durationFactor, conn) =>{
 	        return scoreObject.reduce((list, elem, index) => {
 	            return list.concat( elem.notes ?
-	                FlattenScore(elem.notes, elem.conn.concat(conn)) :
-	                (elem.conn ? Object.assign(elem, {"conn" : elem.conn.concat(conn)}) : Object.assign(elem, {"conn" : conn}))
+	                FlattenScore(elem.notes, elem.factor * durationFactor, elem.conn.concat(conn)) :
+	                (elem.conn ? Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : elem.conn.concat(conn)}) : Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : conn}))
 	            )}, [])
 	        };
 
 	      const half = (note, isTriple) => {
-	      	if(note.duration){
-	        	note.duration /= isTriple ? 3 : 2
-	        } else {
-	        	for(let i = 0; i < note.notes.length; i++){
-	            	note.notes[i].duration /= isTriple ? 3 : 2
-	            }
-	        }
-
+	        	note.duration = isTriple ? 3 : 2
 	        return note
 	      }
 
@@ -41689,16 +41894,27 @@
 
 	      const ScoreModel = function(indexed){
 
+	          console.log(JSON.stringify(indexed));
+
 	          return {
 	              measures : GetDurationOnly(indexed),
 	              underbars : GetUnderbarRanges(indexed),
 	              accidentals : GetAccidentals(indexed),
-	              connects : GetConnectionRanges(indexed)
+	              connects : GetConnectionRanges(indexed),
+	              octaves : GetOctaves(indexed)
 	          }
 	      }
 
 	      let GetDurationOnly = function(notes){
-	          return notes.map(note => {return {"pitch" : note.pitch, "index" : note.index, "duration":note.duration}});
+	          return notes.map(note => (
+	              {
+	                  "pitch" : note.pitch,
+	                  "index" : note.index,
+	                  "duration":note.duration,
+	                  "dotted":note.dotted,
+	                  "octave":note.octave
+	              }
+	          ));
 	      }
 
 	      let GetOctaves = function(notes){
@@ -41706,7 +41922,7 @@
 	          let res = [];
 
 	          notes.forEach(function(note){
-	              note.octave && res.push({index: note.index, octave:note.octave});
+	              note.octave && res.push({index: note.index, octave:note.octave, underbars:note.conn.length});
 	          })
 
 	          return res;
@@ -41721,9 +41937,7 @@
 
 	          notes.forEach(function(note){
 
-	              if(currDuration < 4){
-
-	                  currDuration += note.duration;
+	              if(currDuration <= 1){
 
 	                  for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
 
@@ -41732,7 +41946,6 @@
 	                      if(curr[i] && curr[i].type == note.conn[i]){
 
 	                          curr[i].end = note.index;
-
 
 	                      } else {
 
@@ -41747,24 +41960,26 @@
 	                          curr[i] = note.conn[i] ? {start:note.index, end:note.index, level:i, type:note.conn[i]} : undefined;
 	                      }
 	                  }
-	              } else {
+
+	                  currDuration += note.duration;
+	              }
+	              if(currDuration >= 1) {
 
 	                  // if the current measure has been filled up, then
 	                  // push all existing elements into res, and empty
 	                  // the curr. So that we can seperate all underbars
 	                  // belonging to different measures.
-	                  currDuration = 0;
 
 	                  for (var i = 0; i < curr.length; i++) {
 	                      curr[i] && res.push(curr[i]);
 	                  }
 
+	                  currDuration = 0;
 	                  curr = [];
 	              }
 
 	          })
 
-	          // console.log(JSON.stringify(res));
 	          return res;
 	      }
 
@@ -41833,7 +42048,484 @@
 /* 431 */
 /***/ function(module, exports) {
 
-	module.exports = "\ntitle : {\n耶 稣 恩 友\n}\n\nsubtitle : {\nWhat A Friend We Have In Jesus\n}\n\nlyrics : {\nScriven 1855\n}\n\ncomposer: {\nConverse 1868\n}\n\nbeats: {\n1=F   4/4\n}\n\nscore : {\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 1) (5 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n.2 #1 (2 3) (4 2) 3 - 5   - .6   6 (5 3) (4 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n}\n"
+	module.exports = "\ntitle : {\n耶 稣 恩 友\n}\n\nsubtitle : {\nWhat A Friend We Have In Jesus\n}\n\nlyrics : {\nScriven 1855\n}\n\ncomposer: {\nConverse 1868\n}\n\nbeats: {\n1=F   4/4\n}\n\nscore : {\n.5  5 (6 (5 (5 (5 5)))) (3 1) 1 - 6,1 - .5,1 1 (3 1 1) (5 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n.2 #1 (2 3) (4 2) 3 - 5   - .6   6 (5 3) (4 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n}\n"
+
+/***/ },
+/* 432 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _sidebar = __webpack_require__(433);
+
+	var _sidebar2 = _interopRequireDefault(_sidebar);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	exports.default = _sidebar2.default;
+
+/***/ },
+/* 433 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var CANCEL_DISTANCE_ON_SCROLL = 20;
+
+	var defaultStyles = {
+	  root: {
+	    position: 'absolute',
+	    top: 0,
+	    left: 0,
+	    right: 0,
+	    bottom: 0,
+	    overflow: 'hidden'
+	  },
+	  sidebar: {
+	    zIndex: 2,
+	    position: 'absolute',
+	    top: 0,
+	    bottom: 0,
+	    transition: 'transform .3s ease-out',
+	    WebkitTransition: '-webkit-transform .3s ease-out',
+	    willChange: 'transform',
+	    overflowY: 'auto'
+	  },
+	  content: {
+	    position: 'absolute',
+	    top: 0,
+	    left: 0,
+	    right: 0,
+	    bottom: 0,
+	    overflow: 'auto',
+	    transition: 'left .3s ease-out, right .3s ease-out'
+	  },
+	  overlay: {
+	    zIndex: 1,
+	    position: 'fixed',
+	    top: 0,
+	    left: 0,
+	    right: 0,
+	    bottom: 0,
+	    opacity: 0,
+	    visibility: 'hidden',
+	    transition: 'opacity .3s ease-out',
+	    backgroundColor: 'rgba(0,0,0,.3)'
+	  },
+	  dragHandle: {
+	    zIndex: 1,
+	    position: 'fixed',
+	    top: 0,
+	    bottom: 0
+	  }
+	};
+
+	var Sidebar = function (_React$Component) {
+	  _inherits(Sidebar, _React$Component);
+
+	  function Sidebar(props) {
+	    _classCallCheck(this, Sidebar);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Sidebar).call(this, props));
+
+	    _this.state = {
+	      // the detected width of the sidebar in pixels
+	      sidebarWidth: 0,
+
+	      // keep track of touching params
+	      touchIdentifier: null,
+	      touchStartX: null,
+	      touchStartY: null,
+	      touchCurrentX: null,
+	      touchCurrentY: null,
+
+	      // if touch is supported by the browser
+	      dragSupported: false
+	    };
+
+	    _this.overlayClicked = _this.overlayClicked.bind(_this);
+	    _this.onTouchStart = _this.onTouchStart.bind(_this);
+	    _this.onTouchMove = _this.onTouchMove.bind(_this);
+	    _this.onTouchEnd = _this.onTouchEnd.bind(_this);
+	    _this.onScroll = _this.onScroll.bind(_this);
+	    return _this;
+	  }
+
+	  _createClass(Sidebar, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      this.setState({
+	        dragSupported: (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object' && 'ontouchstart' in window
+	      });
+	      this.saveSidebarWidth();
+	    }
+	  }, {
+	    key: 'componentDidUpdate',
+	    value: function componentDidUpdate() {
+	      // filter out the updates when we're touching
+	      if (!this.isTouching()) {
+	        this.saveSidebarWidth();
+	      }
+	    }
+	  }, {
+	    key: 'onTouchStart',
+	    value: function onTouchStart(ev) {
+	      // filter out if a user starts swiping with a second finger
+	      if (!this.isTouching()) {
+	        var touch = ev.targetTouches[0];
+	        this.setState({
+	          touchIdentifier: touch.identifier,
+	          touchStartX: touch.clientX,
+	          touchStartY: touch.clientY,
+	          touchCurrentX: touch.clientX,
+	          touchCurrentY: touch.clientY
+	        });
+	      }
+	    }
+	  }, {
+	    key: 'onTouchMove',
+	    value: function onTouchMove(ev) {
+	      if (this.isTouching()) {
+	        for (var ind = 0; ind < ev.targetTouches.length; ind++) {
+	          // we only care about the finger that we are tracking
+	          if (ev.targetTouches[ind].identifier === this.state.touchIdentifier) {
+	            this.setState({
+	              touchCurrentX: ev.targetTouches[ind].clientX,
+	              touchCurrentY: ev.targetTouches[ind].clientY
+	            });
+	            break;
+	          }
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'onTouchEnd',
+	    value: function onTouchEnd() {
+	      if (this.isTouching()) {
+	        // trigger a change to open if sidebar has been dragged beyond dragToggleDistance
+	        var touchWidth = this.touchSidebarWidth();
+
+	        if (this.props.open && touchWidth < this.state.sidebarWidth - this.props.dragToggleDistance || !this.props.open && touchWidth > this.props.dragToggleDistance) {
+	          this.props.onSetOpen(!this.props.open);
+	        }
+
+	        this.setState({
+	          touchIdentifier: null,
+	          touchStartX: null,
+	          touchStartY: null,
+	          touchCurrentX: null,
+	          touchCurrentY: null
+	        });
+	      }
+	    }
+
+	    // This logic helps us prevents the user from sliding the sidebar horizontally
+	    // while scrolling the sidebar vertically. When a scroll event comes in, we're
+	    // cancelling the ongoing gesture if it did not move horizontally much.
+
+	  }, {
+	    key: 'onScroll',
+	    value: function onScroll() {
+	      if (this.isTouching() && this.inCancelDistanceOnScroll()) {
+	        this.setState({
+	          touchIdentifier: null,
+	          touchStartX: null,
+	          touchStartY: null,
+	          touchCurrentX: null,
+	          touchCurrentY: null
+	        });
+	      }
+	    }
+
+	    // True if the on going gesture X distance is less than the cancel distance
+
+	  }, {
+	    key: 'inCancelDistanceOnScroll',
+	    value: function inCancelDistanceOnScroll() {
+	      var cancelDistanceOnScroll = void 0;
+
+	      if (this.props.pullRight) {
+	        cancelDistanceOnScroll = Math.abs(this.state.touchCurrentX - this.state.touchStartX) < CANCEL_DISTANCE_ON_SCROLL;
+	      } else {
+	        cancelDistanceOnScroll = Math.abs(this.state.touchStartX - this.state.touchCurrentX) < CANCEL_DISTANCE_ON_SCROLL;
+	      }
+	      return cancelDistanceOnScroll;
+	    }
+	  }, {
+	    key: 'isTouching',
+	    value: function isTouching() {
+	      return this.state.touchIdentifier !== null;
+	    }
+	  }, {
+	    key: 'overlayClicked',
+	    value: function overlayClicked() {
+	      if (this.props.open) {
+	        this.props.onSetOpen(false);
+	      }
+	    }
+	  }, {
+	    key: 'saveSidebarWidth',
+	    value: function saveSidebarWidth() {
+	      var width = _reactDom2.default.findDOMNode(this.refs.sidebar).offsetWidth;
+
+	      if (width !== this.state.sidebarWidth) {
+	        this.setState({ sidebarWidth: width });
+	      }
+	    }
+
+	    // calculate the sidebarWidth based on current touch info
+
+	  }, {
+	    key: 'touchSidebarWidth',
+	    value: function touchSidebarWidth() {
+	      // if the sidebar is open and start point of drag is inside the sidebar
+	      // we will only drag the distance they moved their finger
+	      // otherwise we will move the sidebar to be below the finger.
+	      if (this.props.pullRight) {
+	        if (this.props.open && window.innerWidth - this.state.touchStartX < this.state.sidebarWidth) {
+	          if (this.state.touchCurrentX > this.state.touchStartX) {
+	            return this.state.sidebarWidth + this.state.touchStartX - this.state.touchCurrentX;
+	          }
+	          return this.state.sidebarWidth;
+	        }
+	        return Math.min(window.innerWidth - this.state.touchCurrentX, this.state.sidebarWidth);
+	      }
+
+	      if (this.props.open && this.state.touchStartX < this.state.sidebarWidth) {
+	        if (this.state.touchCurrentX > this.state.touchStartX) {
+	          return this.state.sidebarWidth;
+	        }
+	        return this.state.sidebarWidth - this.state.touchStartX + this.state.touchCurrentX;
+	      }
+	      return Math.min(this.state.touchCurrentX, this.state.sidebarWidth);
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var sidebarStyle = _extends({}, defaultStyles.sidebar, this.props.styles.sidebar);
+	      var contentStyle = _extends({}, defaultStyles.content, this.props.styles.content);
+	      var overlayStyle = _extends({}, defaultStyles.overlay, this.props.styles.overlay);
+	      var useTouch = this.state.dragSupported && this.props.touch;
+	      var isTouching = this.isTouching();
+	      var rootProps = {
+	        className: this.props.rootClassName,
+	        style: _extends({}, defaultStyles.root, this.props.styles.root)
+	      };
+	      var dragHandle = void 0;
+
+	      // sidebarStyle right/left
+	      if (this.props.pullRight) {
+	        sidebarStyle.right = 0;
+	        sidebarStyle.transform = 'translateX(100%)';
+	        sidebarStyle.WebkitTransform = 'translateX(100%)';
+	        if (this.props.shadow) {
+	          sidebarStyle.boxShadow = '-2px 2px 4px rgba(0, 0, 0, 0.15)';
+	        }
+	      } else {
+	        sidebarStyle.left = 0;
+	        sidebarStyle.transform = 'translateX(-100%)';
+	        sidebarStyle.WebkitTransform = 'translateX(-100%)';
+	        if (this.props.shadow) {
+	          sidebarStyle.boxShadow = '2px 2px 4px rgba(0, 0, 0, 0.15)';
+	        }
+	      }
+
+	      if (isTouching) {
+	        var percentage = this.touchSidebarWidth() / this.state.sidebarWidth;
+
+	        // slide open to what we dragged
+	        if (this.props.pullRight) {
+	          sidebarStyle.transform = 'translateX(' + (1 - percentage) * 100 + '%)';
+	          sidebarStyle.WebkitTransform = 'translateX(' + (1 - percentage) * 100 + '%)';
+	        } else {
+	          sidebarStyle.transform = 'translateX(-' + (1 - percentage) * 100 + '%)';
+	          sidebarStyle.WebkitTransform = 'translateX(-' + (1 - percentage) * 100 + '%)';
+	        }
+
+	        // fade overlay to match distance of drag
+	        overlayStyle.opacity = percentage;
+	        overlayStyle.visibility = 'visible';
+	      } else if (this.props.docked) {
+	        // show sidebar
+	        if (this.state.sidebarWidth !== 0) {
+	          sidebarStyle.transform = 'translateX(0%)';
+	          sidebarStyle.WebkitTransform = 'translateX(0%)';
+	        }
+
+	        // make space on the left/right side of the content for the sidebar
+	        if (this.props.pullRight) {
+	          contentStyle.right = this.state.sidebarWidth + 'px';
+	        } else {
+	          contentStyle.left = this.state.sidebarWidth + 'px';
+	        }
+	      } else if (this.props.open) {
+	        // slide open sidebar
+	        sidebarStyle.transform = 'translateX(0%)';
+	        sidebarStyle.WebkitTransform = 'translateX(0%)';
+
+	        // show overlay
+	        overlayStyle.opacity = 1;
+	        overlayStyle.visibility = 'visible';
+	      }
+
+	      if (isTouching || !this.props.transitions) {
+	        sidebarStyle.transition = 'none';
+	        sidebarStyle.WebkitTransition = 'none';
+	        contentStyle.transition = 'none';
+	        overlayStyle.transition = 'none';
+	      }
+
+	      if (useTouch) {
+	        if (this.props.open) {
+	          rootProps.onTouchStart = this.onTouchStart;
+	          rootProps.onTouchMove = this.onTouchMove;
+	          rootProps.onTouchEnd = this.onTouchEnd;
+	          rootProps.onTouchCancel = this.onTouchEnd;
+	          rootProps.onScroll = this.onScroll;
+	        } else {
+	          var dragHandleStyle = _extends({}, defaultStyles.dragHandle, this.props.styles.dragHandle);
+	          dragHandleStyle.width = this.props.touchHandleWidth;
+
+	          // dragHandleStyle right/left
+	          if (this.props.pullRight) {
+	            dragHandleStyle.right = 0;
+	          } else {
+	            dragHandleStyle.left = 0;
+	          }
+
+	          dragHandle = _react2.default.createElement('div', { style: dragHandleStyle,
+	            onTouchStart: this.onTouchStart, onTouchMove: this.onTouchMove,
+	            onTouchEnd: this.onTouchEnd, onTouchCancel: this.onTouchEnd });
+	        }
+	      }
+
+	      return _react2.default.createElement(
+	        'div',
+	        rootProps,
+	        _react2.default.createElement(
+	          'div',
+	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: 'sidebar' },
+	          this.props.sidebar
+	        ),
+	        _react2.default.createElement('div', { className: this.props.overlayClassName,
+	          style: overlayStyle,
+	          role: 'presentation',
+	          tabIndex: '0',
+	          onClick: this.overlayClicked
+	        }),
+	        _react2.default.createElement(
+	          'div',
+	          { className: this.props.contentClassName, style: contentStyle },
+	          dragHandle,
+	          this.props.children
+	        )
+	      );
+	    }
+	  }]);
+
+	  return Sidebar;
+	}(_react2.default.Component);
+
+	Sidebar.propTypes = {
+	  // main content to render
+	  children: _react2.default.PropTypes.node.isRequired,
+
+	  // styles
+	  styles: _react2.default.PropTypes.shape({
+	    root: _react2.default.PropTypes.object,
+	    sidebar: _react2.default.PropTypes.object,
+	    content: _react2.default.PropTypes.object,
+	    overlay: _react2.default.PropTypes.object,
+	    dragHandle: _react2.default.PropTypes.object
+	  }),
+
+	  // root component optional class
+	  rootClassName: _react2.default.PropTypes.string,
+
+	  // sidebar optional class
+	  sidebarClassName: _react2.default.PropTypes.string,
+
+	  // content optional class
+	  contentClassName: _react2.default.PropTypes.string,
+
+	  // overlay optional class
+	  overlayClassName: _react2.default.PropTypes.string,
+
+	  // sidebar content to render
+	  sidebar: _react2.default.PropTypes.node.isRequired,
+
+	  // boolean if sidebar should be docked
+	  docked: _react2.default.PropTypes.bool,
+
+	  // boolean if sidebar should slide open
+	  open: _react2.default.PropTypes.bool,
+
+	  // boolean if transitions should be disabled
+	  transitions: _react2.default.PropTypes.bool,
+
+	  // boolean if touch gestures are enabled
+	  touch: _react2.default.PropTypes.bool,
+
+	  // max distance from the edge we can start touching
+	  touchHandleWidth: _react2.default.PropTypes.number,
+
+	  // Place the sidebar on the right
+	  pullRight: _react2.default.PropTypes.bool,
+
+	  // Enable/Disable sidebar shadow
+	  shadow: _react2.default.PropTypes.bool,
+
+	  // distance we have to drag the sidebar to toggle open state
+	  dragToggleDistance: _react2.default.PropTypes.number,
+
+	  // callback called when the overlay is clicked
+	  onSetOpen: _react2.default.PropTypes.func
+	};
+
+	Sidebar.defaultProps = {
+	  docked: false,
+	  open: false,
+	  transitions: true,
+	  touch: true,
+	  touchHandleWidth: 20,
+	  pullRight: false,
+	  shadow: true,
+	  dragToggleDistance: 30,
+	  onSetOpen: function onSetOpen() {},
+	  styles: {}
+	};
+
+	exports.default = Sidebar;
 
 /***/ }
 /******/ ]);

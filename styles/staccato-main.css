@@ -1,6 +1,5 @@
 
 body {
-  padding-top: 6rem;
   margin: 20px;
   background-color: #F6F4F4;
 }
@@ -107,8 +106,9 @@ body {
 }
 
 .score{
-    width : inherit;
+    /*width : inherit;*/
     display: flex;
+    font-weight: bold;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: space-around;
@@ -117,34 +117,49 @@ body {
 }
 
 .measure {
-    display:inline-block;
-    margin:5px;
-    padding: 10px 5px 20px;
+    display:inline-flex;
+    min-width: 20%;
+    flex-direction: row;
+    justify-content: space-around;
+    /*margin:5px 0;*/
+    padding: 10px 0px 10px;
     text-align: center;
 
-    /*position:relative;*/
-    border: 1px solid #888888;
+    position:relative;
+    /*border: 1px solid #888888;*/
 }
 
 .beat {
-    margin: 3px;
-    padding : 3px;
-    border: 1px solid #888888;
+    display:inline-flex;
+    flex-direction: row;
+    justify-content: space-between;
+    /*margin: 0 4px;*/
+    /*padding : 0 3px;*/
+    /*border: 1px solid #888888;*/
 }
 
 .note {
-    margin : 2px;
-    /*padding : 0 2px;*/
-    border: 1px solid #888888;
+    margin : 0 2px;
+    /*border: 1px solid #888888;*/
 }
 
 .vertbar{
-    width: 8px;
-    /*top : 40px;*/
-    border-right: 1px solid;
+    margin: 5px 0 10px;
+    width: 1px;
+    background-color: #000000;
+    /*border: 1px solid;*/
 }
 
 .underbar{
-    width : 8px;
-    border: 1px solid #888888;
+    padding: 0 2px;
+    position:absolute;
+    height: 2px;
+    /*border: 1px solid #888888;*/
+    background-color: #000000;
+}
+
+.finalbar{
+    margin: 5px -3px 10px -15px;
+    width: 2px;
+    background-color: #000000;
 }
