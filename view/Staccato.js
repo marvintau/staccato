@@ -27,22 +27,6 @@ let Draw = function(component, param, children, to){
     ReactDOM.render( Elem(component, param, children), document.getElementById(to))
 }
 
-let GroupByLength = function(notes, length) {
-    let initial = [[]];
-    let duration = 0;
-
-    return notes.reduce(function(measures, note){
-        if (duration < length) {
-            measures[measures.length - 1].push(note);
-            duration += note.duration;
-        } else {
-            measures.push([note]);
-            duration = note.duration;
-        }
-        return measures;
-    }, initial);
-}
-
 class Vertbar extends React.Component{
     constructor(props){
         super(props);
@@ -82,38 +66,82 @@ class Underbar extends React.Component{
 class Measure extends React.Component{
     constructor(props){
         super(props);
-        this.state = {
-            measure : GroupByLength(this.props.measure, 1)
-        }
     }
 
     BeatElems(){
-        return this.state.measure.map((beat, index)=>Elem(Beat, {ref:index, beat:beat, key:index}));
+        return this.props.measure.map((beat, index)=>Elem(Beat, {
+            ref:index,
+            beat:beat.beatNote,
+            underbar:beat.underbar,
+            key:index
+        }));
     }
 
     render() {
-        return Elem('div', {className:"measure"}, this.BeatElems());
-    }
-
-    componentDidMount(){
-
+        return Elem('div', {ref:"measure", className:"measure"}, this.BeatElems());
     }
 }
 
 class Beat extends React.Component{
     constructor(props){
         super(props);
+        this.state = {
+            underbarPoses : this.props.underbar.map((elem) => ({left:0, width:0, top:0}))
+        }
     }
+
+    GetNotePoses(){
+
+        let notePoses = {};
+
+        for(let ithNote in this.refs){
+            if(ithNote != "beat"){
+                let elem = this.refs[ithNote]
+
+                if(elem.props.note.index){
+                    notePoses[elem.props.note.index] = {
+                        left:elem.box.left,
+                        right:elem.box.right,
+                        bottom:elem.box.bottom
+                    };
+                }
+
+            }
+        }
+
+        return notePoses;
+
+    }
+
+    GetUnderbarPoses(notePoses){
+
+        let beatBox = this.refs.beat.getBoundingClientRect();
+
+        // by subtracting the score position from the underbar position,
+        // we made the new undarbar position relative to score element.
+        return this.props.underbar.map((elem) => ({
+            left:notePoses[elem.start].left - beatBox.left,
+            width:notePoses[elem.end].right - notePoses[elem.start].left,
+            top:notePoses[elem.start].bottom + elem.level * 3 - beatBox.top})
+        )
+    }
+
 
     NoteElems(){
         return this.props.beat.map((note, index)=>Elem(Note, {ref:index, key:index, note:note}));
     }
 
+    UnderbarElems(offset){
+        return this.state.underbarPoses.map((elem, index) => Elem(Underbar, {key:index+offset, left:elem.left, width:elem.width, top:elem.top}))
+    }
+
     render() {
-        return Elem('span', {className: "beat"}, this.NoteElems());
+        let underbarElems = this.UnderbarElems(this.NoteElems().length);
+        return Elem('span', {ref:"beat", className: "beat"}, this.NoteElems().concat(underbarElems));
     }
 
     componentDidMount(){
+        this.setState({underbarPoses:this.GetUnderbarPoses(this.GetNotePoses())})
     }
 
 }
@@ -121,7 +149,7 @@ class Beat extends React.Component{
 class Note extends React.Component{
     constructor(props){
         super(props);
-        this.box = { left  : 0, right : 0 }
+        this.box = { left : 0, right : 0 }
     }
 
     render(){
@@ -129,9 +157,7 @@ class Note extends React.Component{
     }
 
     componentDidMount(){
-        var style = this.refs.note.getBoundingClientRect();
-
-        this.box ={ left : style.left, right : style.right, bottom:style.bottom}
+        this.box = this.refs.note.getBoundingClientRect();
     }
 }
 
@@ -150,9 +176,7 @@ class Score extends React.Component{
         super(props);
 
         this.state = {
-            underbarPoses : this.props.underbars.map(elem => ({left:0, width:0, top:0})),
-            octavePoses : this.props.octaves.map(elem => {top:0}),
-            measures : this.GetExtendedMeasures()
+            underbarPoses : this.props.underbars.map(elem => ({left:0, width:0, top:0}))
         }
     }
 
@@ -163,99 +187,19 @@ class Score extends React.Component{
         }));
     }
 
-    GetNotePoses(){
-        let notePosTable = {};
-
-        for (let ithMeasure in this.refs){
-            for (let ithBeat in this.refs[ithMeasure].refs){
-                for(let ithNote in this.refs[ithMeasure].refs[ithBeat].refs){
-                    let elem = this.refs[ithMeasure].refs[ithBeat].refs[ithNote];
-                    if(elem.props.note.index){
-                        notePosTable[elem.props.note.index] = {left:elem.box.left, right:elem.box.right, bottom:elem.box.bottom};
-                    }
-                }
-            }
-        }
-
-        return notePosTable;
-
-    }
-
-    GetExtendedMeasures(){
-        let extendedMeasures = []
-
-        this.props.measures.forEach(function(note){
-            if(note.duration > 1){
-                extendedMeasures.push({pitch: note.pitch, duration: 1, index:null});
-                for(let i = 1; i < note.duration; i++){
-                    extendedMeasures.push({pitch: "–", duration : 1, index:null})
-                }
-            } else {
-                extendedMeasures.push(note);
-            }
-        });
-
-        return GroupByLength(extendedMeasures, 4)
-    }
-
     MeasureElems(){
 
         return []
-            .concat(this.state.measures.map((measure,index) =>
-                [Elem(Measure, {ref:"measure-"+index, measure: measure, key:2*index}), Elem(Vertbar, {key:2*index+1})]
-            ))
+            .concat(this.props.measures.map((measure,index) => [
+                Elem(Measure, {ref:"measure-"+index, measure: measure, key:2*index}),
+                Elem(Vertbar, {key:2*index+1})
+            ]))
             .concat(Elem(Finalbar, {key:205}));
-
-    }
-
-    UnderbarElems(keyOffset){
-        // the changing of state in componentDidMount will cause a rerendering.
-        // that's why we need to store the underbar position in local state.
-
-        return this.state.underbarPoses.map((elem, index) =>
-            Elem(Underbar, {key:index+keyOffset, ref:"bar-"+index, left:elem.left, width:elem.width, top:elem.top})
-        )
     }
 
     render() {
-
-        let measureElems = this.MeasureElems();
-
-        let totalElems = [].concat(measureElems).concat(this.UnderbarElems(measureElems.length))
-
-        return Elem('div', {ref:"score", className:"score"}, totalElems);
+        return Elem('div', {ref:"score", className:"score"}, this.MeasureElems());
     }
-
-    GetUnderbarPoses(){
-        let notePosTable = this.GetNotePoses();
-
-        let scorePos = this.refs.score.getBoundingClientRect();
-        // console.log(this.props.top)
-        // by subtracting the score position from the underbar position,
-        // we made the new undarbar position relative to score element.
-        return this.props.underbars.map((elem) => ({
-            left:notePosTable[elem.start].left - scorePos.left,
-            width:notePosTable[elem.end].right - notePosTable[elem.start].left,
-            top:notePosTable[elem.start].bottom + elem.level * 3 + this.props.top - scorePos.top - 15})
-        )
-    }
-
-    GetOctavePoses(){
-
-    }
-
-    componentDidUpdate(prevProps, prevState){
-
-        // setting underbar position
-        if(prevProps.top != this.props.top){
-
-            this.setState({
-                measures : prevState.measures,
-                underbarPoses : this.GetUnderbarPoses()
-            })
-        }
-    }
-
 }
 
 class Container extends React.Component {
@@ -263,7 +207,6 @@ class Container extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            scoreTop : 0,
             value : scoreText,
             sections : this.GetSections(scoreText)
         };
@@ -286,7 +229,6 @@ class Container extends React.Component {
         let val = event.target.value;
 
         this.setState((previousState) => ({
-            scoreTop : previousState.scoreTop,
             value : val,
             sections : this.GetSections(val)
         }));
@@ -304,12 +246,11 @@ class Container extends React.Component {
                 try {
                     let scoreModel = parse(this.state.sections[i].body);
 
-                    // console.log(JSON.stringify(scoreModel.octaves))
+                    // console.log(JSON.stringify(scoreModel.measures))
 
                     elems.push(
                         SectionElem(this.state.sections[i].name, i, Elem(Score,
                             {
-                                top:this.state.scoreTop,
                                 measures:scoreModel.measures,
                                 underbars:scoreModel.underbars,
                                 octaves : scoreModel.octaves
@@ -364,14 +305,8 @@ class Container extends React.Component {
     }
 
     componentDidMount(){
-        let top = 0;
-        top += this.refs.title.getBoundingClientRect().height;
-        top += this.refs.subtitle.getBoundingClientRect().height;
-        top += this.refs.composer.getBoundingClientRect().height;
-        top += this.refs.beats.getBoundingClientRect().height;
 
         this.setState((previousState) => ({
-            scoreTop : top,
             value : previousState.text,
             sections : previousState.sections
         }));

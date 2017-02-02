@@ -130,11 +130,10 @@ body {
 }
 
 .beat {
+    position: relative;
     display:inline-flex;
     flex-direction: row;
     justify-content: space-between;
-    /*margin: 0 4px;*/
-    /*padding : 0 3px;*/
     /*border: 1px solid #888888;*/
 }
 
@@ -151,11 +150,18 @@ body {
 }
 
 .underbar{
-    padding: 0 2px;
+    padding: 0 3px;
     position:absolute;
+    margin-top : -5px;
     height: 2px;
     /*border: 1px solid #888888;*/
     background-color: #000000;
+}
+
+.ocatvedot{
+    position: absolute;
+    height : 2px;
+    width : 2px;
 }
 
 .finalbar{

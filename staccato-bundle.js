@@ -93,22 +93,6 @@
 	    _reactDom2.default.render(Elem(component, param, children), document.getElementById(to));
 	};
 
-	var GroupByLength = function GroupByLength(notes, length) {
-	    var initial = [[]];
-	    var duration = 0;
-
-	    return notes.reduce(function (measures, note) {
-	        if (duration < length) {
-	            measures[measures.length - 1].push(note);
-	            duration += note.duration;
-	        } else {
-	            measures.push([note]);
-	            duration = note.duration;
-	        }
-	        return measures;
-	    }, initial);
-	};
-
 	var Vertbar = function (_React$Component) {
 	    _inherits(Vertbar, _React$Component);
 
@@ -179,29 +163,26 @@
 	    function Measure(props) {
 	        _classCallCheck(this, Measure);
 
-	        var _this4 = _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
-
-	        _this4.state = {
-	            measure: GroupByLength(_this4.props.measure, 1)
-	        };
-	        return _this4;
+	        return _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
 	    }
 
 	    _createClass(Measure, [{
 	        key: 'BeatElems',
 	        value: function BeatElems() {
-	            return this.state.measure.map(function (beat, index) {
-	                return Elem(Beat, { ref: index, beat: beat, key: index });
+	            return this.props.measure.map(function (beat, index) {
+	                return Elem(Beat, {
+	                    ref: index,
+	                    beat: beat.beatNote,
+	                    underbar: beat.underbar,
+	                    key: index
+	                });
 	            });
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return Elem('div', { className: "measure" }, this.BeatElems());
+	            return Elem('div', { ref: "measure", className: "measure" }, this.BeatElems());
 	        }
-	    }, {
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {}
 	    }]);
 
 	    return Measure;
@@ -213,10 +194,54 @@
 	    function Beat(props) {
 	        _classCallCheck(this, Beat);
 
-	        return _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
+	        var _this5 = _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
+
+	        _this5.state = {
+	            underbarPoses: _this5.props.underbar.map(function (elem) {
+	                return { left: 0, width: 0, top: 0 };
+	            })
+	        };
+	        return _this5;
 	    }
 
 	    _createClass(Beat, [{
+	        key: 'GetNotePoses',
+	        value: function GetNotePoses() {
+
+	            var notePoses = {};
+
+	            for (var ithNote in this.refs) {
+	                if (ithNote != "beat") {
+	                    var elem = this.refs[ithNote];
+
+	                    if (elem.props.note.index) {
+	                        notePoses[elem.props.note.index] = {
+	                            left: elem.box.left,
+	                            right: elem.box.right,
+	                            bottom: elem.box.bottom
+	                        };
+	                    }
+	                }
+	            }
+
+	            return notePoses;
+	        }
+	    }, {
+	        key: 'GetUnderbarPoses',
+	        value: function GetUnderbarPoses(notePoses) {
+
+	            var beatBox = this.refs.beat.getBoundingClientRect();
+
+	            // by subtracting the score position from the underbar position,
+	            // we made the new undarbar position relative to score element.
+	            return this.props.underbar.map(function (elem) {
+	                return {
+	                    left: notePoses[elem.start].left - beatBox.left,
+	                    width: notePoses[elem.end].right - notePoses[elem.start].left,
+	                    top: notePoses[elem.start].bottom + elem.level * 3 - beatBox.top };
+	            });
+	        }
+	    }, {
 	        key: 'NoteElems',
 	        value: function NoteElems() {
 	            return this.props.beat.map(function (note, index) {
@@ -224,13 +249,23 @@
 	            });
 	        }
 	    }, {
+	        key: 'UnderbarElems',
+	        value: function UnderbarElems(offset) {
+	            return this.state.underbarPoses.map(function (elem, index) {
+	                return Elem(Underbar, { key: index + offset, left: elem.left, width: elem.width, top: elem.top });
+	            });
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return Elem('span', { className: "beat" }, this.NoteElems());
+	            var underbarElems = this.UnderbarElems(this.NoteElems().length);
+	            return Elem('span', { ref: "beat", className: "beat" }, this.NoteElems().concat(underbarElems));
 	        }
 	    }, {
 	        key: 'componentDidMount',
-	        value: function componentDidMount() {}
+	        value: function componentDidMount() {
+	            this.setState({ underbarPoses: this.GetUnderbarPoses(this.GetNotePoses()) });
+	        }
 	    }]);
 
 	    return Beat;
@@ -256,9 +291,7 @@
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            var style = this.refs.note.getBoundingClientRect();
-
-	            this.box = { left: style.left, right: style.right, bottom: style.bottom };
+	            this.box = this.refs.note.getBoundingClientRect();
 	        }
 	    }]);
 
@@ -295,11 +328,7 @@
 	        _this8.state = {
 	            underbarPoses: _this8.props.underbars.map(function (elem) {
 	                return { left: 0, width: 0, top: 0 };
-	            }),
-	            octavePoses: _this8.props.octaves.map(function (elem) {
-	                top: 0;
-	            }),
-	            measures: _this8.GetExtendedMeasures()
+	            })
 	        };
 	        return _this8;
 	    }
@@ -315,102 +344,17 @@
 	            });
 	        }
 	    }, {
-	        key: 'GetNotePoses',
-	        value: function GetNotePoses() {
-	            var notePosTable = {};
-
-	            for (var ithMeasure in this.refs) {
-	                for (var ithBeat in this.refs[ithMeasure].refs) {
-	                    for (var ithNote in this.refs[ithMeasure].refs[ithBeat].refs) {
-	                        var elem = this.refs[ithMeasure].refs[ithBeat].refs[ithNote];
-	                        if (elem.props.note.index) {
-	                            notePosTable[elem.props.note.index] = { left: elem.box.left, right: elem.box.right, bottom: elem.box.bottom };
-	                        }
-	                    }
-	                }
-	            }
-
-	            return notePosTable;
-	        }
-	    }, {
-	        key: 'GetExtendedMeasures',
-	        value: function GetExtendedMeasures() {
-	            var extendedMeasures = [];
-
-	            this.props.measures.forEach(function (note) {
-	                if (note.duration > 1) {
-	                    extendedMeasures.push({ pitch: note.pitch, duration: 1, index: null });
-	                    for (var i = 1; i < note.duration; i++) {
-	                        extendedMeasures.push({ pitch: "–", duration: 1, index: null });
-	                    }
-	                } else {
-	                    extendedMeasures.push(note);
-	                }
-	            });
-
-	            return GroupByLength(extendedMeasures, 4);
-	        }
-	    }, {
 	        key: 'MeasureElems',
 	        value: function MeasureElems() {
 
-	            return [].concat(this.state.measures.map(function (measure, index) {
+	            return [].concat(this.props.measures.map(function (measure, index) {
 	                return [Elem(Measure, { ref: "measure-" + index, measure: measure, key: 2 * index }), Elem(Vertbar, { key: 2 * index + 1 })];
 	            })).concat(Elem(Finalbar, { key: 205 }));
 	        }
 	    }, {
-	        key: 'UnderbarElems',
-	        value: function UnderbarElems(keyOffset) {
-	            // the changing of state in componentDidMount will cause a rerendering.
-	            // that's why we need to store the underbar position in local state.
-
-	            return this.state.underbarPoses.map(function (elem, index) {
-	                return Elem(Underbar, { key: index + keyOffset, ref: "bar-" + index, left: elem.left, width: elem.width, top: elem.top });
-	            });
-	        }
-	    }, {
 	        key: 'render',
 	        value: function render() {
-
-	            var measureElems = this.MeasureElems();
-
-	            var totalElems = [].concat(measureElems).concat(this.UnderbarElems(measureElems.length));
-
-	            return Elem('div', { ref: "score", className: "score" }, totalElems);
-	        }
-	    }, {
-	        key: 'GetUnderbarPoses',
-	        value: function GetUnderbarPoses() {
-	            var _this9 = this;
-
-	            var notePosTable = this.GetNotePoses();
-
-	            var scorePos = this.refs.score.getBoundingClientRect();
-	            // console.log(this.props.top)
-	            // by subtracting the score position from the underbar position,
-	            // we made the new undarbar position relative to score element.
-	            return this.props.underbars.map(function (elem) {
-	                return {
-	                    left: notePosTable[elem.start].left - scorePos.left,
-	                    width: notePosTable[elem.end].right - notePosTable[elem.start].left,
-	                    top: notePosTable[elem.start].bottom + elem.level * 3 + _this9.props.top - scorePos.top - 15 };
-	            });
-	        }
-	    }, {
-	        key: 'GetOctavePoses',
-	        value: function GetOctavePoses() {}
-	    }, {
-	        key: 'componentDidUpdate',
-	        value: function componentDidUpdate(prevProps, prevState) {
-
-	            // setting underbar position
-	            if (prevProps.top != this.props.top) {
-
-	                this.setState({
-	                    measures: prevState.measures,
-	                    underbarPoses: this.GetUnderbarPoses()
-	                });
-	            }
+	            return Elem('div', { ref: "score", className: "score" }, this.MeasureElems());
 	        }
 	    }]);
 
@@ -423,14 +367,13 @@
 	    function Container(props) {
 	        _classCallCheck(this, Container);
 
-	        var _this10 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
+	        var _this9 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
-	        _this10.state = {
-	            scoreTop: 0,
+	        _this9.state = {
 	            value: _What_A_Friend2.default,
-	            sections: _this10.GetSections(_What_A_Friend2.default)
+	            sections: _this9.GetSections(_What_A_Friend2.default)
 	        };
-	        return _this10;
+	        return _this9;
 	    }
 
 	    _createClass(Container, [{
@@ -449,7 +392,7 @@
 	    }, {
 	        key: 'handleChange',
 	        value: function handleChange(event) {
-	            var _this11 = this;
+	            var _this10 = this;
 
 	            event.persist();
 
@@ -457,9 +400,8 @@
 
 	            this.setState(function (previousState) {
 	                return {
-	                    scoreTop: previousState.scoreTop,
 	                    value: val,
-	                    sections: _this11.GetSections(val)
+	                    sections: _this10.GetSections(val)
 	                };
 	            });
 	        }
@@ -476,10 +418,9 @@
 	                    try {
 	                        var scoreModel = (0, _StaccatoParser.parse)(this.state.sections[i].body);
 
-	                        // console.log(JSON.stringify(scoreModel.octaves))
+	                        // console.log(JSON.stringify(scoreModel.measures))
 
 	                        elems.push(SectionElem(this.state.sections[i].name, i, Elem(Score, {
-	                            top: this.state.scoreTop,
 	                            measures: scoreModel.measures,
 	                            underbars: scoreModel.underbars,
 	                            octaves: scoreModel.octaves
@@ -496,7 +437,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this12 = this;
+	            var _this11 = this;
 
 	            var editor = Elem('textarea', {
 	                id: 'editor',
@@ -506,7 +447,7 @@
 	                spellCheck: 'false',
 	                value: this.state.value,
 	                onChange: function onChange(event) {
-	                    return _this12.handleChange(event);
+	                    return _this11.handleChange(event);
 	                }
 	            });
 
@@ -530,15 +471,9 @@
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            var top = 0;
-	            top += this.refs.title.getBoundingClientRect().height;
-	            top += this.refs.subtitle.getBoundingClientRect().height;
-	            top += this.refs.composer.getBoundingClientRect().height;
-	            top += this.refs.beats.getBoundingClientRect().height;
 
 	            this.setState(function (previousState) {
 	                return {
-	                    scoreTop: top,
 	                    value: previousState.text,
 	                    sections: previousState.sections
 	                };
@@ -40953,10 +40888,10 @@
 	        peg$c0 = peg$otherExpectation("notes"),
 	        peg$c1 = function(first, rest) {
 
-	              var all = [first];
+	                var all = [first];
 
 	                for(let i = 0; i < rest.length; i ++){
-	                  all.push(rest[i][1]);
+	                    all.push(rest[i][1]);
 	                }
 
 	                return ScoreModel(IndexNote(FlattenScore(all, 1,[])))
@@ -40969,15 +40904,15 @@
 	        peg$c7 = function(first, next) {
 
 	                return {
-	                	notes : [first, next],
+	                    notes : [first, next],
 	                    factor : 2,
 	                    conn : ["halfed"]
 	                }
 	            },
 	        peg$c8 = function(first, next, last) {
 
-	            	return {
-	                	notes : [first, next, last],
+	                return {
+	                    notes : [first, next, last],
 	                    factor : 3,
 	                    conn : ["triple"]
 	                }
@@ -40992,7 +40927,7 @@
 	                next.conn.push("halfed");
 
 	                return {
-	                	notes : [first, next],
+	                    notes : [first, next],
 	                    factor : 1,
 	                    conn : []
 	                }
@@ -41001,15 +40936,15 @@
 	        peg$c14 = "-",
 	        peg$c15 = peg$literalExpectation("-", false),
 	        peg$c16 = function(note, rest) {
-	          	  note.duration += rest.length;
-	              return note;
+	                note.duration += rest.length;
+	                return note;
 	            },
 	        peg$c17 = function(halfed) {
-	              return halfed;
+	                return halfed;
 	            },
 	        peg$c18 = function(dotted) {
-	             return dotted;
-	          },
+	                return dotted;
+	            },
 	        peg$c19 = peg$otherExpectation("fixed"),
 	        peg$c20 = "/",
 	        peg$c21 = peg$literalExpectation("/", false),
@@ -41028,9 +40963,9 @@
 	                return note;
 	            },
 	        peg$c26 = function(note) {
-	          		note.duration = 1;
+	                note.duration = 1;
 	                note.conn = []
-	          		return note
+	                return note
 	            },
 	        peg$c27 = peg$otherExpectation("modified_pitch"),
 	        peg$c28 = function(acc, pitch, octave) {
@@ -41039,15 +40974,15 @@
 	                return pitch;
 	            },
 	        peg$c29 = function(acc, pitch) {
-	          	   	pitch.accidental = acc;
+	                pitch.accidental = acc;
 	                return pitch;
 	            },
 	        peg$c30 = function(pitch, octave) {
-	            	pitch.octave = octave;
-	            	return pitch
+	                pitch.octave = octave;
+	                return pitch
 	            },
 	        peg$c31 = function(pitch) {
-	              	return pitch
+	                return pitch
 	            },
 	        peg$c32 = peg$otherExpectation("octave"),
 	        peg$c33 = /^[,']/,
@@ -41055,19 +40990,19 @@
 	        peg$c35 = /^[1-3]/,
 	        peg$c36 = peg$classExpectation([["1", "3"]], false, false),
 	        peg$c37 = function() {
-	            let oct = text();
-	            let obj = {};
+	                let oct = text();
+	                let obj = {};
 
-	            if(oct[0] == ','){
-	               obj.side = "negative";
-	            } else {
-	               obj.side = "positive";
-	            }
+	                if(oct[0] == ','){
+	                    obj.side = "negative";
+	                } else {
+	                    obj.side = "positive";
+	                }
 
-	            obj.num = parseInt(oct[1])
+	                obj.num = parseInt(oct[1])
 
-	            return obj;
-	          },
+	                return obj;
+	            },
 	        peg$c38 = peg$otherExpectation("accidental"),
 	        peg$c39 = /^[b#n]/,
 	        peg$c40 = peg$classExpectation(["b", "#", "n"], false, false),
@@ -41872,152 +41807,184 @@
 	    }
 
 
-	      const FlattenScore = (scoreObject, durationFactor, conn) =>{
-	        return scoreObject.reduce((list, elem, index) => {
-	            return list.concat( elem.notes ?
-	                FlattenScore(elem.notes, elem.factor * durationFactor, elem.conn.concat(conn)) :
-	                (elem.conn ? Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : elem.conn.concat(conn)}) : Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : conn}))
-	            )}, [])
-	        };
+	        const FlattenScore = (scoreObject, durationFactor, conn) =>{
+	            return scoreObject.reduce((list, elem, index) => {
+	                return list.concat( elem.notes ?
+	                    FlattenScore(elem.notes, elem.factor * durationFactor, elem.conn.concat(conn)) :
+	                    (elem.conn ? Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : elem.conn.concat(conn)}) : Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : conn}))
+	                )}, [])
+	        }
 
-	      const half = (note, isTriple) => {
-	        	note.duration = isTriple ? 3 : 2
-	        return note
-	      }
+	        const half = (note, isTriple) => {
+	            note.duration = isTriple ? 3 : 2
+	            return note
+	        }
 
-	      const IndexNote = function(notes){
-	          return notes.map(function(elem, index){
-	              elem.index = index;
-	              return elem;
-	          })
-	      }
+	        const IndexNote = function(notes){
+	            return notes.map(function(elem, index){
+	                elem.index = index;
+	                return elem;
+	            })
+	        }
 
-	      const ScoreModel = function(indexed){
+	        const ScoreModel = function(indexed){
 
-	          console.log(JSON.stringify(indexed));
+	            //   console.log(JSON.stringify(indexed));
 
-	          return {
-	              measures : GetDurationOnly(indexed),
-	              underbars : GetUnderbarRanges(indexed),
-	              accidentals : GetAccidentals(indexed),
-	              connects : GetConnectionRanges(indexed),
-	              octaves : GetOctaves(indexed)
-	          }
-	      }
+	            return {
+	                measures : GetMeasures(indexed),
+	                underbars : GetUnderbarRanges(indexed),
+	                accidentals : GetAccidentals(indexed),
+	                connects : GetConnectionRanges(indexed),
+	                octaves : GetOctaves(indexed)
+	            }
+	        }
 
-	      let GetDurationOnly = function(notes){
-	          return notes.map(note => (
-	              {
-	                  "pitch" : note.pitch,
-	                  "index" : note.index,
-	                  "duration":note.duration,
-	                  "dotted":note.dotted,
-	                  "octave":note.octave
-	              }
-	          ));
-	      }
+	        const GroupByLength = function(notes, length) {
+	            let initial = [[]];
+	            let duration = 0;
 
-	      let GetOctaves = function(notes){
-
-	          let res = [];
-
-	          notes.forEach(function(note){
-	              note.octave && res.push({index: note.index, octave:note.octave, underbars:note.conn.length});
-	          })
-
-	          return res;
-	      }
-
-	      let GetUnderbarRanges = function(notes){
-
-	          let curr =[];
-	          let res  =[];
-
-	          let currDuration = 0;
-
-	          notes.forEach(function(note){
-
-	              if(currDuration <= 1){
-
-	                  for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
-
-	                      // condition of rewriting current underbar:
-	                      // curr[i] exists, and have same type with note.conn[i],
-	                      if(curr[i] && curr[i].type == note.conn[i]){
-
-	                          curr[i].end = note.index;
-
-	                      } else {
-
-	                          // if curr[i] exists, but note.conn[i] doesn't exist,
-	                          // or has different type to curr[i], the current bar
-	                          // is done.
-	                          curr[i] && res.push(curr[i]);
-
-	                          // if note.conn[i] exists, but curr[i] could be either
-	                          // not created or finished, assign it with a new object.
-	                          // if not, then rewrite as undefined.
-	                          curr[i] = note.conn[i] ? {start:note.index, end:note.index, level:i, type:note.conn[i]} : undefined;
-	                      }
-	                  }
-
-	                  currDuration += note.duration;
-	              }
-	              if(currDuration >= 1) {
-
-	                  // if the current measure has been filled up, then
-	                  // push all existing elements into res, and empty
-	                  // the curr. So that we can seperate all underbars
-	                  // belonging to different measures.
-
-	                  for (var i = 0; i < curr.length; i++) {
-	                      curr[i] && res.push(curr[i]);
-	                  }
-
-	                  currDuration = 0;
-	                  curr = [];
-	              }
-
-	          })
-
-	          return res;
-	      }
+	            return notes.reduce(function(measures, note){
+	                if (duration < length) {
+	                    measures[measures.length - 1].push(note);
+	                    duration += note.duration;
+	                } else {
+	                    measures.push([note]);
+	                    duration = note.duration;
+	                }
+	                return measures;
+	            }, initial);
+	        }
 
 
-	      let GetConnectionRanges = function(notes){
-	          let res = [];
-	          notes.forEach(function(note){
+	        let GetMeasures = function(notes){
 
-	              // inserting the first opening connection point
-	              (res.length==0 && note.upperConn == "open") && res.push({start:note.index});
+	            let durations = notes.map(note => (
+	                {
+	                    "pitch" : note.pitch,
+	                    "index" : note.index,
+	                    "duration":note.duration,
+	                    "dotted":note.dotted,
+	                    "conn":note.conn
+	                }
+	            ));
 
-	              // if res.last exists, and has found another opening
-	              // connection, push a new element. illegally successive
-	              // opennings will be omitted.
-	              (res.length>0 && res[res.length - 1].end && note.upperConn == "open") && res.push({start:note.index});
+	            let extendedNotes = []
 
-	              // if res.last.end is not being assigned, assign
-	              // it with the first found closing. The following
-	              // closings will be omitted.
+	            durations.forEach(function(note){
+	                if(note.duration > 1){
+	                    extendedNotes.push({pitch: note.pitch, duration: 1, index:null, conn:[]});
+	                    for(let i = 1; i < note.duration; i++){
+	                        extendedNotes.push({pitch: "–", duration : 1, index:null, conn:[]})
+	                    }
+	                } else {
+	                    extendedNotes.push(note);
+	                }
+	            });
 
-	              if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
-	                  res[res.length-1].end = note.index
-	              }
+	            return GroupByLength(extendedNotes, 4)
+	                .map(measure => GroupByLength(measure, 1).map(beat => ({beatNote:beat, underbar:GetUnderbarRanges(beat)})))
+	        }
 
-	          })
+	        let GetOctaves = function(notes){
 
-	          return res;
-	      }
+	            let res = [];
 
-	      let GetAccidentals = function(notes){
-	          let res = [];
-	          notes.forEach(function(note){
-	              note.accidental && res.push({index : note.index, accidental : note.accidental});
-	          })
-	          return res;
-	      }
+	            notes.forEach(function(note){
+	                if(note.octave){
+	                    for (var i = 0; i < note.octave.num; i++) {
+	                        res.push({index: note.index, side:note.octave.side, underbars:note.conn.length, dotIndex:i});
+	                    }
+	                }
+	            })
+
+	            return res;
+	        }
+
+	        let GetUnderbarRanges = function(notes){
+
+	            let curr =[];
+	            let res  =[];
+
+	            let currDuration = 0;
+
+	            notes.forEach(function(note){
+
+	                if(currDuration <= 1){
+
+	                    for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
+
+	                        // curr[i] exists, and have same type with note.conn[i]
+	                        if(curr[i] && curr[i].type == note.conn[i]){
+	                            // rewrite (enlonging) current underbar
+	                            curr[i].end = note.index;
+
+	                        } else {
+
+	                            // if curr[i] exists, but note.conn[i] doesn't exist, or has
+	                            // different type to curr[i], the current bar is done.
+	                            curr[i] && res.push(curr[i]);
+
+	                            // if note.conn[i] exists, but curr[i] could be either
+	                            // not created or finished, assign it with a new object.
+	                            // if not, then rewrite as undefined.
+	                            curr[i] = note.conn[i] ? {start:note.index, end:note.index, level:i, type:note.conn[i]} : undefined;
+	                        }
+	                    }
+
+	                    currDuration += note.duration;
+	                }
+	                if(currDuration >= 1) {
+
+	                    // if the current measure has been filled up, then
+	                    // push all existing elements into res, and empty
+	                    // the curr.
+
+	                    for (var i = 0; i < curr.length; i++) {
+	                        curr[i] && res.push(curr[i]);
+	                    }
+	                }
+
+	            })
+
+	            return res;
+	        }
 
 
+	            let GetConnectionRanges = function(notes){
+	                let res = [];
+	                notes.forEach(function(note){
+
+	                    // inserting the first opening connection point
+	                    (res.length==0 && note.upperConn == "open") && res.push({start:note.index});
+
+	                    // if res.last exists, and has found another opening
+	                    // connection, push a new element. illegally successive
+	                    // opennings will be omitted.
+	                    (res.length>0 && res[res.length - 1].end && note.upperConn == "open") && res.push({start:note.index});
+
+	                    // if res.last.end is not being assigned, assign
+	                    // it with the first found closing. The following
+	                    // closings will be omitted.
+
+	                    if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
+	                        res[res.length-1].end = note.index
+	                    }
+
+	                })
+
+	                return res;
+	            }
+
+	            let GetAccidentals = function(notes){
+	                let res = [];
+	                notes.forEach(function(note){
+	                    note.accidental && res.push({index : note.index, accidental : note.accidental});
+	                })
+	                return res;
+	            }
+
+	        
 
 	    peg$result = peg$startRuleFunction();
 
@@ -42048,7 +42015,7 @@
 /* 431 */
 /***/ function(module, exports) {
 
-	module.exports = "\ntitle : {\n耶 稣 恩 友\n}\n\nsubtitle : {\nWhat A Friend We Have In Jesus\n}\n\nlyrics : {\nScriven 1855\n}\n\ncomposer: {\nConverse 1868\n}\n\nbeats: {\n1=F   4/4\n}\n\nscore : {\n.5  5 (6 (5 (5 (5 5)))) (3 1) 1 - 6,1 - .5,1 1 (3 1 1) (5 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n.2 #1 (2 3) (4 2) 3 - 5   - .6   6 (5 3) (4 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n}\n"
+	module.exports = "\ntitle : {\n耶 稣 恩 友\n}\n\nsubtitle : {\nWhat A Friend We Have In Jesus\n}\n\nlyrics : {\nScriven 1855\n}\n\ncomposer: {\nConverse 1868\n}\n\nbeats: {\n1=F   4/4\n}\n\nscore : {\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 1 1) (5 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n.2 #1 (2 3) (4 2) 3 - 5   - .6   6 (5 3) (4 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n}\n"
 
 /***/ },
 /* 432 */
