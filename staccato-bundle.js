@@ -76,6 +76,20 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	Array.prototype.riffle = function (func) {
+	    var res = [];
+
+	    for (var i = 0; i < this.length; i++) {
+	        res.push(this[i]);res.push(func(this[i], i, this.length));
+	    }
+
+	    return res;
+	};
+
+	Array.prototype.last = function () {
+	    return this[this.length - 1];
+	};
+
 	var Elem = function Elem(component, param, children) {
 	    return _react2.default.createElement(component, param, children);
 	};
@@ -157,18 +171,55 @@
 	    return Underbar;
 	}(_react2.default.Component);
 
-	var Measure = function (_React$Component4) {
-	    _inherits(Measure, _React$Component4);
+	var Repeatbar = function (_React$Component4) {
+	    _inherits(Repeatbar, _React$Component4);
+
+	    function Repeatbar(props) {
+	        _classCallCheck(this, Repeatbar);
+
+	        return _possibleConstructorReturn(this, (Repeatbar.__proto__ || Object.getPrototypeOf(Repeatbar)).call(this, props));
+	    }
+
+	    _createClass(Repeatbar, [{
+	        key: 'render',
+	        value: function render() {
+	            return Elem('span', { className: "repeatbar" + (this.props.initial ? " initialbar" : "") }, [Elem('span', { className: "dotUpper", key: 42944 })]);
+	        }
+	    }]);
+
+	    return Repeatbar;
+	}(_react2.default.Component);
+
+	var Measure = function (_React$Component5) {
+	    _inherits(Measure, _React$Component5);
 
 	    function Measure(props) {
 	        _classCallCheck(this, Measure);
 
-	        return _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
+	        var _this5 = _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
+
+	        _this5.notePoses = {};
+	        return _this5;
 	    }
 
 	    _createClass(Measure, [{
+	        key: 'GetNotePoses',
+	        value: function GetNotePoses() {
+	            var notePoses = {};
+
+	            for (var ithBeat in this.refs) {
+	                if (ithBeat != "measure") {
+	                    var elem = this.refs[ithBeat];
+	                    Object.assign(notePoses, elem.notePoses);
+	                }
+	            }
+
+	            return notePoses;
+	        }
+	    }, {
 	        key: 'BeatElems',
 	        value: function BeatElems() {
+	            // console.log(this.props.measure.repeat)
 	            return this.props.measure.map(function (beat, index) {
 	                return Elem(Beat, {
 	                    ref: index,
@@ -181,27 +232,34 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return Elem('div', { ref: "measure", className: "measure" }, this.BeatElems());
+	            var width = this.props.measure[0].beatNote.length == 0 ? { minWidth: 0 } : {};
+	            return Elem('div', { style: width, ref: "measure", className: "measure" }, this.BeatElems());
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            this.notePoses = this.GetNotePoses();
 	        }
 	    }]);
 
 	    return Measure;
 	}(_react2.default.Component);
 
-	var Beat = function (_React$Component5) {
-	    _inherits(Beat, _React$Component5);
+	var Beat = function (_React$Component6) {
+	    _inherits(Beat, _React$Component6);
 
 	    function Beat(props) {
 	        _classCallCheck(this, Beat);
 
-	        var _this5 = _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
+	        var _this6 = _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
 
-	        _this5.state = {
-	            underbarPoses: _this5.props.underbar.map(function (elem) {
+	        _this6.state = {
+	            underbarPoses: _this6.props.underbar.map(function (elem) {
 	                return { left: 0, width: 0, top: 0 };
 	            })
 	        };
-	        return _this5;
+	        _this6.notePoses = {};
+	        return _this6;
 	    }
 
 	    _createClass(Beat, [{
@@ -215,11 +273,7 @@
 	                    var elem = this.refs[ithNote];
 
 	                    if (elem.props.note.index) {
-	                        notePoses[elem.props.note.index] = {
-	                            left: elem.box.left,
-	                            right: elem.box.right,
-	                            bottom: elem.box.bottom
-	                        };
+	                        notePoses[elem.props.note.index] = elem.box;
 	                    }
 	                }
 	            }
@@ -228,9 +282,7 @@
 	        }
 	    }, {
 	        key: 'GetUnderbarPoses',
-	        value: function GetUnderbarPoses(notePoses) {
-
-	            var beatBox = this.refs.beat.getBoundingClientRect();
+	        value: function GetUnderbarPoses(notePoses, beatBox) {
 
 	            // by subtracting the score position from the underbar position,
 	            // we made the new undarbar position relative to score element.
@@ -258,48 +310,178 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
+
 	            var underbarElems = this.UnderbarElems(this.NoteElems().length);
-	            return Elem('span', { ref: "beat", className: "beat" }, this.NoteElems().concat(underbarElems));
+	            var underbarredNotes = this.NoteElems().concat(underbarElems);
+
+	            if (this.props.repeatNotOnSide && this.props.beat.some(function (elem) {
+	                return elem.repeat == "open";
+	            })) {
+	                underbarredNotes = [Elem(Repeatbar, { key: offset, direction: "open" })].concat(underbarredNotes);
+	            }
+	            if (this.props.repeatNotOnSide && this.props.beat.some(function (elem) {
+	                return elem.repeat == "close";
+	            })) {
+	                underbarredNotes = underbarredNotes.concat(Elem(Repeatbar, { key: offset, direction: "close" }));
+	            }
+
+	            return Elem('span', { ref: "beat", className: "beat" }, underbarredNotes);
 	        }
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            this.setState({ underbarPoses: this.GetUnderbarPoses(this.GetNotePoses()) });
+
+	            var beatBox = this.refs.beat.getBoundingClientRect();
+
+	            this.notePoses = this.GetNotePoses();
+
+	            this.setState({ underbarPoses: this.GetUnderbarPoses(this.GetNotePoses(), beatBox) });
 	        }
 	    }]);
 
 	    return Beat;
 	}(_react2.default.Component);
 
-	var Note = function (_React$Component6) {
-	    _inherits(Note, _React$Component6);
+	var Pitch = function (_React$Component7) {
+	    _inherits(Pitch, _React$Component7);
+
+	    function Pitch(props) {
+	        _classCallCheck(this, Pitch);
+
+	        return _possibleConstructorReturn(this, (Pitch.__proto__ || Object.getPrototypeOf(Pitch)).call(this, props));
+	    }
+
+	    _createClass(Pitch, [{
+	        key: 'render',
+	        value: function render() {
+	            return Elem('span', { ref: "pitch", className: "pitch" }, this.props.pitch);
+	        }
+	    }]);
+
+	    return Pitch;
+	}(_react2.default.Component);
+
+	var Note = function (_React$Component8) {
+	    _inherits(Note, _React$Component8);
 
 	    function Note(props) {
 	        _classCallCheck(this, Note);
 
-	        var _this6 = _possibleConstructorReturn(this, (Note.__proto__ || Object.getPrototypeOf(Note)).call(this, props));
+	        var _this8 = _possibleConstructorReturn(this, (Note.__proto__ || Object.getPrototypeOf(Note)).call(this, props));
 
-	        _this6.box = { left: 0, right: 0 };
-	        return _this6;
+	        _this8.box = { left: 0, right: 0 };
+
+	        _this8.state = {
+	            octaveDotPoses: []
+	        };
+	        return _this8;
 	    }
 
 	    _createClass(Note, [{
+	        key: 'GetOctaveDotPoses',
+	        value: function GetOctaveDotPoses() {
+	            var octaveDotPoses = [];
+	            if (this.props.note.octave) {
+
+	                var octave = this.props.note.octave;
+	                for (var i = 0; i < octave.num; i++) {
+	                    octaveDotPoses.push({
+	                        index: this.props.note.pitch,
+	                        left: (this.box.right - this.box.left) / 2,
+	                        top: octave.side == "positive" ? -5 * i - this.box.height / 2 : 3 * this.props.note.conn.length + 5 * i + this.box.height / 2
+	                    });
+	                }
+	            }
+	            return octaveDotPoses;
+	        }
+	    }, {
+	        key: 'PitchElem',
+	        value: function PitchElem() {
+	            return Elem(Pitch, { key: 0, ref: "note", className: "note", pitch: this.props.note.pitch });
+	        }
+	    }, {
+	        key: 'OctaveDotElem',
+	        value: function OctaveDotElem() {
+	            return this.state.octaveDotPoses.map(function (elem, index) {
+	                return Elem(OctaveDot, { key: 1 + index, ref: "dot-" + index, pos: elem });
+	            });
+	        }
+	    }, {
+	        key: 'AccidentalElem',
+	        value: function AccidentalElem() {
+	            return this.props.note.accidental ? [Elem(Accidental, { key: 205, ref: "acc", acc: this.props.note.accidental })] : [];
+	        }
+	    }, {
+	        key: 'DotElem',
+	        value: function DotElem() {
+	            return this.props.note.dotted ? [Elem(Dot, { key: 204, ref: "dot" })] : [];
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return Elem('span', { ref: "note", className: "note" }, this.props.note.pitch + (this.props.note.dotted ? "·" : ""));
+
+	            var style = {
+	                marginLeft: -this.props.note.conn.length * 0.7,
+	                marginRight: -this.props.note.conn.length * 0.7
+	            };
+
+	            return Elem('span', { style: style, className: "note" }, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()).concat(this.OctaveDotElem()));
 	        }
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            this.box = this.refs.note.getBoundingClientRect();
+	            this.box = this.refs.note.refs.pitch.getBoundingClientRect();
+
+	            this.setState({ octaveDotPoses: this.GetOctaveDotPoses() });
 	        }
 	    }]);
 
 	    return Note;
 	}(_react2.default.Component);
 
-	var OctaveDot = function (_React$Component7) {
-	    _inherits(OctaveDot, _React$Component7);
+	var Accidental = function (_React$Component9) {
+	    _inherits(Accidental, _React$Component9);
+
+	    function Accidental(props) {
+	        _classCallCheck(this, Accidental);
+
+	        return _possibleConstructorReturn(this, (Accidental.__proto__ || Object.getPrototypeOf(Accidental)).call(this, props));
+	    }
+
+	    _createClass(Accidental, [{
+	        key: 'render',
+	        value: function render() {
+	            // console.log(this.props.acc)
+	            var accidental = this.props.acc == "#" ? '\uE10F' : '\uE11B';
+
+	            return Elem('span', { className: "accidental" }, accidental);
+	        }
+	    }]);
+
+	    return Accidental;
+	}(_react2.default.Component);
+
+	var Dot = function (_React$Component10) {
+	    _inherits(Dot, _React$Component10);
+
+	    function Dot(props) {
+	        _classCallCheck(this, Dot);
+
+	        return _possibleConstructorReturn(this, (Dot.__proto__ || Object.getPrototypeOf(Dot)).call(this, props));
+	    }
+
+	    _createClass(Dot, [{
+	        key: 'render',
+	        value: function render() {
+	            return Elem('span', { className: "dot" }, "·");
+	        }
+	    }]);
+
+	    return Dot;
+	}(_react2.default.Component);
+
+	var OctaveDot = function (_React$Component11) {
+	    _inherits(OctaveDot, _React$Component11);
 
 	    function OctaveDot(props) {
 	        _classCallCheck(this, OctaveDot);
@@ -310,37 +492,123 @@
 	    _createClass(OctaveDot, [{
 	        key: 'render',
 	        value: function render() {
-	            return Elem('span', { className: "octaveDot" }, "·");
+	            return Elem('span', { style: this.props.pos, className: "octavedot" }, "·");
 	        }
 	    }]);
 
 	    return OctaveDot;
 	}(_react2.default.Component);
 
-	var Score = function (_React$Component8) {
-	    _inherits(Score, _React$Component8);
+	var Connect = function (_React$Component12) {
+	    _inherits(Connect, _React$Component12);
+
+	    function Connect(props) {
+	        _classCallCheck(this, Connect);
+
+	        return _possibleConstructorReturn(this, (Connect.__proto__ || Object.getPrototypeOf(Connect)).call(this, props));
+	    }
+
+	    _createClass(Connect, [{
+	        key: 'GetSVGCurveText',
+	        value: function GetSVGCurveText(AX, AY, CAX, CAY, CBX, CBY, BX, BY, thickness) {
+	            return "M" + AX + " " + AY + "C" + CAX + " " + CAY + "," + CBX + " " + CBY + "," + BX + " " + BY + "C" + CBX + " " + (CBY + thickness) + "," + CAX + " " + (CAY + thickness) + "," + AX + " " + AY + "Z";
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+
+	            var startX = this.props.startLeft,
+	                startY = this.props.startTop,
+	                startCX = this.props.startCLeft,
+	                startCY = this.props.startCTop,
+	                endX = this.props.endLeft,
+	                endY = this.props.endTop,
+	                endCX = this.props.endCLeft,
+	                endCY = this.props.endCTop,
+	                fakeStartX = endX - 200,
+	                fakeEndX = startX + 200,
+	                fakeStartY = endY,
+	                fakeEndY = startY,
+	                fakeStartCX = endCX - 180,
+	                fakeEndCX = startCX + 180,
+	                fakeStartCY = endCY,
+	                fakeEndCY = startCY;
+
+	            var elem = void 0;
+	            if (startY == endY) {
+	                elem = Elem('svg', {
+	                    xmlns: "http://www.w3.org/2000/svg" }, Elem('path', {
+	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, endCX, endCY, endX, endY, 2),
+	                    fill: "black"
+	                }));
+	            } else {
+	                elem = Elem('svg', {
+	                    xmlns: "http://www.w3.org/2000/svg" }, Elem('path', {
+	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 2) + this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 2),
+	                    fill: "black"
+	                }));
+	            }
+
+	            return elem;
+	        }
+	    }]);
+
+	    return Connect;
+	}(_react2.default.Component);
+
+	var Score = function (_React$Component13) {
+	    _inherits(Score, _React$Component13);
 
 	    function Score(props) {
 	        _classCallCheck(this, Score);
 
-	        var _this8 = _possibleConstructorReturn(this, (Score.__proto__ || Object.getPrototypeOf(Score)).call(this, props));
+	        var _this13 = _possibleConstructorReturn(this, (Score.__proto__ || Object.getPrototypeOf(Score)).call(this, props));
 
-	        _this8.state = {
-	            underbarPoses: _this8.props.underbars.map(function (elem) {
-	                return { left: 0, width: 0, top: 0 };
+	        _this13.notePoses = {}, _this13.state = {
+	            connectPoses: _this13.props.connects.map(function (elem) {
+	                return { startLeft: 0, startCLeft: 0, startTop: 0, startCTop: 0, endCLeft: 0, endCTop: 0, endLeft: 0, endTop: 0 };
 	            })
 	        };
-	        return _this8;
+	        return _this13;
 	    }
 
 	    _createClass(Score, [{
-	        key: 'handleResize',
-	        value: function handleResize() {
-	            this.setState(function (previousState) {
+	        key: 'GetNotePoses',
+	        value: function GetNotePoses() {
+	            var notePoses = {};
+
+	            for (var ithMeasure in this.refs) {
+	                if (ithMeasure != "score") {
+	                    var elem = this.refs[ithMeasure];
+	                    Object.assign(notePoses, elem.notePoses);
+	                }
+	            }
+
+	            return notePoses;
+	        }
+	    }, {
+	        key: 'GetConnectPoses',
+	        value: function GetConnectPoses(scoreBox) {
+	            var _this14 = this;
+
+	            return this.props.connects.map(function (elem) {
 	                return {
-	                    underbarPoses: previousState.underbarPoses,
-	                    measures: previousState.measures
+	                    startLeft: _this14.notePoses[elem.start].left - scoreBox.left,
+	                    startTop: _this14.notePoses[elem.start].top - scoreBox.top,
+	                    startCLeft: _this14.notePoses[elem.start].left - scoreBox.left + 5,
+	                    startCTop: _this14.notePoses[elem.start].top - scoreBox.top - 15,
+	                    endCLeft: _this14.notePoses[elem.end].left - scoreBox.left - 5,
+	                    endCTop: _this14.notePoses[elem.end].top - scoreBox.top - 15,
+	                    endLeft: _this14.notePoses[elem.end].left - scoreBox.left,
+	                    endTop: _this14.notePoses[elem.end].top - scoreBox.top
 	                };
+	            });
+	        }
+	    }, {
+	        key: 'ConnectElems',
+	        value: function ConnectElems() {
+	            return this.state.connectPoses.map(function (elem, index) {
+	                return Elem(Connect, Object.assign(elem, { key: 206 + index }));
 	            });
 	        }
 	    }, {
@@ -348,32 +616,56 @@
 	        value: function MeasureElems() {
 
 	            return [].concat(this.props.measures.map(function (measure, index) {
-	                return [Elem(Measure, { ref: "measure-" + index, measure: measure, key: 2 * index }), Elem(Vertbar, { key: 2 * index + 1 })];
-	            })).concat(Elem(Finalbar, { key: 205 }));
+	                var elem = void 0;
+	                if (measure[0].beatNote[0].repeat == "open") {
+	                    elem = [Elem(Repeatbar, { key: 5300 + index, direction: "open", initial: true }), Elem(Measure, { ref: "measure-" + index, measure: measure, key: index })];
+	                    index == 0 && elem.push(Elem(Vertbar, { key: 5300 + index - 1 }));
+	                } else if (measure.last().beatNote.last().repeat == "close") {
+
+	                    elem = [Elem(Measure, { ref: "measure-" + index, measure: measure, key: index }), Elem(Repeatbar, { key: 5300 + index, direction: "closed" })];
+	                } else {
+
+	                    elem = [Elem(Measure, { ref: "measure-" + index, measure: measure, key: index }), Elem(Vertbar, { key: 5300 + index })];
+	                }
+	                return elem;
+	            })).concat(Elem(Finalbar, { key: 6300 })).concat(this.ConnectElems());
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
+
 	            return Elem('div', { ref: "score", className: "score" }, this.MeasureElems());
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+
+	            var scoreBox = this.refs.score.getBoundingClientRect();
+
+	            this.notePoses = this.GetNotePoses();
+
+	            this.setState({
+	                connectPoses: this.GetConnectPoses(scoreBox)
+	            });
 	        }
 	    }]);
 
 	    return Score;
 	}(_react2.default.Component);
 
-	var Container = function (_React$Component9) {
-	    _inherits(Container, _React$Component9);
+	var Container = function (_React$Component14) {
+	    _inherits(Container, _React$Component14);
 
 	    function Container(props) {
 	        _classCallCheck(this, Container);
 
-	        var _this9 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
+	        var _this15 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
-	        _this9.state = {
+	        _this15.state = {
 	            value: _What_A_Friend2.default,
-	            sections: _this9.GetSections(_What_A_Friend2.default)
+	            sections: _this15.GetSections(_What_A_Friend2.default)
 	        };
-	        return _this9;
+	        return _this15;
 	    }
 
 	    _createClass(Container, [{
@@ -392,7 +684,7 @@
 	    }, {
 	        key: 'handleChange',
 	        value: function handleChange(event) {
-	            var _this10 = this;
+	            var _this16 = this;
 
 	            event.persist();
 
@@ -401,7 +693,7 @@
 	            this.setState(function (previousState) {
 	                return {
 	                    value: val,
-	                    sections: _this10.GetSections(val)
+	                    sections: _this16.GetSections(val)
 	                };
 	            });
 	        }
@@ -418,12 +710,9 @@
 	                    try {
 	                        var scoreModel = (0, _StaccatoParser.parse)(this.state.sections[i].body);
 
-	                        // console.log(JSON.stringify(scoreModel.measures))
-
 	                        elems.push(SectionElem(this.state.sections[i].name, i, Elem(Score, {
 	                            measures: scoreModel.measures,
-	                            underbars: scoreModel.underbars,
-	                            octaves: scoreModel.octaves
+	                            connects: scoreModel.connects
 	                        })));
 	                    } catch (error) {
 	                        console.log(error);
@@ -437,17 +726,17 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this11 = this;
+	            var _this17 = this;
 
 	            var editor = Elem('textarea', {
 	                id: 'editor',
 	                className: 'editing',
-	                rows: 20,
+	                rows: 60,
 	                placeholder: 'yep',
 	                spellCheck: 'false',
 	                value: this.state.value,
 	                onChange: function onChange(event) {
-	                    return _this11.handleChange(event);
+	                    return _this17.handleChange(event);
 	                }
 	            });
 
@@ -40888,14 +41177,14 @@
 	        peg$c0 = peg$otherExpectation("notes"),
 	        peg$c1 = function(first, rest) {
 
-	                var all = [first];
+	            var all = [first];
 
-	                for(let i = 0; i < rest.length; i ++){
-	                    all.push(rest[i][1]);
-	                }
+	            for(let i = 0; i < rest.length; i ++){
+	                all.push(rest[i][1]);
+	            }
 
-	                return ScoreModel(IndexNote(FlattenScore(all, 1,[])))
-	            },
+	            return ScoreModel(IndexNote(FlattenScore(all, 1,[])))
+	        },
 	        peg$c2 = peg$otherExpectation("duration"),
 	        peg$c3 = "(",
 	        peg$c4 = peg$literalExpectation("(", false),
@@ -40903,117 +41192,137 @@
 	        peg$c6 = peg$literalExpectation(")", false),
 	        peg$c7 = function(first, next) {
 
-	                return {
-	                    notes : [first, next],
-	                    factor : 2,
-	                    conn : ["halfed"]
-	                }
-	            },
+	            return {
+	                notes : [first, next],
+	                factor : 2,
+	                conn : ["halfed"]
+	            }
+	        },
 	        peg$c8 = function(first, next, last) {
 
-	                return {
-	                    notes : [first, next, last],
-	                    factor : 3,
-	                    conn : ["triple"]
-	                }
-	            },
+	            return {
+	                notes : [first, next, last],
+	                factor : 3,
+	                conn : ["triple"]
+	            }
+	        },
 	        peg$c9 = peg$otherExpectation("dotted"),
 	        peg$c10 = ".",
 	        peg$c11 = peg$literalExpectation(".", false),
 	        peg$c12 = function(first, next) {
 
-	                first.dotted = true;
+	            first.dotted = true;
 
-	                next.conn.push("halfed");
+	            next.conn.push("halfed");
 
-	                return {
-	                    notes : [first, next],
-	                    factor : 1,
-	                    conn : []
-	                }
-	            },
+	            return {
+	                notes : [first, next],
+	                factor : 1,
+	                conn : []
+	            }
+	        },
 	        peg$c13 = peg$otherExpectation("note"),
 	        peg$c14 = "-",
 	        peg$c15 = peg$literalExpectation("-", false),
 	        peg$c16 = function(note, rest) {
-	                note.duration += rest.length;
-	                return note;
-	            },
+	            note.duration += rest.length;
+	            return note;
+	        },
 	        peg$c17 = function(halfed) {
-	                return halfed;
-	            },
+	            return halfed;
+	        },
 	        peg$c18 = function(dotted) {
-	                return dotted;
-	            },
-	        peg$c19 = peg$otherExpectation("fixed"),
-	        peg$c20 = "/",
-	        peg$c21 = peg$literalExpectation("/", false),
-	        peg$c22 = function(note) {
-	                note.duration = 1;
-	                note.upperConn = "open";
-	                note.conn = []
-	                return note;
-	            },
-	        peg$c23 = "\\",
-	        peg$c24 = peg$literalExpectation("\\", false),
-	        peg$c25 = function(note) {
-	                note.duration = 1;
-	                note.upperConn = "close";
-	                note.conn = []
-	                return note;
-	            },
-	        peg$c26 = function(note) {
-	                note.duration = 1;
-	                note.conn = []
-	                return note
-	            },
-	        peg$c27 = peg$otherExpectation("modified_pitch"),
-	        peg$c28 = function(acc, pitch, octave) {
-	                pitch.accidental = acc;
-	                pitch.octave = octave;
-	                return pitch;
-	            },
-	        peg$c29 = function(acc, pitch) {
-	                pitch.accidental = acc;
-	                return pitch;
-	            },
-	        peg$c30 = function(pitch, octave) {
-	                pitch.octave = octave;
-	                return pitch
-	            },
-	        peg$c31 = function(pitch) {
-	                return pitch
-	            },
-	        peg$c32 = peg$otherExpectation("octave"),
-	        peg$c33 = /^[,']/,
-	        peg$c34 = peg$classExpectation([",", "'"], false, false),
-	        peg$c35 = /^[1-3]/,
-	        peg$c36 = peg$classExpectation([["1", "3"]], false, false),
-	        peg$c37 = function() {
-	                let oct = text();
-	                let obj = {};
+	            return dotted;
+	        },
+	        peg$c19 = function(repeat) {
+	            return repeat;
+	        },
+	        peg$c20 = peg$otherExpectation("repeat"),
+	        peg$c21 = "|@",
+	        peg$c22 = peg$literalExpectation("|@", false),
+	        peg$c23 = function() {
+	            return {
+	                repeat : "open"
+	            }
+	        },
+	        peg$c24 = "@|",
+	        peg$c25 = peg$literalExpectation("@|", false),
+	        peg$c26 = function() {
+	            return {
+	                repeat : "close"
+	            }
+	        },
+	        peg$c27 = peg$otherExpectation("fixed"),
+	        peg$c28 = "/",
+	        peg$c29 = peg$literalExpectation("/", false),
+	        peg$c30 = function(note) {
+	            note.duration = 1;
+	            note.upperConn = "open";
+	            note.conn = []
+	            return note;
+	        },
+	        peg$c31 = "\\",
+	        peg$c32 = peg$literalExpectation("\\", false),
+	        peg$c33 = function(note) {
+	            note.duration = 1;
+	            note.upperConn = "close";
+	            note.conn = []
+	            return note;
+	        },
+	        peg$c34 = function(note) {
+	            note.duration = 1;
+	            note.conn = []
+	            return note
+	        },
+	        peg$c35 = peg$otherExpectation("modified_pitch"),
+	        peg$c36 = function(acc, pitch, octave) {
+	            pitch.accidental = acc;
+	            pitch.octave = octave;
+	            return pitch;
+	        },
+	        peg$c37 = function(acc, pitch) {
+	            pitch.accidental = acc;
+	            return pitch;
+	        },
+	        peg$c38 = function(pitch, octave) {
+	            pitch.octave = octave;
+	            return pitch
+	        },
+	        peg$c39 = function(pitch) {
+	            return pitch
+	        },
+	        peg$c40 = peg$otherExpectation("octave"),
+	        peg$c41 = /^[,']/,
+	        peg$c42 = peg$classExpectation([",", "'"], false, false),
+	        peg$c43 = /^[1-3]/,
+	        peg$c44 = peg$classExpectation([["1", "3"]], false, false),
+	        peg$c45 = function() {
+	            let oct = text();
+	            let obj = {};
 
-	                if(oct[0] == ','){
-	                    obj.side = "negative";
-	                } else {
-	                    obj.side = "positive";
-	                }
+	            if(oct[0] == ','){
+	                obj.side = "negative";
+	            } else {
+	                obj.side = "positive";
+	            }
 
-	                obj.num = parseInt(oct[1])
+	            obj.num = parseInt(oct[1])
 
-	                return obj;
-	            },
-	        peg$c38 = peg$otherExpectation("accidental"),
-	        peg$c39 = /^[b#n]/,
-	        peg$c40 = peg$classExpectation(["b", "#", "n"], false, false),
-	        peg$c41 = function() { return text(); },
-	        peg$c42 = peg$otherExpectation("pitch"),
-	        peg$c43 = /^[0-7]/,
-	        peg$c44 = peg$classExpectation([["0", "7"]], false, false),
-	        peg$c45 = function() { return {pitch : parseInt(text())}; },
-	        peg$c46 = peg$otherExpectation("whitespace"),
-	        peg$c47 = /^[ \t\n\r]/,
-	        peg$c48 = peg$classExpectation([" ", "\t", "\n", "\r"], false, false),
+	            return obj;
+	        },
+	        peg$c46 = peg$otherExpectation("accidental"),
+	        peg$c47 = /^[b#n]/,
+	        peg$c48 = peg$classExpectation(["b", "#", "n"], false, false),
+	        peg$c49 = function() {
+	            return text();
+	        },
+	        peg$c50 = peg$otherExpectation("pitch"),
+	        peg$c51 = /^[0-7]/,
+	        peg$c52 = peg$classExpectation([["0", "7"]], false, false),
+	        peg$c53 = function() { return {pitch : parseInt(text())}; },
+	        peg$c54 = peg$otherExpectation("whitespace"),
+	        peg$c55 = /^[ \t\n\r]/,
+	        peg$c56 = peg$classExpectation([" ", "\t", "\n", "\r"], false, false),
 
 	        peg$currPos          = 0,
 	        peg$savedPos         = 0,
@@ -41502,6 +41811,15 @@
 	            s1 = peg$c18(s1);
 	          }
 	          s0 = s1;
+	          if (s0 === peg$FAILED) {
+	            s0 = peg$currPos;
+	            s1 = peg$parseRepeat();
+	            if (s1 !== peg$FAILED) {
+	              peg$savedPos = s0;
+	              s1 = peg$c19(s1);
+	            }
+	            s0 = s1;
+	          }
 	        }
 	      }
 	      peg$silentFails--;
@@ -41513,17 +41831,88 @@
 	      return s0;
 	    }
 
+	    function peg$parseRepeat() {
+	      var s0, s1, s2, s3;
+
+	      peg$silentFails++;
+	      s0 = peg$currPos;
+	      s1 = peg$parse_();
+	      if (s1 !== peg$FAILED) {
+	        if (input.substr(peg$currPos, 2) === peg$c21) {
+	          s2 = peg$c21;
+	          peg$currPos += 2;
+	        } else {
+	          s2 = peg$FAILED;
+	          if (peg$silentFails === 0) { peg$fail(peg$c22); }
+	        }
+	        if (s2 !== peg$FAILED) {
+	          s3 = peg$parse_();
+	          if (s3 !== peg$FAILED) {
+	            peg$savedPos = s0;
+	            s1 = peg$c23();
+	            s0 = s1;
+	          } else {
+	            peg$currPos = s0;
+	            s0 = peg$FAILED;
+	          }
+	        } else {
+	          peg$currPos = s0;
+	          s0 = peg$FAILED;
+	        }
+	      } else {
+	        peg$currPos = s0;
+	        s0 = peg$FAILED;
+	      }
+	      if (s0 === peg$FAILED) {
+	        s0 = peg$currPos;
+	        s1 = peg$parse_();
+	        if (s1 !== peg$FAILED) {
+	          if (input.substr(peg$currPos, 2) === peg$c24) {
+	            s2 = peg$c24;
+	            peg$currPos += 2;
+	          } else {
+	            s2 = peg$FAILED;
+	            if (peg$silentFails === 0) { peg$fail(peg$c25); }
+	          }
+	          if (s2 !== peg$FAILED) {
+	            s3 = peg$parse_();
+	            if (s3 !== peg$FAILED) {
+	              peg$savedPos = s0;
+	              s1 = peg$c26();
+	              s0 = s1;
+	            } else {
+	              peg$currPos = s0;
+	              s0 = peg$FAILED;
+	            }
+	          } else {
+	            peg$currPos = s0;
+	            s0 = peg$FAILED;
+	          }
+	        } else {
+	          peg$currPos = s0;
+	          s0 = peg$FAILED;
+	        }
+	      }
+	      peg$silentFails--;
+	      if (s0 === peg$FAILED) {
+	        s1 = peg$FAILED;
+	        if (peg$silentFails === 0) { peg$fail(peg$c20); }
+	      }
+
+	      return s0;
+	    }
+
 	    function peg$parseFixedNote() {
 	      var s0, s1, s2, s3;
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
 	      if (input.charCodeAt(peg$currPos) === 47) {
-	        s1 = peg$c20;
+	        s1 = peg$c28;
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c21); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c29); }
 	      }
 	      if (s1 !== peg$FAILED) {
 	        s2 = peg$parseModifiedPitch();
@@ -41531,7 +41920,7 @@
 	          s3 = peg$parse_();
 	          if (s3 !== peg$FAILED) {
 	            peg$savedPos = s0;
-	            s1 = peg$c22(s2);
+	            s1 = peg$c30(s2);
 	            s0 = s1;
 	          } else {
 	            peg$currPos = s0;
@@ -41550,17 +41939,17 @@
 	        s1 = peg$parseModifiedPitch();
 	        if (s1 !== peg$FAILED) {
 	          if (input.charCodeAt(peg$currPos) === 92) {
-	            s2 = peg$c23;
+	            s2 = peg$c31;
 	            peg$currPos++;
 	          } else {
 	            s2 = peg$FAILED;
-	            if (peg$silentFails === 0) { peg$fail(peg$c24); }
+	            if (peg$silentFails === 0) { peg$fail(peg$c32); }
 	          }
 	          if (s2 !== peg$FAILED) {
 	            s3 = peg$parse_();
 	            if (s3 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c25(s1);
+	              s1 = peg$c33(s1);
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -41581,7 +41970,7 @@
 	            s2 = peg$parse_();
 	            if (s2 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c26(s1);
+	              s1 = peg$c34(s1);
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -41596,7 +41985,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c19); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c27); }
 	      }
 
 	      return s0;
@@ -41614,7 +42003,7 @@
 	          s3 = peg$parseOctave();
 	          if (s3 !== peg$FAILED) {
 	            peg$savedPos = s0;
-	            s1 = peg$c28(s1, s2, s3);
+	            s1 = peg$c36(s1, s2, s3);
 	            s0 = s1;
 	          } else {
 	            peg$currPos = s0;
@@ -41635,7 +42024,7 @@
 	          s2 = peg$parsePitch();
 	          if (s2 !== peg$FAILED) {
 	            peg$savedPos = s0;
-	            s1 = peg$c29(s1, s2);
+	            s1 = peg$c37(s1, s2);
 	            s0 = s1;
 	          } else {
 	            peg$currPos = s0;
@@ -41652,7 +42041,7 @@
 	            s2 = peg$parseOctave();
 	            if (s2 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c30(s1, s2);
+	              s1 = peg$c38(s1, s2);
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -41667,7 +42056,7 @@
 	            s1 = peg$parsePitch();
 	            if (s1 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c31(s1);
+	              s1 = peg$c39(s1);
 	            }
 	            s0 = s1;
 	          }
@@ -41676,7 +42065,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c27); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c35); }
 	      }
 
 	      return s0;
@@ -41687,24 +42076,24 @@
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
-	      if (peg$c33.test(input.charAt(peg$currPos))) {
+	      if (peg$c41.test(input.charAt(peg$currPos))) {
 	        s1 = input.charAt(peg$currPos);
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c34); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c42); }
 	      }
 	      if (s1 !== peg$FAILED) {
-	        if (peg$c35.test(input.charAt(peg$currPos))) {
+	        if (peg$c43.test(input.charAt(peg$currPos))) {
 	          s2 = input.charAt(peg$currPos);
 	          peg$currPos++;
 	        } else {
 	          s2 = peg$FAILED;
-	          if (peg$silentFails === 0) { peg$fail(peg$c36); }
+	          if (peg$silentFails === 0) { peg$fail(peg$c44); }
 	        }
 	        if (s2 !== peg$FAILED) {
 	          peg$savedPos = s0;
-	          s1 = peg$c37();
+	          s1 = peg$c45();
 	          s0 = s1;
 	        } else {
 	          peg$currPos = s0;
@@ -41717,7 +42106,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c32); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c40); }
 	      }
 
 	      return s0;
@@ -41728,22 +42117,22 @@
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
-	      if (peg$c39.test(input.charAt(peg$currPos))) {
+	      if (peg$c47.test(input.charAt(peg$currPos))) {
 	        s1 = input.charAt(peg$currPos);
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c40); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c48); }
 	      }
 	      if (s1 !== peg$FAILED) {
 	        peg$savedPos = s0;
-	        s1 = peg$c41();
+	        s1 = peg$c49();
 	      }
 	      s0 = s1;
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c38); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c46); }
 	      }
 
 	      return s0;
@@ -41754,22 +42143,22 @@
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
-	      if (peg$c43.test(input.charAt(peg$currPos))) {
+	      if (peg$c51.test(input.charAt(peg$currPos))) {
 	        s1 = input.charAt(peg$currPos);
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c44); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c52); }
 	      }
 	      if (s1 !== peg$FAILED) {
 	        peg$savedPos = s0;
-	        s1 = peg$c45();
+	        s1 = peg$c53();
 	      }
 	      s0 = s1;
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c42); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c50); }
 	      }
 
 	      return s0;
@@ -41780,47 +42169,67 @@
 
 	      peg$silentFails++;
 	      s0 = [];
-	      if (peg$c47.test(input.charAt(peg$currPos))) {
+	      if (peg$c55.test(input.charAt(peg$currPos))) {
 	        s1 = input.charAt(peg$currPos);
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c48); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c56); }
 	      }
 	      while (s1 !== peg$FAILED) {
 	        s0.push(s1);
-	        if (peg$c47.test(input.charAt(peg$currPos))) {
+	        if (peg$c55.test(input.charAt(peg$currPos))) {
 	          s1 = input.charAt(peg$currPos);
 	          peg$currPos++;
 	        } else {
 	          s1 = peg$FAILED;
-	          if (peg$silentFails === 0) { peg$fail(peg$c48); }
+	          if (peg$silentFails === 0) { peg$fail(peg$c56); }
 	        }
 	      }
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c46); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c54); }
 	      }
 
 	      return s0;
 	    }
 
 
-	        const FlattenScore = (scoreObject, durationFactor, conn) =>{
-	            return scoreObject.reduce((list, elem, index) => {
-	                return list.concat( elem.notes ?
-	                    FlattenScore(elem.notes, elem.factor * durationFactor, elem.conn.concat(conn)) :
-	                    (elem.conn ? Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : elem.conn.concat(conn)}) : Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : conn}))
-	                )}, [])
-	        }
-
 	        const half = (note, isTriple) => {
 	            note.duration = isTriple ? 3 : 2
 	            return note
 	        }
 
+	        const FlattenScore = (scoreObject, durationFactor, conn) =>{
+	            return scoreObject.reduce((list, elem, index) => {
+	                return list.concat( elem.notes ?
+	                    FlattenScore(elem.notes, elem.factor * durationFactor, elem.conn.concat(conn)) :
+	                    (elem.conn ?
+	                        Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : elem.conn.concat(conn)}) :
+	                        Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : conn}))
+	                )}, [])
+	        }
+
+	        const MergeSymbols = function(notes){
+	            let newNotes = []
+
+	            for (var i = 0; i < notes.length; i++) {
+	                if (notes[i].repeat == "open"){
+	                    i += 1; notes[i].repeat = "open"
+	                }
+	                if (notes[i].repeat == "close") {
+	                    newNotes[newNotes.length - 1].repeat = "close";
+	                    i += 1;
+	                }
+	                newNotes.push(notes[i])
+	            }
+
+	            return newNotes
+	        }
+
 	        const IndexNote = function(notes){
+
 	            return notes.map(function(elem, index){
 	                elem.index = index;
 	                return elem;
@@ -41833,72 +42242,75 @@
 
 	            return {
 	                measures : GetMeasures(indexed),
-	                underbars : GetUnderbarRanges(indexed),
-	                accidentals : GetAccidentals(indexed),
-	                connects : GetConnectionRanges(indexed),
-	                octaves : GetOctaves(indexed)
+	                connects : GetConnectionRanges(indexed)
 	            }
 	        }
 
-	        const GroupByLength = function(notes, length) {
+	        const GroupBeat = function(notes, length) {
 	            let initial = [[]];
 	            let duration = 0;
 
 	            return notes.reduce(function(measures, note){
-	                if (duration < length) {
-	                    measures[measures.length - 1].push(note);
-	                    duration += note.duration;
-	                } else {
+	                if (duration >= length) {
 	                    measures.push([note]);
 	                    duration = note.duration;
+	                } else {
+	                    measures[measures.length - 1].push(note);
+	                    duration += note.duration;
 	                }
 	                return measures;
 	            }, initial);
 	        }
 
+	        const GroupMeasure = function(notes, length) {
+	            let initial = [[]];
+	            let duration = 0;
+
+	            return notes.reduce(function(measures, note){
+	                if (duration >= length) {
+
+	                    measures.push([note]);
+	                    duration = note.duration;
+	                } else {
+	                    measures[measures.length - 1].push(note);
+	                    duration += note.duration;
+	                }
+	                return measures;
+	            }, initial);
+	        }
 
 	        let GetMeasures = function(notes){
 
-	            let durations = notes.map(note => (
+	            let newNotes = notes.map(note => (
 	                {
 	                    "pitch" : note.pitch,
 	                    "index" : note.index,
 	                    "duration":note.duration,
 	                    "dotted":note.dotted,
-	                    "conn":note.conn
+	                    "conn":note.conn,
+	                    "octave":note.octave,
+	                    "accidental":note.accidental,
+	                    "repeat":note.repeat
 	                }
 	            ));
 
 	            let extendedNotes = []
 
-	            durations.forEach(function(note){
+	            newNotes.forEach(function(note){
 	                if(note.duration > 1){
-	                    extendedNotes.push({pitch: note.pitch, duration: 1, index:null, conn:[]});
+	                    extendedNotes.push({pitch: note.pitch, index:note.index, duration: 1, conn:[], octave:note.octave});
 	                    for(let i = 1; i < note.duration; i++){
-	                        extendedNotes.push({pitch: "–", duration : 1, index:null, conn:[]})
+	                        extendedNotes.push({pitch: "–", index:null, duration : 1, conn:[]})
 	                    }
 	                } else {
 	                    extendedNotes.push(note);
 	                }
 	            });
 
-	            return GroupByLength(extendedNotes, 4)
-	                .map(measure => GroupByLength(measure, 1).map(beat => ({beatNote:beat, underbar:GetUnderbarRanges(beat)})))
-	        }
+	            let mergedExtendedNotes = MergeSymbols(extendedNotes)
 
-	        let GetOctaves = function(notes){
-
-	            let res = [];
-
-	            notes.forEach(function(note){
-	                if(note.octave){
-	                    for (var i = 0; i < note.octave.num; i++) {
-	                        res.push({index: note.index, side:note.octave.side, underbars:note.conn.length, dotIndex:i});
-	                    }
-	                }
-	            })
-
-	            return res;
+	            return GroupMeasure(mergedExtendedNotes, 4)
+	                .map(measure => GroupBeat(measure, 1).map(beat => ({beatNote:beat, underbar:GetUnderbarRanges(beat)})))
 	        }
 
 	        let GetUnderbarRanges = function(notes){
@@ -41951,40 +42363,32 @@
 	        }
 
 
-	            let GetConnectionRanges = function(notes){
-	                let res = [];
-	                notes.forEach(function(note){
+	        let GetConnectionRanges = function(notes){
+	            let res = [];
+	            notes.forEach(function(note){
 
-	                    // inserting the first opening connection point
-	                    (res.length==0 && note.upperConn == "open") && res.push({start:note.index});
+	                // inserting the first opening connection point
+	                (res.length==0 && note.upperConn == "open") && res.push({start:note.index});
 
-	                    // if res.last exists, and has found another opening
-	                    // connection, push a new element. illegally successive
-	                    // opennings will be omitted.
-	                    (res.length>0 && res[res.length - 1].end && note.upperConn == "open") && res.push({start:note.index});
+	                // if res.last exists, and has found another opening
+	                // connection, push a new element. illegally successive
+	                // opennings will be omitted.
+	                (res.length>0 && res[res.length - 1].end && note.upperConn == "open") && res.push({start:note.index});
 
-	                    // if res.last.end is not being assigned, assign
-	                    // it with the first found closing. The following
-	                    // closings will be omitted.
+	                // if res.last.end is not being assigned, assign
+	                // it with the first found closing. The following
+	                // closings will be omitted.
 
-	                    if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
-	                        res[res.length-1].end = note.index
-	                    }
+	                if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
+	                    res[res.length-1].end = note.index
+	                }
 
-	                })
+	            })
 
-	                return res;
-	            }
+	            return res;
+	        }
 
-	            let GetAccidentals = function(notes){
-	                let res = [];
-	                notes.forEach(function(note){
-	                    note.accidental && res.push({index : note.index, accidental : note.accidental});
-	                })
-	                return res;
-	            }
 
-	        
 
 	    peg$result = peg$startRuleFunction();
 
@@ -42015,7 +42419,7 @@
 /* 431 */
 /***/ function(module, exports) {
 
-	module.exports = "\ntitle : {\n耶 稣 恩 友\n}\n\nsubtitle : {\nWhat A Friend We Have In Jesus\n}\n\nlyrics : {\nScriven 1855\n}\n\ncomposer: {\nConverse 1868\n}\n\nbeats: {\n1=F   4/4\n}\n\nscore : {\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 1 1) (5 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n.2 #1 (2 3) (4 2) 3 - 5   - .6   6 (5 3) (4 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n}\n"
+	module.exports = "\ntitle : {\nWhat A Friend We Have In Jesus\n}\n\nsubtitle : {\n}\n\nlyrics : {\nScriven 1855\n}\n\ncomposer: {\nConverse 1868\n}\n\nbeats: {\n1=F   4/4\n}\n\nscore : {\n|@ .5 5  (6 5) (3 /1) 1\\ - 6,1\\ - .5,1 /1  (3 1) (5 3\\)   /2 - - -\n.5\\  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n.2 #1 (2 /3) (4\\ 2) 3 - 5   - .6   6 (5 3) (4 3)   2 - - -\n.5  5 (6 5) (3 1) 1 - 6,1 - .5,1 1 (3 2) (1 7,1) 1 - - -\n}\n"
 
 /***/ },
 /* 432 */

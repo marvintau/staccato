@@ -1,4 +1,9 @@
 
+@font-face {
+    font-family: music;
+    src: url(../Resources/Fonts/emmentaler-26.woff);
+}
+
 body {
   margin: 20px;
   background-color: #F6F4F4;
@@ -12,7 +17,7 @@ body {
     /*position:absolute;*/
 	background-color : #FFFFFF;
 	border-radius: 5px;
-	height:400px;
+	height:600px;
 }
 
 .editing{
@@ -119,9 +124,10 @@ body {
 .measure {
     display:inline-flex;
     min-width: 20%;
+    max-width: 25%;
     flex-direction: row;
     justify-content: space-around;
-    /*margin:5px 0;*/
+    margin-top:10px;
     padding: 10px 0px 10px;
     text-align: center;
 
@@ -137,35 +143,84 @@ body {
     /*border: 1px solid #888888;*/
 }
 
-.note {
+.pitch {
     margin : 0 2px;
     /*border: 1px solid #888888;*/
 }
 
+.note {
+    position: relative;
+    /*border: 1px solid #888888;*/
+}
+
 .vertbar{
-    margin: 5px 0 10px;
+    margin: 15px 0 10px;
     width: 1px;
     background-color: #000000;
     /*border: 1px solid;*/
 }
 
+.repeatbar{
+    display: inline;
+    margin:15px -5px 10px;
+    width: 15px;
+    background-color: #000000;
+    /*box-shadow: 0 0 0 1px red;*/
+    /*border-right: dotted 9px orange;*/
+}
+
+.initialbar {
+    /*display: inline-flex;*/
+    /*margin-left: -18px;*/
+    /*margin-right: -2px;*/
+    /*position : absolute;*/
+    /*margin : 0;*/
+}
+
+.dot{
+    position: absolute;
+    width: 5px;
+    height:5px;
+    border-radius: 50%;
+}
+
 .underbar{
     padding: 0 3px;
     position:absolute;
-    margin-top : -5px;
+    margin-top : -2px;
     height: 2px;
     /*border: 1px solid #888888;*/
     background-color: #000000;
 }
 
-.ocatvedot{
+.dot{
+    margin : -2px;
+}
+
+.accidental{
     position: absolute;
-    height : 2px;
-    width : 2px;
+    left : -3px;
+    top : -4px;
+    font-family: music;
+    font-size : 1.2em;
+    font-weight: bold;
+}
+
+.octavedot{
+    position: absolute;
+    /*margin : -1px;*/
+    /*border: 1px solid #888888;*/
 }
 
 .finalbar{
-    margin: 5px -3px 10px -15px;
+    margin: 15px -3px 10px -15px;
     width: 2px;
     background-color: #000000;
+}
+
+svg{
+    position:absolute;
+    margin-left : 5px;
+    width : 100%;
+    height : 100%;
 }

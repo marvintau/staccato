@@ -1,18 +1,38 @@
 {
-    const FlattenScore = (scoreObject, durationFactor, conn) =>{
-        return scoreObject.reduce((list, elem, index) => {
-            return list.concat( elem.notes ?
-                FlattenScore(elem.notes, elem.factor * durationFactor, elem.conn.concat(conn)) :
-                (elem.conn ? Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : elem.conn.concat(conn)}) : Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : conn}))
-            )}, [])
-    }
-
     const half = (note, isTriple) => {
         note.duration = isTriple ? 3 : 2
         return note
     }
 
+    const FlattenScore = (scoreObject, durationFactor, conn) =>{
+        return scoreObject.reduce((list, elem, index) => {
+            return list.concat( elem.notes ?
+                FlattenScore(elem.notes, elem.factor * durationFactor, elem.conn.concat(conn)) :
+                (elem.conn ?
+                    Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : elem.conn.concat(conn)}) :
+                    Object.assign(elem, {duration:elem.duration/durationFactor, "conn" : conn}))
+            )}, [])
+    }
+
+    const MergeSymbols = function(notes){
+        let newNotes = []
+
+        for (var i = 0; i < notes.length; i++) {
+            if (notes[i].repeat == "open"){
+                i += 1; notes[i].repeat = "open"
+            }
+            if (notes[i].repeat == "close") {
+                newNotes[newNotes.length - 1].repeat = "close";
+                i += 1;
+            }
+            newNotes.push(notes[i])
+        }
+
+        return newNotes
+    }
+
     const IndexNote = function(notes){
+
         return notes.map(function(elem, index){
             elem.index = index;
             return elem;
@@ -25,72 +45,75 @@
 
         return {
             measures : GetMeasures(indexed),
-            underbars : GetUnderbarRanges(indexed),
-            accidentals : GetAccidentals(indexed),
-            connects : GetConnectionRanges(indexed),
-            octaves : GetOctaves(indexed)
+            connects : GetConnectionRanges(indexed)
         }
     }
 
-    const GroupByLength = function(notes, length) {
+    const GroupBeat = function(notes, length) {
         let initial = [[]];
         let duration = 0;
 
         return notes.reduce(function(measures, note){
-            if (duration < length) {
-                measures[measures.length - 1].push(note);
-                duration += note.duration;
-            } else {
+            if (duration >= length) {
                 measures.push([note]);
                 duration = note.duration;
+            } else {
+                measures[measures.length - 1].push(note);
+                duration += note.duration;
             }
             return measures;
         }, initial);
     }
 
+    const GroupMeasure = function(notes, length) {
+        let initial = [[]];
+        let duration = 0;
+
+        return notes.reduce(function(measures, note){
+            if (duration >= length) {
+
+                measures.push([note]);
+                duration = note.duration;
+            } else {
+                measures[measures.length - 1].push(note);
+                duration += note.duration;
+            }
+            return measures;
+        }, initial);
+    }
 
     let GetMeasures = function(notes){
 
-        let durations = notes.map(note => (
+        let newNotes = notes.map(note => (
             {
                 "pitch" : note.pitch,
                 "index" : note.index,
                 "duration":note.duration,
                 "dotted":note.dotted,
-                "conn":note.conn
+                "conn":note.conn,
+                "octave":note.octave,
+                "accidental":note.accidental,
+                "repeat":note.repeat
             }
         ));
 
         let extendedNotes = []
 
-        durations.forEach(function(note){
+        newNotes.forEach(function(note){
             if(note.duration > 1){
-                extendedNotes.push({pitch: note.pitch, duration: 1, index:null, conn:[]});
+                extendedNotes.push({pitch: note.pitch, index:note.index, duration: 1, conn:[], octave:note.octave});
                 for(let i = 1; i < note.duration; i++){
-                    extendedNotes.push({pitch: "–", duration : 1, index:null, conn:[]})
+                    extendedNotes.push({pitch: "–", index:null, duration : 1, conn:[]})
                 }
             } else {
                 extendedNotes.push(note);
             }
         });
 
-        return GroupByLength(extendedNotes, 4)
-            .map(measure => GroupByLength(measure, 1).map(beat => ({beatNote:beat, underbar:GetUnderbarRanges(beat)})))
-    }
+        let mergedExtendedNotes = MergeSymbols(extendedNotes)
 
-    let GetOctaves = function(notes){
-
-        let res = [];
-
-        notes.forEach(function(note){
-            if(note.octave){
-                for (var i = 0; i < note.octave.num; i++) {
-                    res.push({index: note.index, side:note.octave.side, underbars:note.conn.length, dotIndex:i});
-                }
-            }
-        })
-
-        return res;
+        return GroupMeasure(mergedExtendedNotes, 4)
+            .map(measure => GroupBeat(measure, 1).map(beat => ({beatNote:beat, underbar:GetUnderbarRanges(beat)})))
     }
 
     let GetUnderbarRanges = function(notes){
@@ -143,158 +166,168 @@
     }
 
 
-        let GetConnectionRanges = function(notes){
-            let res = [];
-            notes.forEach(function(note){
+    let GetConnectionRanges = function(notes){
+        let res = [];
+        notes.forEach(function(note){
 
-                // inserting the first opening connection point
-                (res.length==0 && note.upperConn == "open") && res.push({start:note.index});
+            // inserting the first opening connection point
+            (res.length==0 && note.upperConn == "open") && res.push({start:note.index});
 
-                // if res.last exists, and has found another opening
-                // connection, push a new element. illegally successive
-                // opennings will be omitted.
-                (res.length>0 && res[res.length - 1].end && note.upperConn == "open") && res.push({start:note.index});
+            // if res.last exists, and has found another opening
+            // connection, push a new element. illegally successive
+            // opennings will be omitted.
+            (res.length>0 && res[res.length - 1].end && note.upperConn == "open") && res.push({start:note.index});
 
-                // if res.last.end is not being assigned, assign
-                // it with the first found closing. The following
-                // closings will be omitted.
+            // if res.last.end is not being assigned, assign
+            // it with the first found closing. The following
+            // closings will be omitted.
 
-                if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
-                    res[res.length-1].end = note.index
-                }
+            if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
+                res[res.length-1].end = note.index
+            }
 
-            })
+        })
 
-            return res;
-        }
-
-        let GetAccidentals = function(notes){
-            let res = [];
-            notes.forEach(function(note){
-                note.accidental && res.push({index : note.index, accidental : note.accidental});
-            })
-            return res;
-        }
-
+        return res;
     }
 
+}
 
-    Notes "notes"
-    = _ first:Note rest:(_ Note)* _{
 
-        var all = [first];
+Notes "notes"
+= _ first:Note rest:(_ Note)* _{
 
-        for(let i = 0; i < rest.length; i ++){
-            all.push(rest[i][1]);
-        }
+    var all = [first];
 
-        return ScoreModel(IndexNote(FlattenScore(all, 1,[])))
+    for(let i = 0; i < rest.length; i ++){
+        all.push(rest[i][1]);
     }
 
-    HalfedNote "duration"
-    = "(" _  first:Note _ next:Note _ ")" {
+    return ScoreModel(IndexNote(FlattenScore(all, 1,[])))
+}
 
-        return {
-            notes : [first, next],
-            factor : 2,
-            conn : ["halfed"]
-        }
+HalfedNote "duration"
+= "(" _  first:Note _ next:Note _ ")" {
+
+    return {
+        notes : [first, next],
+        factor : 2,
+        conn : ["halfed"]
     }
-    / "(" _ first:Note _ next:Note _ last:Note _ ")" {
+}
+/ "(" _ first:Note _ next:Note _ last:Note _ ")" {
 
-        return {
-            notes : [first, next, last],
-            factor : 3,
-            conn : ["triple"]
-        }
+    return {
+        notes : [first, next, last],
+        factor : 3,
+        conn : ["triple"]
+    }
+}
+
+DottedNote "dotted"
+= "." first:FixedNote _ next:FixedNote {
+
+    first.dotted = true;
+
+    next.conn.push("halfed");
+
+    return {
+        notes : [first, next],
+        factor : 1,
+        conn : []
+    }
+}
+
+Note "note"
+= note:FixedNote rest:(_ "-")* _ {
+    note.duration += rest.length;
+    return note;
+}
+/ halfed:HalfedNote {
+    return halfed;
+}
+/ dotted:DottedNote {
+    return dotted;
+}
+/ repeat:Repeat {
+    return repeat;
+}
+
+Repeat "repeat"
+= _ "|@" _ {
+    return {
+        repeat : "open"
+    }
+}
+/ _ "@|" _ {
+    return {
+        repeat : "close"
+    }
+}
+
+FixedNote "fixed"
+= "/" note:ModifiedPitch _ {
+    note.duration = 1;
+    note.upperConn = "open";
+    note.conn = []
+    return note;
+}
+
+/ note:ModifiedPitch "\\" _ {
+    note.duration = 1;
+    note.upperConn = "close";
+    note.conn = []
+    return note;
+}
+/ note:ModifiedPitch _ {
+    note.duration = 1;
+    note.conn = []
+    return note
+}
+
+
+ModifiedPitch "modified_pitch"
+= acc:Accidental pitch:Pitch octave:Octave {
+    pitch.accidental = acc;
+    pitch.octave = octave;
+    return pitch;
+}
+/ acc:Accidental pitch:Pitch {
+    pitch.accidental = acc;
+    return pitch;
+}
+
+/ pitch:Pitch octave:Octave {
+    pitch.octave = octave;
+    return pitch
+}
+/ pitch:Pitch {
+    return pitch
+}
+
+Octave "octave"
+= [,'][1-3] {
+    let oct = text();
+    let obj = {};
+
+    if(oct[0] == ','){
+        obj.side = "negative";
+    } else {
+        obj.side = "positive";
     }
 
-    DottedNote "dotted"
-    = "." first:FixedNote _ next:FixedNote {
+    obj.num = parseInt(oct[1])
 
-        first.dotted = true;
+    return obj;
+}
 
-        next.conn.push("halfed");
+Accidental "accidental"
+= [b#n] {
+    return text();
+}
 
-        return {
-            notes : [first, next],
-            factor : 1,
-            conn : []
-        }
-    }
+Pitch "pitch"
+= [0-7] { return {pitch : parseInt(text())}; }
 
-    Note "note"
-    = note:FixedNote rest:(_ "-")* _ {
-        note.duration += rest.length;
-        return note;
-    }
-    / halfed:HalfedNote {
-        return halfed;
-    }
-    / dotted:DottedNote {
-        return dotted;
-    }
-
-    FixedNote "fixed"
-    = "/" note:ModifiedPitch _ {
-        note.duration = 1;
-        note.upperConn = "open";
-        note.conn = []
-        return note;
-    }
-
-    / note:ModifiedPitch "\\" _ {
-        note.duration = 1;
-        note.upperConn = "close";
-        note.conn = []
-        return note;
-    }
-    / note:ModifiedPitch _ {
-        note.duration = 1;
-        note.conn = []
-        return note
-    }
-
-    ModifiedPitch "modified_pitch"
-    = acc:Accidental pitch:Pitch octave:Octave {
-        pitch.accidental = acc;
-        pitch.octave = octave;
-        return pitch;
-    }
-    / acc:Accidental pitch:Pitch {
-        pitch.accidental = acc;
-        return pitch;
-    }
-
-    / pitch:Pitch octave:Octave {
-        pitch.octave = octave;
-        return pitch
-    }
-    / pitch:Pitch {
-        return pitch
-    }
-
-    Octave "octave"
-    = [,'][1-3] {
-        let oct = text();
-        let obj = {};
-
-        if(oct[0] == ','){
-            obj.side = "negative";
-        } else {
-            obj.side = "positive";
-        }
-
-        obj.num = parseInt(oct[1])
-
-        return obj;
-    }
-
-    Accidental "accidental"
-    = [b#n] { return text(); }
-
-    Pitch "pitch"
-    = [0-7] { return {pitch : parseInt(text())}; }
-
-    _ "whitespace"
-    = [ \t\n\r]*
+_ "whitespace"
+= [ \t\n\r]*
