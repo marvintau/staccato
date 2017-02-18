@@ -476,7 +476,7 @@ class Container extends React.Component {
     }
 
     GetSections(text){
-        let sectionFinder = /\s+(\w+)\s*:\s*\{([^:]*)\}/g;
+        let sectionFinder = /\s+(\w+)\s*\{([^\}]*)\}/g;
 
         let model;
         let matched, newSections = [];
