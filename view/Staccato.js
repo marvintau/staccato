@@ -469,21 +469,12 @@ class Container extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            value : scoreText,
-            sections : this.GetSections(scoreText)
-        };
-    }
 
-    GetSections(text){
-        let sectionFinder = /\s+(\w+)\s*\{([^\}]*)\}/g;
+        parse(scoreText);
 
-        let model;
-        let matched, newSections = [];
-        while (matched = sectionFinder.exec(text)){
-            newSections.push({name : matched[1], body : matched[2]})
-        }
-        return newSections
+        // this.state = {
+        //     sections : this.GetSections(scoreText)
+        // };
     }
 
     handleChange(event) {
@@ -491,42 +482,43 @@ class Container extends React.Component {
 
         let val = event.target.value;
 
-        this.setState((previousState) => ({
-            value : val,
-            sections : this.GetSections(val)
-        }));
+        // this.setState((previousState) => ({
+        //     text : val,
+        //     sections : this.GetSections(val)
+        // }));
 
     }
 
     sectionElems(){
         let elems = [];
 
-        for (var i = 0; i < this.state.sections.length; i++) {
-            if(this.state.sections[i].name != "score"){
-                elems.push(SectionElem(this.state.sections[i].name, i, this.state.sections[i].body));
-            } else {
-
-                try {
-                    let scoreModel = parse(this.state.sections[i].body);
-
-                    elems.push(
-                        SectionElem(this.state.sections[i].name, i, Elem(Score,
-                            {
-                                measures:scoreModel.measures,
-                                connects : scoreModel.connects
-                            }
-                        ))
-                    );
-                } catch (error){
-                    console.log(error);
-                    elems.push(
-                        SectionElem(this.state.sections[i].name, i, Elem(Score, {}, [this.state.sections[i].body]))
-                    );
-                }
-
-            }
-
-        }
+        // for (var i = 0; i < this.state.sections.length; i++) {
+        //     if(this.state.sections[i].name != "score"){
+        //         elems.push(SectionElem(this.state.sections[i].name, i, this.state.sections[i].body));
+        //     } else {
+        //
+        //         try {
+        //             console.log(this.state.text);
+        //             let scoreModel = parse(this.state.text);
+        //
+        //             elems.push(
+        //                 SectionElem(this.state.sections[i].name, i, Elem(Score,
+        //                     {
+        //                         measures:scoreModel.measures,
+        //                         connects : scoreModel.connects
+        //                     }
+        //                 ))
+        //             );
+        //         } catch (error){
+        //             console.log(error);
+        //             elems.push(
+        //                 SectionElem(this.state.sections[i].name, i, Elem(Score, {}, [this.state.sections[i].body]))
+        //             );
+        //         }
+        //
+        //     }
+        //
+        // }
 
         return elems;
     }

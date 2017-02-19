@@ -6,39 +6,15 @@
 
     const Flatten = (scoreObject, durFactor, conn) =>{
         return scoreObject.reduce((list, elem) => {
+
+            let dur = elem.duration/durFactor;
+
             return list.concat( elem.notes ?
-                Flatten(elem.notes, elem.factor * durFactor, elem.conn.concat(conn)) :
-                (elem.conn ?
-                    Object.assign(elem, {duration:elem.duration/durFactor, "conn" : elem.conn.concat(conn)}) :
-                    Object.assign(elem, {duration:elem.duration/durFactor, "conn" : conn}))
+            Flatten(elem.notes, elem.factor * durFactor, elem.conn.concat(conn)) :
+            (elem.conn ?
+                Object.assign(elem, {duration:dur, "conn" : elem.conn.concat(conn)}) :
+                Object.assign(elem, {duration:dur, "conn" : conn}))
             )}, [])
-    }
-
-    const MergeSymbols = function(notes){
-        let newNotes = []
-
-        for (var i = 0; i < notes.length; i++) {
-            if (notes[i].repeat == "open"){
-                i += 1; notes[i].repeat = "open"
-            }
-            if (notes[i].repeat == "close") {
-                newNotes[newNotes.length - 1].repeat = "close";
-                i += 1;
-            }
-            newNotes.push(notes[i])
-        }
-
-        return newNotes
-    }
-
-    const ScoreModel = function(indexed){
-
-        //   console.log(JSON.stringify(indexed));
-
-        return {
-            measures : GetMeasures(indexed),
-            connects : GetConnectionRanges(indexed)
-        }
     }
 
     const GroupBeat = function(notes, length) {
@@ -55,40 +31,6 @@
             }
             return measures;
         }, initial);
-    }
-
-    let GetMeasures = function(notes){
-
-        let newNotes = notes.map(note => (
-            {
-                "pitch" : note.pitch,
-                "index" : note.index,
-                "duration":note.duration,
-                "dotted":note.dotted,
-                "conn":note.conn,
-                "octave":note.octave,
-                "accidental":note.accidental,
-                "repeat":note.repeat
-            }
-        ));
-
-        let extendedNotes = []
-
-        newNotes.forEach(function(note){
-            if(note.duration > 1){
-                extendedNotes.push({pitch: note.pitch, index:note.index, duration: 1, conn:[], octave:note.octave});
-                for(let i = 1; i < note.duration; i++){
-                    extendedNotes.push({pitch: "–", index:null, duration : 1, conn:[]})
-                }
-            } else {
-                extendedNotes.push(note);
-            }
-        });
-
-        let mergedExtendedNotes = MergeSymbols(extendedNotes)
-
-        return GroupMeasure(mergedExtendedNotes, 4)
-            .map(measure => GroupBeat(measure, 1).map(beat => ({beatNote:beat, underbar:GetDurations(beat)})))
     }
 
     let GetDurations = function(notes){
@@ -131,25 +73,18 @@
 
     let GetConnectionRanges = function(measures){
         let res = [];
+
         measures.forEach(function(measure, index){
             measure.notes.forEach(function(note){
-                // inserting the first opening connection point
-                (res.length==0 && note.upperConn == "open") && res.push({start: {measure: index, note:note.index}})
 
-                // if res.last exists, and has found another opening
-                // connection, push a new element. illegally successive
-                // opennings will be omitted.
-                if(res.length>0 && res[res.length - 1].end && note.upperConn == "open") {
-                  res.push({start:{measure:index, note:note.index}});
+                if((res.length==0 || (res.length>0 && res[res.length - 1].end)) && note.upperConn == "open") {
+                    res.push({start:{measure:index, note:note.index}});
                 }
-
-                // if res.last.end is not being assigned, assign
-                // it with the first found closing. The following
-                // closings will be omitted.
 
                 if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
                     res[res.length-1].end = {measure:index, note:note.index}
                 }
+
             })
         })
 
@@ -158,24 +93,67 @@
 
 }
 
+Sections "all sections"
+= _ sections:Section* {
+
+    let score = {}, chorusMeasures = [], chorusConnections=[];
+    sections.forEach(elem => {
+        if(elem.name == "chorus"){
+
+            elem.content.part = elem.part;
+            chorus.push(elem.content);
+
+        } else {
+            score[elem.name] = elem.content
+        }
+    })
+
+    console.log(JSON.stringify(chorus, null, 4));
+    return score
+}
+
+Section "section that contains different info"
+= "chorus" _ part:[a-zA-Z]+ _ "{" measures:Measures "}" _ {
+    return {
+        name : "chorus",
+        part : part.join(""),
+        content : measures
+    };
+}
+/ section:[a-zA-Z]+ _ '{' content:[^\}]* '}' _ {
+    return {
+        name : section.join(""),
+        content : content.join("")
+    }
+}
+
 Measures "measures"
 = measures:Measure* {
-  return {
-    measures : measures,
-    connections : GetConnectionRanges(measures)
-  }
+    let connections = GetConnectionRanges(measures);
+
+    measures.forEach((measure) =>{
+        Object.assign(measure, {beats: GroupBeat(measure.notes, 1)});
+        delete measure.notes;
+    })
+
+    let measureList = {
+        measures : measures,
+        connections : connections
+    }
+
+    return measureList
 }
 
 Measure "measure"
 = notes:Notes _ bar:MeasureBar _ {
 
-  let flattenedNotes = Flatten(notes, 1, []).map((elem, index) => Object.assign(elem, {index:index}))
+    let flattenedNotes = Flatten(notes, 1, []).map((elem, index) => Object.assign(elem, {index:index}))
 
-  return {
-    notes : flattenedNotes,
-    underbars :  [].concat.apply([], GroupBeat(flattenedNotes, 1).map(elem => GetDurations(elem))),
-    measure : bar
-  }
+    return {
+        notes : flattenedNotes,
+        underbars :  [].concat.apply([], GroupBeat(flattenedNotes, 1).map(elem => GetDurations(elem))),
+        measure : bar
+    }
 }
 
 Notes "notes"
@@ -200,6 +178,9 @@ HalfedNote "duration"
     }
 }
 / "(" _ first:Note _ next:Note _ last:Note _ ")" {
+
+    first.tripleConn = "open",
+    last.tripleConn = "close"
 
     return {
         notes : [first, next, last],
@@ -300,16 +281,16 @@ Pitch "pitch"
 
 MeasureBar "measure bar"
 = "||" _ {
-  return {measure : "fin"}
+    return {measure : "fin"}
 }
 / "\:|" _ {
-  return {measure : "rep_fin"}
+    return {measure : "rep_fin"}
 }
 / "|\:" _ {
-  return {measure : "rep_start"}
+    return {measure : "rep_start"}
 }
 / "|" _ {
-  return {measure : "normal"}
+    return {measure : "normal"}
 }
 
 
