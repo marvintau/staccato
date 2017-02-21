@@ -33,21 +33,21 @@
         }, initial);
     }
 
-    let GetDurations = function(notes){
+    let GetDurations = function(notes, beatIndex){
 
         let curr =[];
         let res  =[];
 
         let currDuration = 0;
 
-        notes.forEach(function(note){
+        notes.forEach(function(note, noteIndex){
 
             for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
 
                 // curr[i] exists, and have same type with note.conn[i]
                 if(curr[i] && curr[i].type == note.conn[i]){
                     // rewrite (enlonging) current underbar
-                    curr[i].end = note.index;
+                    curr[i].note.end = noteIndex;
 
                 } else {
 
@@ -58,9 +58,11 @@
                     // if note.conn[i] exists, but curr[i] could be either
                     // not created or finished, assign it with a new object.
                     // if not, then rewrite as undefined.
-                    curr[i] = note.conn[i] ? {start:note.index, end:note.index, level:i, type:note.conn[i]} : undefined;
+                    curr[i] = note.conn[i] ? {beat:beatIndex, note:{start:noteIndex, end:noteIndex}, level:i, type:note.conn[i]} : undefined;
                 }
             }
+
+            delete note.conn
         })
 
         for (var i = 0; i < curr.length; i++) {
@@ -75,20 +77,38 @@
         let res = [];
 
         measures.forEach(function(measure, index){
-            measure.notes.forEach(function(note){
+            measure.beats.forEach(function(beat, beatIndex){
+                beat.forEach(function(note, noteIndex){
+                    if((res.length==0 || (res.length>0 && res[res.length - 1].end)) && note.upperConn == "open") {
+                        res.push({start:{measure:index, beat:beatIndex, note:noteIndex}});
+                    }
 
-                if((res.length==0 || (res.length>0 && res[res.length - 1].end)) && note.upperConn == "open") {
-                    res.push({start:{measure:index, note:note.index}});
-                }
+                    if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
+                        res[res.length-1].end = {measure:index, beat:beatIndex, note:noteIndex}
+                    }
 
-                if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
-                    res[res.length-1].end = {measure:index, note:note.index}
-                }
-
+                    delete note.upperConn
+                })
             })
         })
 
+
         return res;
+    }
+
+    let zipMeasure = (obj, parts) => {
+
+        obj.measures = obj[parts[0]]["measures"].map((_) => ({}))
+        obj[parts[0]].measures.forEach( (_, index) => {
+            parts.forEach(part => {
+                obj.measures[index][part] = obj[part].measures[index]
+            })
+        })
+
+    }
+
+    let zipNote = (obj, parts) => {
+
     }
 
 }
@@ -96,17 +116,16 @@
 Sections "all sections"
 = _ sections:Section* {
 
-    let score = {}, chorusMeasures = [], chorusConnections=[];
+    let score = {}, chorus={};
     sections.forEach(elem => {
         if(elem.name == "chorus"){
-
-            elem.content.part = elem.part;
-            chorus.push(elem.content);
-
+            chorus[elem.part] = elem.content;
         } else {
             score[elem.name] = elem.content
         }
     })
+
+    zipMeasure(chorus, ["soprano","alto"])
 
     console.log(JSON.stringify(chorus, null, 4));
     return score
@@ -131,27 +150,47 @@ Measures "measures"
 = measures:Measure* {
     let connections = GetConnectionRanges(measures);
 
-    measures.forEach((measure) =>{
-        Object.assign(measure, {beats: GroupBeat(measure.notes, 1)});
-        delete measure.notes;
-    })
-
     let measureList = {
         measures : measures,
         connections : connections
     }
 
+    // console.log(JSON.stringify(measureList, null, 4));
     return measureList
 }
 
 Measure "measure"
 = notes:Notes _ bar:MeasureBar _ {
 
-    let flattenedNotes = Flatten(notes, 1, []).map((elem, index) => Object.assign(elem, {index:index}))
+    let flattenedNotes = Flatten(notes, 1, []).map((note, index) =>
+        Object.assign(note, {
+            octave: note.octave ? {start:(note.octave>0 ? 0 : note.conn.length), nums:note.octave} : undefined
+        })
+    );
+    let durationExtendedBeats = [];
+
+    flattenedNotes.forEach(note => {
+        durationExtendedBeats.push(note);
+        for (let i = 0; i < note.duration - 1; i++) {
+            durationExtendedBeats.push({
+                pitch : "-",
+                duration : 1
+            })
+        }
+
+        if(note.duration > 1){
+            note.duration = 1
+        }
+    })
+
+    let beats = GroupBeat(durationExtendedBeats, 1),
+        underbars = [].concat.apply([], beats.map((elem, beatIndex) => GetDurations(elem, beatIndex)))
+
+    // console.log(JSON.stringify(underbars, null, 4))
 
     return {
-        notes : flattenedNotes,
-        underbars :  [].concat.apply([], GroupBeat(flattenedNotes, 1).map(elem => GetDurations(elem))),
+        beats : beats,
+        underbars : underbars,
         measure : bar
     }
 }
@@ -204,8 +243,7 @@ DottedNote "dotted"
 }
 
 Note "note"
-= note:FixedNote rest:(_ "-")* _ {
-    note.duration += rest.length;
+= note:FixedNote _ {
     return note;
 }
 / halfed:HalfedNote {
@@ -257,18 +295,9 @@ ModifiedPitch "modified_pitch"
 
 Octave "octave"
 = [,'][1-3] {
-    let oct = text();
-    let obj = {};
 
-    if(oct[0] == ','){
-        obj.side = "negative";
-    } else {
-        obj.side = "positive";
-    }
+    return (text()[0] == ',') ? - parseInt(text()[1]) : parseInt(text()[1])
 
-    obj.num = parseInt(oct[1])
-
-    return obj;
 }
 
 Accidental "accidental"
@@ -277,7 +306,12 @@ Accidental "accidental"
 }
 
 Pitch "pitch"
-= [0-7] { return {pitch : parseInt(text())}; }
+= [0-7] {
+    return {pitch : parseInt(text())};
+}
+/ "-" {
+    return {pitch : text()}
+}
 
 MeasureBar "measure bar"
 = "||" _ {
