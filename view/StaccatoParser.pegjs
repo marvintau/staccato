@@ -98,17 +98,33 @@
 
     let zipMeasure = (obj, parts) => {
 
-        obj.measures = obj[parts[0]]["measures"].map((_) => ({}))
+        obj.measures = obj[parts[0]]["measures"].map((_) => [])
         obj[parts[0]].measures.forEach( (_, index) => {
             parts.forEach(part => {
+                obj.measures[index].part = part;
                 obj.measures[index][part] = obj[part].measures[index]
             })
         })
 
+        return obj;
     }
 
     let zipNote = (obj, parts) => {
+        obj.beats = obj[parts[0]]["beats"].map((_) => ({}))
+        obj[parts[0]].beats.forEach( (_, index) => {
+            parts.forEach(part => {
+                obj.beats[index][part] = obj[part].beats[index]
+            })
+        })
 
+        return obj;
+    }
+
+    let zipUnderbar = (obj, parts) => {
+        obj.underbars = obj[parts[0]]["underbars"].map((_) => ({}))
+        obj[parts[0]].underbars.forEach( (_, index) => {
+
+        })
     }
 
 }
@@ -125,9 +141,8 @@ Sections "all sections"
         }
     })
 
-    zipMeasure(chorus, ["soprano","alto"])
+    console.log(JSON.stringify(zipMeasure(chorus, ["soprano","alto"]).measures.map(measure => zipNote(measure, ["soprano", "alto"])), null, 4))
 
-    console.log(JSON.stringify(chorus, null, 4));
     return score
 }
 
@@ -155,7 +170,6 @@ Measures "measures"
         connections : connections
     }
 
-    // console.log(JSON.stringify(measureList, null, 4));
     return measureList
 }
 

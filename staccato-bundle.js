@@ -41179,9 +41179,8 @@
 	                }
 	            })
 
-	            zipMeasure(chorus, ["soprano","alto"])
+	            console.log(JSON.stringify(zipMeasure(chorus, ["soprano","alto"]).measures.map(measure => zipNote(measure, ["soprano", "alto"])), null, 4))
 
-	            console.log(JSON.stringify(chorus, null, 4));
 	            return score
 	        },
 	        peg$c2 = peg$otherExpectation("section that contains different info"),
@@ -41217,7 +41216,6 @@
 	                connections : connections
 	            }
 
-	            // console.log(JSON.stringify(measureList, null, 4));
 	            return measureList
 	        },
 	        peg$c17 = peg$otherExpectation("measure"),
@@ -42664,17 +42662,33 @@
 
 	        let zipMeasure = (obj, parts) => {
 
-	            obj.measures = obj[parts[0]]["measures"].map((_) => ({}))
+	            obj.measures = obj[parts[0]]["measures"].map((_) => [])
 	            obj[parts[0]].measures.forEach( (_, index) => {
 	                parts.forEach(part => {
+	                    obj.measures[index].part = part;
 	                    obj.measures[index][part] = obj[part].measures[index]
 	                })
 	            })
 
+	            return obj;
 	        }
 
 	        let zipNote = (obj, parts) => {
+	            obj.beats = obj[parts[0]]["beats"].map((_) => ({}))
+	            obj[parts[0]].beats.forEach( (_, index) => {
+	                parts.forEach(part => {
+	                    obj.beats[index][part] = obj[part].beats[index]
+	                })
+	            })
 
+	            return obj;
+	        }
+
+	        let zipUnderbar = (obj, parts) => {
+	            obj.underbars = obj[parts[0]]["underbars"].map((_) => ({}))
+	            obj[parts[0]].underbars.forEach( (_, index) => {
+
+	            })
 	        }
 
 
@@ -42748,6 +42762,10 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -42795,7 +42813,7 @@
 	    bottom: 0,
 	    opacity: 0,
 	    visibility: 'hidden',
-	    transition: 'opacity .3s ease-out, visibility .3s ease-out',
+	    transition: 'opacity .3s ease-out',
 	    backgroundColor: 'rgba(0,0,0,.3)'
 	  },
 	  dragHandle: {
@@ -42816,7 +42834,7 @@
 
 	    _this.state = {
 	      // the detected width of the sidebar in pixels
-	      sidebarWidth: props.defaultSidebarWidth,
+	      sidebarWidth: 0,
 
 	      // keep track of touching params
 	      touchIdentifier: null,
@@ -42834,7 +42852,6 @@
 	    _this.onTouchMove = _this.onTouchMove.bind(_this);
 	    _this.onTouchEnd = _this.onTouchEnd.bind(_this);
 	    _this.onScroll = _this.onScroll.bind(_this);
-	    _this.saveSidebarRef = _this.saveSidebarRef.bind(_this);
 	    return _this;
 	  }
 
@@ -42953,16 +42970,11 @@
 	  }, {
 	    key: 'saveSidebarWidth',
 	    value: function saveSidebarWidth() {
-	      var width = this.sidebar.offsetWidth;
+	      var width = _reactDom2.default.findDOMNode(this.refs.sidebar).offsetWidth;
 
 	      if (width !== this.state.sidebarWidth) {
 	        this.setState({ sidebarWidth: width });
 	      }
-	    }
-	  }, {
-	    key: 'saveSidebarRef',
-	    value: function saveSidebarRef(node) {
-	      this.sidebar = node;
 	    }
 
 	    // calculate the sidebarWidth based on current touch info
@@ -43096,7 +43108,7 @@
 	        rootProps,
 	        _react2.default.createElement(
 	          'div',
-	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: this.saveSidebarRef },
+	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: 'sidebar' },
 	          this.props.sidebar
 	        ),
 	        _react2.default.createElement('div', { className: this.props.overlayClassName,
@@ -43171,10 +43183,7 @@
 	  dragToggleDistance: _react2.default.PropTypes.number,
 
 	  // callback called when the overlay is clicked
-	  onSetOpen: _react2.default.PropTypes.func,
-
-	  // Intial sidebar width when page loads
-	  defaultSidebarWidth: _react2.default.PropTypes.number
+	  onSetOpen: _react2.default.PropTypes.func
 	};
 
 	Sidebar.defaultProps = {
@@ -43187,8 +43196,7 @@
 	  shadow: true,
 	  dragToggleDistance: 30,
 	  onSetOpen: function onSetOpen() {},
-	  styles: {},
-	  defaultSidebarWidth: 0
+	  styles: {}
 	};
 
 	exports.default = Sidebar;
