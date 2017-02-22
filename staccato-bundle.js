@@ -42599,16 +42599,13 @@
 	            let curr =[];
 	            let res  =[];
 
-	            let currDuration = 0;
-
 	            notes.forEach(function(note, noteIndex){
 
 	                for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
 
-	                    // curr[i] exists, and have same type with note.conn[i]
+	                    // current underbar exists, and have same type with underbar of current note
+	                    // then enlong the current underbar
 	                    if(curr[i] && curr[i].type == note.conn[i]){
-	                        // rewrite (enlonging) current underbar
-	                        console.log(curr[i])
 	                        curr[i].end = noteIndex;
 
 	                    } else {
