@@ -18,22 +18,22 @@
     }
 
     const GroupBeat = function(notes, length) {
-        let initial = [[]];
         let duration = 0;
 
         return notes.reduce(function(measures, note){
             if (duration >= length) {
-                measures.push([note]);
+                measures[measures.length - 1].underbar = GetDurations(measures[measures.length - 1].notes);
+                measures.push({notes : [note]});
                 duration = note.duration;
             } else {
-                measures[measures.length - 1].push(note);
+                measures[measures.length - 1].notes.push(note);
                 duration += note.duration;
             }
             return measures;
-        }, initial);
+        }, [{notes:[]}]);
     }
 
-    let GetDurations = function(notes, beatIndex){
+    let GetDurations = function(notes){
 
         let curr =[];
         let res  =[];
@@ -47,7 +47,8 @@
                 // curr[i] exists, and have same type with note.conn[i]
                 if(curr[i] && curr[i].type == note.conn[i]){
                     // rewrite (enlonging) current underbar
-                    curr[i].note.end = noteIndex;
+                    console.log(curr[i])
+                    curr[i].end = noteIndex;
 
                 } else {
 
@@ -58,7 +59,7 @@
                     // if note.conn[i] exists, but curr[i] could be either
                     // not created or finished, assign it with a new object.
                     // if not, then rewrite as undefined.
-                    curr[i] = note.conn[i] ? {beat:beatIndex, note:{start:noteIndex, end:noteIndex}, level:i, type:note.conn[i]} : undefined;
+                    curr[i] = note.conn[i] ? {start:noteIndex, end:noteIndex, level:i, type:note.conn[i]} : undefined;
                 }
             }
 
@@ -78,7 +79,7 @@
 
         measures.forEach(function(measure, index){
             measure.beats.forEach(function(beat, beatIndex){
-                beat.forEach(function(note, noteIndex){
+                beat.notes.forEach(function(note, noteIndex){
                     if((res.length==0 || (res.length>0 && res[res.length - 1].end)) && note.upperConn == "open") {
                         res.push({start:{measure:index, beat:beatIndex, note:noteIndex}});
                     }
@@ -122,9 +123,11 @@
 
     let zipUnderbar = (obj, parts) => {
         obj.underbars = obj[parts[0]]["underbars"].map((_) => ({}))
-        obj[parts[0]].underbars.forEach( (_, index) => {
-
+        parts.forEach(part => {
+            obj.underbars[index][part] = obj[part].underbars[index]
         })
+
+        return obj;
     }
 
 }
@@ -141,8 +144,8 @@ Sections "all sections"
         }
     })
 
-    console.log(JSON.stringify(zipMeasure(chorus, ["soprano","alto"]).measures.map(measure => zipNote(measure, ["soprano", "alto"])), null, 4))
-
+    // console.log(JSON.stringify(zipMeasure(chorus, ["soprano","alto"]).measures.map(measure => zipUnderbar(measure, ["soprano", "alto"])), null, 4))
+    console.log(JSON.stringify(chorus, null, 4))
     return score
 }
 
@@ -163,11 +166,11 @@ Section "section that contains different info"
 
 Measures "measures"
 = measures:Measure* {
-    let connections = GetConnectionRanges(measures);
+    // let connections = GetConnectionRanges(measures);
 
     let measureList = {
-        measures : measures,
-        connections : connections
+        measures : measures
+        // connections : connections
     }
 
     return measureList
@@ -197,14 +200,11 @@ Measure "measure"
         }
     })
 
-    let beats = GroupBeat(durationExtendedBeats, 1),
-        underbars = [].concat.apply([], beats.map((elem, beatIndex) => GetDurations(elem, beatIndex)))
-
+    let beats = GroupBeat(durationExtendedBeats, 1)
     // console.log(JSON.stringify(underbars, null, 4))
 
     return {
         beats : beats,
-        underbars : underbars,
         measure : bar
     }
 }

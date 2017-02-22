@@ -41179,8 +41179,8 @@
 	                }
 	            })
 
-	            console.log(JSON.stringify(zipMeasure(chorus, ["soprano","alto"]).measures.map(measure => zipNote(measure, ["soprano", "alto"])), null, 4))
-
+	            // console.log(JSON.stringify(zipMeasure(chorus, ["soprano","alto"]).measures.map(measure => zipUnderbar(measure, ["soprano", "alto"])), null, 4))
+	            console.log(JSON.stringify(chorus, null, 4))
 	            return score
 	        },
 	        peg$c2 = peg$otherExpectation("section that contains different info"),
@@ -41209,11 +41209,11 @@
 	        },
 	        peg$c15 = peg$otherExpectation("measures"),
 	        peg$c16 = function(measures) {
-	            let connections = GetConnectionRanges(measures);
+	            // let connections = GetConnectionRanges(measures);
 
 	            let measureList = {
-	                measures : measures,
-	                connections : connections
+	                measures : measures
+	                // connections : connections
 	            }
 
 	            return measureList
@@ -41242,14 +41242,11 @@
 	                }
 	            })
 
-	            let beats = GroupBeat(durationExtendedBeats, 1),
-	                underbars = [].concat.apply([], beats.map((elem, beatIndex) => GetDurations(elem, beatIndex)))
-
+	            let beats = GroupBeat(durationExtendedBeats, 1)
 	            // console.log(JSON.stringify(underbars, null, 4))
 
 	            return {
 	                beats : beats,
-	                underbars : underbars,
 	                measure : bar
 	            }
 	        },
@@ -42582,22 +42579,22 @@
 	        }
 
 	        const GroupBeat = function(notes, length) {
-	            let initial = [[]];
 	            let duration = 0;
 
 	            return notes.reduce(function(measures, note){
 	                if (duration >= length) {
-	                    measures.push([note]);
+	                    measures[measures.length - 1].underbar = GetDurations(measures[measures.length - 1].notes);
+	                    measures.push({notes : [note]});
 	                    duration = note.duration;
 	                } else {
-	                    measures[measures.length - 1].push(note);
+	                    measures[measures.length - 1].notes.push(note);
 	                    duration += note.duration;
 	                }
 	                return measures;
-	            }, initial);
+	            }, [{notes:[]}]);
 	        }
 
-	        let GetDurations = function(notes, beatIndex){
+	        let GetDurations = function(notes){
 
 	            let curr =[];
 	            let res  =[];
@@ -42611,7 +42608,8 @@
 	                    // curr[i] exists, and have same type with note.conn[i]
 	                    if(curr[i] && curr[i].type == note.conn[i]){
 	                        // rewrite (enlonging) current underbar
-	                        curr[i].note.end = noteIndex;
+	                        console.log(curr[i])
+	                        curr[i].end = noteIndex;
 
 	                    } else {
 
@@ -42622,7 +42620,7 @@
 	                        // if note.conn[i] exists, but curr[i] could be either
 	                        // not created or finished, assign it with a new object.
 	                        // if not, then rewrite as undefined.
-	                        curr[i] = note.conn[i] ? {beat:beatIndex, note:{start:noteIndex, end:noteIndex}, level:i, type:note.conn[i]} : undefined;
+	                        curr[i] = note.conn[i] ? {start:noteIndex, end:noteIndex, level:i, type:note.conn[i]} : undefined;
 	                    }
 	                }
 
@@ -42642,7 +42640,7 @@
 
 	            measures.forEach(function(measure, index){
 	                measure.beats.forEach(function(beat, beatIndex){
-	                    beat.forEach(function(note, noteIndex){
+	                    beat.notes.forEach(function(note, noteIndex){
 	                        if((res.length==0 || (res.length>0 && res[res.length - 1].end)) && note.upperConn == "open") {
 	                            res.push({start:{measure:index, beat:beatIndex, note:noteIndex}});
 	                        }
@@ -42686,9 +42684,11 @@
 
 	        let zipUnderbar = (obj, parts) => {
 	            obj.underbars = obj[parts[0]]["underbars"].map((_) => ({}))
-	            obj[parts[0]].underbars.forEach( (_, index) => {
-
+	            parts.forEach(part => {
+	                obj.underbars[index][part] = obj[part].underbars[index]
 	            })
+
+	            return obj;
 	        }
 
 
@@ -42762,10 +42762,6 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactDom = __webpack_require__(32);
-
-	var _reactDom2 = _interopRequireDefault(_reactDom);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -42813,7 +42809,7 @@
 	    bottom: 0,
 	    opacity: 0,
 	    visibility: 'hidden',
-	    transition: 'opacity .3s ease-out',
+	    transition: 'opacity .3s ease-out, visibility .3s ease-out',
 	    backgroundColor: 'rgba(0,0,0,.3)'
 	  },
 	  dragHandle: {
@@ -42834,7 +42830,7 @@
 
 	    _this.state = {
 	      // the detected width of the sidebar in pixels
-	      sidebarWidth: 0,
+	      sidebarWidth: props.defaultSidebarWidth,
 
 	      // keep track of touching params
 	      touchIdentifier: null,
@@ -42852,6 +42848,7 @@
 	    _this.onTouchMove = _this.onTouchMove.bind(_this);
 	    _this.onTouchEnd = _this.onTouchEnd.bind(_this);
 	    _this.onScroll = _this.onScroll.bind(_this);
+	    _this.saveSidebarRef = _this.saveSidebarRef.bind(_this);
 	    return _this;
 	  }
 
@@ -42970,11 +42967,16 @@
 	  }, {
 	    key: 'saveSidebarWidth',
 	    value: function saveSidebarWidth() {
-	      var width = _reactDom2.default.findDOMNode(this.refs.sidebar).offsetWidth;
+	      var width = this.sidebar.offsetWidth;
 
 	      if (width !== this.state.sidebarWidth) {
 	        this.setState({ sidebarWidth: width });
 	      }
+	    }
+	  }, {
+	    key: 'saveSidebarRef',
+	    value: function saveSidebarRef(node) {
+	      this.sidebar = node;
 	    }
 
 	    // calculate the sidebarWidth based on current touch info
@@ -43108,7 +43110,7 @@
 	        rootProps,
 	        _react2.default.createElement(
 	          'div',
-	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: 'sidebar' },
+	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: this.saveSidebarRef },
 	          this.props.sidebar
 	        ),
 	        _react2.default.createElement('div', { className: this.props.overlayClassName,
@@ -43183,7 +43185,10 @@
 	  dragToggleDistance: _react2.default.PropTypes.number,
 
 	  // callback called when the overlay is clicked
-	  onSetOpen: _react2.default.PropTypes.func
+	  onSetOpen: _react2.default.PropTypes.func,
+
+	  // Intial sidebar width when page loads
+	  defaultSidebarWidth: _react2.default.PropTypes.number
 	};
 
 	Sidebar.defaultProps = {
@@ -43196,7 +43201,8 @@
 	  shadow: true,
 	  dragToggleDistance: 30,
 	  onSetOpen: function onSetOpen() {},
-	  styles: {}
+	  styles: {},
+	  defaultSidebarWidth: 0
 	};
 
 	exports.default = Sidebar;
