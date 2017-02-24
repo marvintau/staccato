@@ -49,12 +49,12 @@
 
                 } else {
 
-                    // if curr[i] exists, but note.conn[i] doesn't exist, or has
-                    // different type to curr[i], the current bar is done.
+                    // if current underbar exists, but underbar of current note doesn't exist,
+                    // or has different type to current underbar, the current bar is done.
                     curr[i] && res.push(curr[i]);
 
-                    // if note.conn[i] exists, but curr[i] could be either
-                    // not created or finished, assign it with a new object.
+                    // if the ith underbar of current note exists, but the ith current underbar
+                    // could be either not created or finished, assign it with a new object.
                     // if not, then rewrite as undefined.
                     curr[i] = note.conn[i] ? {start:noteIndex, end:noteIndex, level:i, type:note.conn[i]} : undefined;
                 }
@@ -74,15 +74,26 @@
     let GetConnectionRanges = function(measures){
         let res = [];
 
+        let slot = 0;
+        let isConnecting = false;
+        let slots = [];
+
         measures.forEach(function(measure, index){
             measure.beats.forEach(function(beat, beatIndex){
                 beat.notes.forEach(function(note, noteIndex){
+
+                    if(!isConnecting && note.pitch != "-"){
+                        slots.push({measure:index, beat:beatIndex, note:noteIndex, pitch:note.pitch})
+                    }
+
                     if((res.length==0 || (res.length>0 && res[res.length - 1].end)) && note.upperConn == "open") {
                         res.push({start:{measure:index, beat:beatIndex, note:noteIndex}});
+                        isConnecting = true;
                     }
 
                     if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
                         res[res.length-1].end = {measure:index, beat:beatIndex, note:noteIndex}
+                        isConnecting = false;
                     }
 
                     delete note.upperConn
@@ -90,41 +101,55 @@
             })
         })
 
-
-        return res;
+        return {ranges:res, slots:slots};
     }
 
-    let zipMeasure = (obj, parts) => {
+    let zipMeasure = (chorus, parts) => {
 
-        obj.measures = obj[parts[0]]["measures"].map((_) => [])
-        obj[parts[0]].measures.forEach( (_, index) => {
+        chorus.measures = chorus[parts[0]]["measures"].map((_) => ({}))
+        chorus.connections = {}
+
+        chorus[parts[0]].measures.forEach( (_, index) => {
             parts.forEach(part => {
-                obj.measures[index].part = part;
-                obj.measures[index][part] = obj[part].measures[index]
+                chorus.measures[index][part] = chorus[part].measures[index];
+                chorus.measures[index].measure = chorus[part].measures[index].measure;
             })
+
+            chorus.measures[index] = zipBeat(chorus.measures[index], parts)
         })
 
-        return obj;
-    }
-
-    let zipNote = (obj, parts) => {
-        obj.beats = obj[parts[0]]["beats"].map((_) => ({}))
-        obj[parts[0]].beats.forEach( (_, index) => {
-            parts.forEach(part => {
-                obj.beats[index][part] = obj[part].beats[index]
-            })
-        })
-
-        return obj;
-    }
-
-    let zipUnderbar = (obj, parts) => {
-        obj.underbars = obj[parts[0]]["underbars"].map((_) => ({}))
         parts.forEach(part => {
-            obj.underbars[index][part] = obj[part].underbars[index]
+            chorus.connections[part] = chorus[part].connections
         })
 
-        return obj;
+        for (var part of parts) {
+            delete chorus[part];
+        }
+
+        console.log(JSON.stringify(chorus, null, 4))
+
+        return chorus;
+    }
+
+    let zipBeat = (measure, parts) => {
+        measure.beats = measure[parts[0]]["beats"].map((_) => ({}))
+
+        measure[parts[0]].beats.forEach( (_, index) => {
+            parts.forEach(part => {
+
+                measure[part].beats[index].notes.forEach(note =>{
+                    delete note.conn
+                })
+
+                measure.beats[index][part] = measure[part].beats[index]
+            })
+        })
+
+        for (var part of parts) {
+            delete measure[part];
+        }
+
+        return measure;
     }
 
 }
@@ -132,17 +157,21 @@
 Sections "all sections"
 = _ sections:Section* {
 
-    let score = {}, chorus={};
+    let score = {}, chorus={}, parts = [];
     sections.forEach(elem => {
-        if(elem.name == "chorus"){
+        if(elem.name == "parts"){
+                parts = elem.parts;
+        } else if(elem.name == "chorus"){
             chorus[elem.part] = elem.content;
         } else {
             score[elem.name] = elem.content
         }
     })
 
-    // console.log(JSON.stringify(zipMeasure(chorus, ["soprano","alto"]).measures.map(measure => zipUnderbar(measure, ["soprano", "alto"])), null, 4))
-    console.log(JSON.stringify(chorus, null, 4))
+    zipMeasure(chorus, parts)
+    // console.log(JSON.stringify(.measures, null, 4))
+
+    // console.log(JSON.stringify(zipMeasure(chorus, parts), null, 4))
     return score
 }
 
@@ -154,6 +183,12 @@ Section "section that contains different info"
         content : measures
     };
 }
+/ "parts" _ '{' _ parts:([a-zA-Z]+ _)* '}' _ {
+    return {
+        name : "parts",
+        parts : parts.map(elem => elem[0].join(""))
+    };
+}
 / section:[a-zA-Z]+ _ '{' content:[^\}]* '}' _ {
     return {
         name : section.join(""),
@@ -163,11 +198,10 @@ Section "section that contains different info"
 
 Measures "measures"
 = measures:Measure* {
-    // let connections = GetConnectionRanges(measures);
 
     let measureList = {
-        measures : measures
-        // connections : connections
+        measures : measures,
+        connections : GetConnectionRanges(measures)
     }
 
     return measureList
