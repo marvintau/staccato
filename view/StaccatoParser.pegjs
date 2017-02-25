@@ -83,7 +83,7 @@
                 beat.notes.forEach(function(note, noteIndex){
 
                     if(!isConnecting && note.pitch != "-"){
-                        slots.push({measure:index, beat:beatIndex, note:noteIndex, pitch:note.pitch})
+                        slots.push({measure:index, beat:beatIndex, note:noteIndex})
                     }
 
                     if((res.length==0 || (res.length>0 && res[res.length - 1].end)) && note.upperConn == "open") {
@@ -100,7 +100,7 @@
                 })
             })
         })
-
+        console.log(slots.length);
         return {ranges:res, slots:slots};
     }
 
@@ -108,6 +108,7 @@
 
         chorus.measures = chorus[parts[0]]["measures"].map((_) => ({}))
         chorus.connections = {}
+
 
         chorus[parts[0]].measures.forEach( (_, index) => {
             parts.forEach(part => {
@@ -118,15 +119,23 @@
             chorus.measures[index] = zipBeat(chorus.measures[index], parts)
         })
 
-        parts.forEach(part => {
-            chorus.connections[part] = chorus[part].connections
+        let identical = parts.every(part => {
+            return JSON.stringify(chorus[part].connections.slots) == JSON.stringify(chorus[parts[0]].connections.slots)
         })
+
+        if(identical){
+            chorus.connections.unison = chorus[parts[0]].connections;
+        } else {
+            parts.forEach(part => {
+                chorus.connections[part] = chorus[part].connections
+            })
+        }
 
         for (var part of parts) {
             delete chorus[part];
         }
 
-        console.log(JSON.stringify(chorus, null, 4))
+        // console.log(JSON.stringify(chorus, null, 4))
 
         return chorus;
     }
@@ -152,15 +161,25 @@
         return measure;
     }
 
+    let zipLyric = (lyrics) => lyrics[0].map((verse,i) => lyrics.map(verse => verse[i]))
+
+    let groupBy = function(xs, key) {
+        return xs.reduce(function(rv, x) {
+            (rv[x[key]] = rv[x[key]] || []).push(x);
+        return rv;
+      }, {});
+    };
 }
 
 Sections "all sections"
 = _ sections:Section* {
 
-    let score = {}, chorus={}, parts = [];
+    let score = {}, chorus={}, parts = [], verses= [];
     sections.forEach(elem => {
         if(elem.name == "parts"){
-                parts = elem.parts;
+            parts = elem.parts;
+        } else if(elem.name == "verse"){
+            verses.push(elem);
         } else if(elem.name == "chorus"){
             chorus[elem.part] = elem.content;
         } else {
@@ -168,10 +187,22 @@ Sections "all sections"
         }
     })
 
-    zipMeasure(chorus, parts)
-    // console.log(JSON.stringify(.measures, null, 4))
+    let groupedLyric = groupBy(verses, 'part')
+    for(var part in groupedLyric){
+        groupedLyric[part] = zipLyric(groupedLyric[part].map(lyric => lyric.verse))
+    }
 
-    // console.log(JSON.stringify(zipMeasure(chorus, parts), null, 4))
+    let zippedChorus = zipMeasure(chorus, parts)
+    console.log(zippedChorus);
+
+    if(chorus.connections.unison){
+        if(groupedLyric.unison){
+            chorus.connections.unison.slots.forEach((slot, index) =>{
+                zippedChorus.measures[slot.measure].beats[slot.beat].lyric = groupedLyric.unison[index]
+            })
+        }
+    }
+
     return score
 }
 
@@ -181,6 +212,20 @@ Section "section that contains different info"
         name : "chorus",
         part : part.join(""),
         content : measures
+    };
+}
+/ "verse" _ verseNumber:[0-9]+ _ '{' _ lyric:([^ \t\n\r\}]+ _)* '}' _ {
+    return {
+        name : "verse",
+        part : "unison",
+        verse : lyric.map(l => l[0].join(""))
+    };
+}
+/ "verse" _ verseNumber:[0-9]+ _ part:[a-zA-Z]+ _ '{' _ lyric:([^ \t\n\r\}]+ _)* '}' _ {
+    return {
+        name : "verse",
+        part : part.join(""),
+        verse : lyric.map(l => l[0].join(""))
     };
 }
 / "parts" _ '{' _ parts:([a-zA-Z]+ _)* '}' _ {
