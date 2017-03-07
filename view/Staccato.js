@@ -108,33 +108,85 @@ class Measure extends React.Component{
         return notePoses;
     }
 
-    BeatElems(){
-        // console.log(this.props.measure.repeat)
-        return this.props.measure.map((beat, index)=>Elem(Beat, {
-            ref:index,
-            beat:beat.beatNote,
-            underbar:beat.underbar,
-            key:index
-        }));
+    SlotElems(){
+        return this.props.measure.beats.map((slot, index)=>Elem(Slot, Object.assign(slot, {
+            key : index,
+            parts : this.props.parts
+        })));
     }
 
     render() {
-        let width = (this.props.measure[0].beatNote.length == 0) ? {minWidth: 0} : {}
-        return Elem('div', {style:width, ref:"measure", className:"measure"}, this.BeatElems());
+        // let width = (this.props.measure[0].beatNote.length == 0) ? {minWidth: 0} : {}
+        return Elem('div', {style:{}, ref:"measure", className:"measure"}, this.SlotElems());
     }
 
     componentDidMount(){
-        this.notePoses = this.GetNotePoses()
+        // this.notePoses = this.GetNotePoses()
     }
+}
+
+class Slot extends React.Component{
+    constructor(props){
+        super(props);
+    }
+
+    Elems(){
+        let elems = [], index = 0;
+        for (let part in this.props) {
+            if (this.props.hasOwnProperty(part) && this.props[part]) {
+                if(part != "lyric" && part != "parts"){
+                    elems.push(Elem(Beat, Object.assign(this.props[part], {key:index})));
+                    index++;
+                }
+                if(part == "lyric"){
+                    elems.push(Elem(Lyric, Object.assign(this.props[part], {key:index})));
+                }
+            }
+        }
+
+        return elems;
+    }
+
+    render(){
+        return Elem('div', {style:{}, ref:"slot", className:"slot"}, this.Elems());
+    };
+}
+
+class Lyric extends React.Component{
+    constructor(props){
+        super(props);
+    }
+
+    LyricChars(chars){
+        console.log(chars);
+        let res = chars.map((c, index) => Elem('span', {className:"lyricChar", key:index}, c));
+        console.log(res);
+        return res;
+    }
+
+    Lyrics(){
+        let elems = [];
+        Object.keys(this.props).forEach((key, index) =>{
+            if(key != "children" && this.props[key]){
+                elems.push(Elem('span', {className:"lyricSlot", key:index}, this.LyricChars(this.props[key])));
+            }
+        })
+        return elems;
+    }
+
+    render() {
+        return Elem('span', {ref:"lyric", className: "lyricBeat"}, this.Lyrics());
+    }
+
 }
 
 class Beat extends React.Component{
     constructor(props){
         super(props);
+
         this.state = {
-            underbarPoses : this.props.underbar.map((elem) => ({left:0, width:0, top:0}))
+            underbarPoses : this.props.underbar ? this.props.underbar.map((elem) => ({left:0, width:0, top:0})) : []
         }
-        this.notePoses = {}
     }
 
     GetNotePoses(){
@@ -143,23 +195,18 @@ class Beat extends React.Component{
 
         for(let ithNote in this.refs){
             if(ithNote != "beat"){
-                let elem = this.refs[ithNote]
-
-                if(elem.props.note.index){
-                    notePoses[elem.props.note.index] = elem.box
-                }
-
+                notePoses[ithNote] = this.refs[ithNote].box
             }
         }
 
         return notePoses;
-
     }
 
     GetUnderbarPoses(notePoses, beatBox){
 
         // by subtracting the score position from the underbar position,
         // we made the new undarbar position relative to score element.
+
         return this.props.underbar.map((elem) => ({
             left:notePoses[elem.start].left - beatBox.left,
             width:notePoses[elem.end].right - notePoses[elem.start].left,
@@ -169,7 +216,7 @@ class Beat extends React.Component{
 
 
     NoteElems(){
-        return this.props.beat.map((note, index)=>Elem(Note, {ref:index, key:index, note:note}));
+        return this.props.notes.map((note, index)=>Elem(Note, {ref:index, key:index, note:note}));
     }
 
     UnderbarElems(offset){
@@ -179,27 +226,19 @@ class Beat extends React.Component{
 
     render() {
 
+        // console.log(this.props)
+
         let underbarElems = this.UnderbarElems(this.NoteElems().length);
-        let underbarredNotes = this.NoteElems().concat(underbarElems);
+        let noteElems = this.NoteElems().concat(underbarElems);
 
-        if(this.props.repeatNotOnSide && this.props.beat.some(elem => (elem.repeat == "open"))){
-            underbarredNotes = [Elem(Repeatbar, {key:offset, direction:"open"})].concat(underbarredNotes)
-        }
-        if(this.props.repeatNotOnSide && this.props.beat.some(elem => (elem.repeat == "close"))){
-            underbarredNotes = underbarredNotes.concat(Elem(Repeatbar, {key:offset, direction:"close"}))
-        }
-
-
-        return Elem('span', {ref:"beat", className: "beat"}, underbarredNotes);
+        return Elem('span', {ref:"beat", className: "beat"}, noteElems);
     }
 
     componentDidMount(){
 
         let beatBox = this.refs.beat.getBoundingClientRect();
 
-        this.notePoses = this.GetNotePoses();
-
-        this.setState({underbarPoses:this.GetUnderbarPoses(this.GetNotePoses(), beatBox)})
+        this.setState({underbarPoses: this.props.underbar ? this.GetUnderbarPoses(this.GetNotePoses(), beatBox) : []})
     }
 
 }
@@ -225,20 +264,21 @@ class Note extends React.Component{
     }
 
     GetOctaveDotPoses(){
-        let octaveDotPoses = []
-        if(this.props.note.octave){
 
+        let octaveDotPoses = []
+        if(this.props.note.octave && this.props.note.octave.nums){
             let octave = this.props.note.octave;
-            for (var i = 0; i < octave.num; i++) {
+            for (var i = 0; i < Math.abs(octave.nums); i++) {
                 octaveDotPoses.push({
                     index : this.props.note.pitch,
                     left : (this.box.right - this.box.left) / 2,
-                    top : octave.side == "positive"
+                    top : octave.nums >= 0
                           ? (-5 * i - this.box.height/2)
-                          : (3 * this.props.note.conn.length + 5 * i + this.box.height/2)
+                          : (3 * octave.start + 5 * i + this.box.height/2)
                 })
             }
         }
+
         return octaveDotPoses;
     }
 
@@ -265,13 +305,13 @@ class Note extends React.Component{
     }
 
     render(){
+        //
+        // let style = {
+        //     marginLeft : -this.props.note.conn.length *0.7,
+        //     marginRight : -this.props.note.conn.length *0.7
+        // }
 
-        let style = {
-            marginLeft : -this.props.note.conn.length *0.7,
-            marginRight : -this.props.note.conn.length *0.7
-        }
-
-        return Elem('span', {style:style, className:"note"}, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()).concat(this.OctaveDotElem()))
+        return Elem('span', {style:{}, className:"note"}, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()).concat(this.OctaveDotElem()))
     }
 
     componentDidMount(){
@@ -373,14 +413,14 @@ class Connect extends React.Component {
     }
 }
 
-class Score extends React.Component{
+class Chorus extends React.Component{
     constructor(props){
         super(props);
 
         this.notePoses = {},
 
         this.state = {
-            connectPoses : this.props.connects.map(elem => ({startLeft:0, startCLeft:0, startTop:0, startCTop:0, endCLeft:0, endCTop:0, endLeft:0, endTop:0}))
+            // connectPoses : this.props.connects.map(elem => ({startLeft:0, startCLeft:0, startTop:0, startCTop:0, endCLeft:0, endCTop:0, endLeft:0, endTop:0}))
         }
     }
 
@@ -415,40 +455,29 @@ class Score extends React.Component{
     }
 
     MeasureElems(){
+        // console.log(this.props);
 
         return []
             .concat(this.props.measures.map((measure,index) =>{
-                let elem;
-                if(measure[0].beatNote[0].repeat == "open") {
-                    elem = [
-                        Elem(Repeatbar, {key:5300+index, direction:"open", initial:true}),
-                        Elem(Measure, {ref:"measure-"+index, measure: measure, key:index})
-                    ]
-                    index == 0 && elem.push(Elem(Vertbar, {key:5300+index-1}))
+                let elem = [Elem(Measure, {ref:"measure-"+index, measure: measure, parts:this.props.parts, key:index})];
 
-                } else if (measure.last().beatNote.last().repeat == "close") {
-
-                    elem = [
-                        Elem(Measure, {ref:"measure-"+index, measure: measure, key:index}),
-                        Elem(Repeatbar, {key:5300+index, direction:"closed"})
-                    ]
-
-                } else {
-
-                    elem = [
-                        Elem(Measure, {ref:"measure-"+index, measure: measure, key:index}),
-                        Elem(Vertbar, {key:5300+index})
-                    ]
-
+                if(measure.measureType == "normal"){
+                    elem.push(Elem(Vertbar, {key:5300+index-1}))
+                } else if (measure.measureType == "rep_start"){
+                    elem.push(Elem(Repeatbar, {key:5300+index-1, direction:"open"}))
+                } else if (measure.measureType == "rep_fin"){
+                    elem.push(Elem(Repeatbar, {key:5300+index-1, direction:"close"}))
+                } else if (measure.measureType == "fin"){
+                    elem.push(Elem(Vertbar, {key:5300+index-1}))
+                    elem.push(Elem(Finalbar, {key:6300}))
                 }
+
                 return elem;
-            }))
-            .concat(Elem(Finalbar, {key:6300}))
-            .concat(this.ConnectElems())
+            }));
+            // .concat(this.ConnectElems())
     }
 
     render() {
-
         return Elem('div', {ref:"score", className:"score"}, this.MeasureElems());
     }
 
@@ -456,10 +485,10 @@ class Score extends React.Component{
 
         let scoreBox = this.refs.score.getBoundingClientRect()
 
-        this.notePoses = this.GetNotePoses()
+        // this.notePoses = this.GetNotePoses()
 
         this.setState({
-            connectPoses:this.GetConnectPoses(scoreBox)
+            // connectPoses:this.GetConnectPoses(scoreBox)
         })
 
     }
@@ -470,76 +499,54 @@ class Container extends React.Component {
     constructor(props) {
         super(props);
 
-        parse(scoreText);
+        // parse(scoreText);
 
-        // this.state = {
-        //     sections : this.GetSections(scoreText)
-        // };
+        this.state = {
+            text : scoreText,
+            score : parse(scoreText)
+        };
     }
 
     handleChange(event) {
         event.persist()
 
-        let val = event.target.value;
+        let newText = event.target.value;
 
-        // this.setState((previousState) => ({
-        //     text : val,
-        //     sections : this.GetSections(val)
-        // }));
+        this.setState((previousState) => ({
+            text : newText,
+            score : parse(newText)
+        }));
 
     }
-
-    sectionElems(){
-        let elems = [];
-
-        // for (var i = 0; i < this.state.sections.length; i++) {
-        //     if(this.state.sections[i].name != "score"){
-        //         elems.push(SectionElem(this.state.sections[i].name, i, this.state.sections[i].body));
-        //     } else {
-        //
-        //         try {
-        //             console.log(this.state.text);
-        //             let scoreModel = parse(this.state.text);
-        //
-        //             elems.push(
-        //                 SectionElem(this.state.sections[i].name, i, Elem(Score,
-        //                     {
-        //                         measures:scoreModel.measures,
-        //                         connects : scoreModel.connects
-        //                     }
-        //                 ))
-        //             );
-        //         } catch (error){
-        //             console.log(error);
-        //             elems.push(
-        //                 SectionElem(this.state.sections[i].name, i, Elem(Score, {}, [this.state.sections[i].body]))
-        //             );
-        //         }
-        //
-        //     }
-        //
-        // }
-
-        return elems;
-    }
-
 
     render() {
 
+        let sectionElems = [], index = 0;
+        for (let section in this.state.score) {
+            if (this.state.score.hasOwnProperty(section)) {
+                if(section != "chorus"){
+                    sectionElems.push(SectionElem(section, index, this.state.score[section]));
+                } else {
+                    sectionElems.push(Elem(Chorus, Object.assign(this.state.score.chorus, {key:index})));
+                }
+                index++;
+            }
+        }
+
         const editor = Elem('textarea', {
             id        : 'editor',
-            className : 'editing',
-            rows      : 60,
+            className : 'editor',
+            rows      : 30,
             placeholder : 'yep',
             spellCheck  : 'false',
-            value       : this.state.value,
+            value       : this.state.text,
             onChange    : (event) => this.handleChange(event)
         })
 
         const editorWrapper = Elem(Col, {
             key : 'editor',
             md  :  4,
-            className:"editing-wrapper"
+            className:"editor-wrapper"
         }, editor)
 
         let preview = Elem(Col, {
@@ -547,7 +554,7 @@ class Container extends React.Component {
             md  :  6,
             id  : 'preview',
             className:'preview',
-        }, Elem('div', {ref:"preview", id:'page', className:'page'}, this.sectionElems()))
+        }, Elem('div', {ref:"preview", id:'page', className:'page'}, sectionElems))
 
         const row = Elem(Row, {},
             [editorWrapper, preview]
@@ -558,10 +565,10 @@ class Container extends React.Component {
 
     componentDidMount(){
 
-        this.setState((previousState) => ({
-            value : previousState.text,
-            sections : previousState.sections
-        }));
+        // this.setState((previousState) => ({
+        //     value : previousState.text,
+        //     sections : previousState.sections
+        // }));
 
     }
 }

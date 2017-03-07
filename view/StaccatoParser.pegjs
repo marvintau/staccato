@@ -17,20 +17,24 @@
             )}, [])
     }
 
-    const GroupBeat = function(notes, length) {
+    const GroupBeat = function(notes) {
         let duration = 0;
 
-        return notes.reduce(function(measures, note){
-            if (duration >= length) {
-                measures[measures.length - 1].underbar = GetDurations(measures[measures.length - 1].notes);
-                measures.push({notes : [note]});
-                duration = note.duration;
-            } else {
-                measures[measures.length - 1].notes.push(note);
-                duration += note.duration;
+        let beats = [{notes:[]}];
+        notes.forEach(note =>{
+            duration += note.duration;
+            (duration <= 1) && beats[beats.length - 1].notes.push(note);
+
+            if(duration == 1){
+                duration = 0;
+                beats.push({notes : []});
             }
-            return measures;
-        }, [{notes:[]}]);
+        })
+
+        beats.forEach(beat =>{
+            beat.underbar = GetDurations(beat.notes);
+        })
+        return beats;
     }
 
     let GetDurations = function(notes){
@@ -82,7 +86,7 @@
             measure.beats.forEach(function(beat, beatIndex){
                 beat.notes.forEach(function(note, noteIndex){
 
-                    if(!isConnecting && note.pitch != "-"){
+                    if(note.pitch != "–"){
                         slots.push({measure:index, beat:beatIndex, note:noteIndex})
                     }
 
@@ -100,7 +104,6 @@
                 })
             })
         })
-        console.log(slots.length);
         return {ranges:res, slots:slots};
     }
 
@@ -113,7 +116,7 @@
         chorus[parts[0]].measures.forEach( (_, index) => {
             parts.forEach(part => {
                 chorus.measures[index][part] = chorus[part].measures[index];
-                chorus.measures[index].measure = chorus[part].measures[index].measure;
+                chorus.measures[index].measureType = chorus[part].measures[index].measureType.measureType;
             })
 
             chorus.measures[index] = zipBeat(chorus.measures[index], parts)
@@ -134,8 +137,6 @@
         for (var part of parts) {
             delete chorus[part];
         }
-
-        // console.log(JSON.stringify(chorus, null, 4))
 
         return chorus;
     }
@@ -193,17 +194,25 @@ Sections "all sections"
     }
 
     let zippedChorus = zipMeasure(chorus, parts)
-    console.log(zippedChorus);
 
     if(chorus.connections.unison){
         if(groupedLyric.unison){
             chorus.connections.unison.slots.forEach((slot, index) =>{
-                zippedChorus.measures[slot.measure].beats[slot.beat].lyric = groupedLyric.unison[index]
+                // 要把这里换一下，不是直接把index的歌词加进来，而是把属于同一个Beat的歌词加入进来
+                // 然后在Beat中进行进一步渲染
+                if(!zippedChorus.measures[slot.measure].beats[slot.beat].lyric){
+                        zippedChorus.measures[slot.measure].beats[slot.beat].lyric = [];
+                }
+                zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric.unison[index]
             })
         }
     }
 
-    return score
+    // console.log(zippedChorus.measures.map(measure => measure.beats));
+
+    zippedChorus.parts = parts;
+    score.chorus = zippedChorus;
+    return score;
 }
 
 Section "section that contains different info"
@@ -276,12 +285,11 @@ Measure "measure"
         }
     })
 
-    let beats = GroupBeat(durationExtendedBeats, 1)
-    // console.log(JSON.stringify(underbars, null, 4))
+    let beats = GroupBeat(durationExtendedBeats);
 
     return {
         beats : beats,
-        measure : bar
+        measureType : bar
     }
 }
 
@@ -400,21 +408,21 @@ Pitch "pitch"
     return {pitch : parseInt(text())};
 }
 / "-" {
-    return {pitch : text()}
+    return {pitch : "–"}
 }
 
 MeasureBar "measure bar"
 = "||" _ {
-    return {measure : "fin"}
+    return {measureType : "fin"}
 }
 / "\:|" _ {
-    return {measure : "rep_fin"}
+    return {measureType : "rep_fin"}
 }
 / "|\:" _ {
-    return {measure : "rep_start"}
+    return {measureType : "rep_start"}
 }
 / "|" _ {
-    return {measure : "normal"}
+    return {measureType : "normal"}
 }
 
 

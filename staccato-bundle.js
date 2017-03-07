@@ -217,49 +217,127 @@
 	            return notePoses;
 	        }
 	    }, {
-	        key: 'BeatElems',
-	        value: function BeatElems() {
-	            // console.log(this.props.measure.repeat)
-	            return this.props.measure.map(function (beat, index) {
-	                return Elem(Beat, {
-	                    ref: index,
-	                    beat: beat.beatNote,
-	                    underbar: beat.underbar,
-	                    key: index
-	                });
+	        key: 'SlotElems',
+	        value: function SlotElems() {
+	            var _this6 = this;
+
+	            return this.props.measure.beats.map(function (slot, index) {
+	                return Elem(Slot, Object.assign(slot, {
+	                    key: index,
+	                    parts: _this6.props.parts
+	                }));
 	            });
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var width = this.props.measure[0].beatNote.length == 0 ? { minWidth: 0 } : {};
-	            return Elem('div', { style: width, ref: "measure", className: "measure" }, this.BeatElems());
+	            // let width = (this.props.measure[0].beatNote.length == 0) ? {minWidth: 0} : {}
+	            return Elem('div', { style: {}, ref: "measure", className: "measure" }, this.SlotElems());
 	        }
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            this.notePoses = this.GetNotePoses();
+	            // this.notePoses = this.GetNotePoses()
 	        }
 	    }]);
 
 	    return Measure;
 	}(_react2.default.Component);
 
-	var Beat = function (_React$Component6) {
-	    _inherits(Beat, _React$Component6);
+	var Slot = function (_React$Component6) {
+	    _inherits(Slot, _React$Component6);
+
+	    function Slot(props) {
+	        _classCallCheck(this, Slot);
+
+	        return _possibleConstructorReturn(this, (Slot.__proto__ || Object.getPrototypeOf(Slot)).call(this, props));
+	    }
+
+	    _createClass(Slot, [{
+	        key: 'Elems',
+	        value: function Elems() {
+	            var elems = [],
+	                index = 0;
+	            for (var part in this.props) {
+	                if (this.props.hasOwnProperty(part) && this.props[part]) {
+	                    if (part != "lyric" && part != "parts") {
+	                        elems.push(Elem(Beat, Object.assign(this.props[part], { key: index })));
+	                        index++;
+	                    }
+	                    if (part == "lyric") {
+	                        elems.push(Elem(Lyric, Object.assign(this.props[part], { key: index })));
+	                    }
+	                }
+	            }
+
+	            return elems;
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return Elem('div', { style: {}, ref: "slot", className: "slot" }, this.Elems());
+	        }
+	    }]);
+
+	    return Slot;
+	}(_react2.default.Component);
+
+	var Lyric = function (_React$Component7) {
+	    _inherits(Lyric, _React$Component7);
+
+	    function Lyric(props) {
+	        _classCallCheck(this, Lyric);
+
+	        return _possibleConstructorReturn(this, (Lyric.__proto__ || Object.getPrototypeOf(Lyric)).call(this, props));
+	    }
+
+	    _createClass(Lyric, [{
+	        key: 'LyricChars',
+	        value: function LyricChars(chars) {
+	            console.log(chars);
+	            var res = chars.map(function (c, index) {
+	                return Elem('span', { className: "lyricChar", key: index }, c);
+	            });
+	            console.log(res);
+	            return res;
+	        }
+	    }, {
+	        key: 'Lyrics',
+	        value: function Lyrics() {
+	            var _this9 = this;
+
+	            var elems = [];
+	            Object.keys(this.props).forEach(function (key, index) {
+	                if (key != "children" && _this9.props[key]) {
+	                    elems.push(Elem('span', { className: "lyricSlot", key: index }, _this9.LyricChars(_this9.props[key])));
+	                }
+	            });
+	            return elems;
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return Elem('span', { ref: "lyric", className: "lyricBeat" }, this.Lyrics());
+	        }
+	    }]);
+
+	    return Lyric;
+	}(_react2.default.Component);
+
+	var Beat = function (_React$Component8) {
+	    _inherits(Beat, _React$Component8);
 
 	    function Beat(props) {
 	        _classCallCheck(this, Beat);
 
-	        var _this6 = _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
+	        var _this10 = _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
 
-	        _this6.state = {
-	            underbarPoses: _this6.props.underbar.map(function (elem) {
+	        _this10.state = {
+	            underbarPoses: _this10.props.underbar ? _this10.props.underbar.map(function (elem) {
 	                return { left: 0, width: 0, top: 0 };
-	            })
+	            }) : []
 	        };
-	        _this6.notePoses = {};
-	        return _this6;
+	        return _this10;
 	    }
 
 	    _createClass(Beat, [{
@@ -270,11 +348,7 @@
 
 	            for (var ithNote in this.refs) {
 	                if (ithNote != "beat") {
-	                    var elem = this.refs[ithNote];
-
-	                    if (elem.props.note.index) {
-	                        notePoses[elem.props.note.index] = elem.box;
-	                    }
+	                    notePoses[ithNote] = this.refs[ithNote].box;
 	                }
 	            }
 
@@ -286,6 +360,7 @@
 
 	            // by subtracting the score position from the underbar position,
 	            // we made the new undarbar position relative to score element.
+
 	            return this.props.underbar.map(function (elem) {
 	                return {
 	                    left: notePoses[elem.start].left - beatBox.left,
@@ -296,7 +371,7 @@
 	    }, {
 	        key: 'NoteElems',
 	        value: function NoteElems() {
-	            return this.props.beat.map(function (note, index) {
+	            return this.props.notes.map(function (note, index) {
 	                return Elem(Note, { ref: index, key: index, note: note });
 	            });
 	        }
@@ -311,21 +386,12 @@
 	        key: 'render',
 	        value: function render() {
 
+	            // console.log(this.props)
+
 	            var underbarElems = this.UnderbarElems(this.NoteElems().length);
-	            var underbarredNotes = this.NoteElems().concat(underbarElems);
+	            var noteElems = this.NoteElems().concat(underbarElems);
 
-	            if (this.props.repeatNotOnSide && this.props.beat.some(function (elem) {
-	                return elem.repeat == "open";
-	            })) {
-	                underbarredNotes = [Elem(Repeatbar, { key: offset, direction: "open" })].concat(underbarredNotes);
-	            }
-	            if (this.props.repeatNotOnSide && this.props.beat.some(function (elem) {
-	                return elem.repeat == "close";
-	            })) {
-	                underbarredNotes = underbarredNotes.concat(Elem(Repeatbar, { key: offset, direction: "close" }));
-	            }
-
-	            return Elem('span', { ref: "beat", className: "beat" }, underbarredNotes);
+	            return Elem('span', { ref: "beat", className: "beat" }, noteElems);
 	        }
 	    }, {
 	        key: 'componentDidMount',
@@ -333,17 +399,15 @@
 
 	            var beatBox = this.refs.beat.getBoundingClientRect();
 
-	            this.notePoses = this.GetNotePoses();
-
-	            this.setState({ underbarPoses: this.GetUnderbarPoses(this.GetNotePoses(), beatBox) });
+	            this.setState({ underbarPoses: this.props.underbar ? this.GetUnderbarPoses(this.GetNotePoses(), beatBox) : [] });
 	        }
 	    }]);
 
 	    return Beat;
 	}(_react2.default.Component);
 
-	var Pitch = function (_React$Component7) {
-	    _inherits(Pitch, _React$Component7);
+	var Pitch = function (_React$Component9) {
+	    _inherits(Pitch, _React$Component9);
 
 	    function Pitch(props) {
 	        _classCallCheck(this, Pitch);
@@ -361,37 +425,38 @@
 	    return Pitch;
 	}(_react2.default.Component);
 
-	var Note = function (_React$Component8) {
-	    _inherits(Note, _React$Component8);
+	var Note = function (_React$Component10) {
+	    _inherits(Note, _React$Component10);
 
 	    function Note(props) {
 	        _classCallCheck(this, Note);
 
-	        var _this8 = _possibleConstructorReturn(this, (Note.__proto__ || Object.getPrototypeOf(Note)).call(this, props));
+	        var _this12 = _possibleConstructorReturn(this, (Note.__proto__ || Object.getPrototypeOf(Note)).call(this, props));
 
-	        _this8.box = { left: 0, right: 0 };
+	        _this12.box = { left: 0, right: 0 };
 
-	        _this8.state = {
+	        _this12.state = {
 	            octaveDotPoses: []
 	        };
-	        return _this8;
+	        return _this12;
 	    }
 
 	    _createClass(Note, [{
 	        key: 'GetOctaveDotPoses',
 	        value: function GetOctaveDotPoses() {
-	            var octaveDotPoses = [];
-	            if (this.props.note.octave) {
 
+	            var octaveDotPoses = [];
+	            if (this.props.note.octave && this.props.note.octave.nums) {
 	                var octave = this.props.note.octave;
-	                for (var i = 0; i < octave.num; i++) {
+	                for (var i = 0; i < Math.abs(octave.nums); i++) {
 	                    octaveDotPoses.push({
 	                        index: this.props.note.pitch,
 	                        left: (this.box.right - this.box.left) / 2,
-	                        top: octave.side == "positive" ? -5 * i - this.box.height / 2 : 3 * this.props.note.conn.length + 5 * i + this.box.height / 2
+	                        top: octave.nums >= 0 ? -5 * i - this.box.height / 2 : 3 * octave.start + 5 * i + this.box.height / 2
 	                    });
 	                }
 	            }
+
 	            return octaveDotPoses;
 	        }
 	    }, {
@@ -419,13 +484,13 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
+	            //
+	            // let style = {
+	            //     marginLeft : -this.props.note.conn.length *0.7,
+	            //     marginRight : -this.props.note.conn.length *0.7
+	            // }
 
-	            var style = {
-	                marginLeft: -this.props.note.conn.length * 0.7,
-	                marginRight: -this.props.note.conn.length * 0.7
-	            };
-
-	            return Elem('span', { style: style, className: "note" }, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()).concat(this.OctaveDotElem()));
+	            return Elem('span', { style: {}, className: "note" }, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()).concat(this.OctaveDotElem()));
 	        }
 	    }, {
 	        key: 'componentDidMount',
@@ -439,8 +504,8 @@
 	    return Note;
 	}(_react2.default.Component);
 
-	var Accidental = function (_React$Component9) {
-	    _inherits(Accidental, _React$Component9);
+	var Accidental = function (_React$Component11) {
+	    _inherits(Accidental, _React$Component11);
 
 	    function Accidental(props) {
 	        _classCallCheck(this, Accidental);
@@ -461,8 +526,8 @@
 	    return Accidental;
 	}(_react2.default.Component);
 
-	var Dot = function (_React$Component10) {
-	    _inherits(Dot, _React$Component10);
+	var Dot = function (_React$Component12) {
+	    _inherits(Dot, _React$Component12);
 
 	    function Dot(props) {
 	        _classCallCheck(this, Dot);
@@ -480,8 +545,8 @@
 	    return Dot;
 	}(_react2.default.Component);
 
-	var OctaveDot = function (_React$Component11) {
-	    _inherits(OctaveDot, _React$Component11);
+	var OctaveDot = function (_React$Component13) {
+	    _inherits(OctaveDot, _React$Component13);
 
 	    function OctaveDot(props) {
 	        _classCallCheck(this, OctaveDot);
@@ -499,8 +564,8 @@
 	    return OctaveDot;
 	}(_react2.default.Component);
 
-	var Connect = function (_React$Component12) {
-	    _inherits(Connect, _React$Component12);
+	var Connect = function (_React$Component14) {
+	    _inherits(Connect, _React$Component14);
 
 	    function Connect(props) {
 	        _classCallCheck(this, Connect);
@@ -556,23 +621,21 @@
 	    return Connect;
 	}(_react2.default.Component);
 
-	var Score = function (_React$Component13) {
-	    _inherits(Score, _React$Component13);
+	var Chorus = function (_React$Component15) {
+	    _inherits(Chorus, _React$Component15);
 
-	    function Score(props) {
-	        _classCallCheck(this, Score);
+	    function Chorus(props) {
+	        _classCallCheck(this, Chorus);
 
-	        var _this13 = _possibleConstructorReturn(this, (Score.__proto__ || Object.getPrototypeOf(Score)).call(this, props));
+	        var _this17 = _possibleConstructorReturn(this, (Chorus.__proto__ || Object.getPrototypeOf(Chorus)).call(this, props));
 
-	        _this13.notePoses = {}, _this13.state = {
-	            connectPoses: _this13.props.connects.map(function (elem) {
-	                return { startLeft: 0, startCLeft: 0, startTop: 0, startCTop: 0, endCLeft: 0, endCTop: 0, endLeft: 0, endTop: 0 };
-	            })
+	        _this17.notePoses = {}, _this17.state = {
+	            // connectPoses : this.props.connects.map(elem => ({startLeft:0, startCLeft:0, startTop:0, startCTop:0, endCLeft:0, endCTop:0, endLeft:0, endTop:0}))
 	        };
-	        return _this13;
+	        return _this17;
 	    }
 
-	    _createClass(Score, [{
+	    _createClass(Chorus, [{
 	        key: 'GetNotePoses',
 	        value: function GetNotePoses() {
 	            var notePoses = {};
@@ -589,18 +652,18 @@
 	    }, {
 	        key: 'GetConnectPoses',
 	        value: function GetConnectPoses(scoreBox) {
-	            var _this14 = this;
+	            var _this18 = this;
 
 	            return this.props.connects.map(function (elem) {
 	                return {
-	                    startLeft: _this14.notePoses[elem.start].left - scoreBox.left,
-	                    startTop: _this14.notePoses[elem.start].top - scoreBox.top,
-	                    startCLeft: _this14.notePoses[elem.start].left - scoreBox.left + 5,
-	                    startCTop: _this14.notePoses[elem.start].top - scoreBox.top - 15,
-	                    endCLeft: _this14.notePoses[elem.end].left - scoreBox.left - 5,
-	                    endCTop: _this14.notePoses[elem.end].top - scoreBox.top - 15,
-	                    endLeft: _this14.notePoses[elem.end].left - scoreBox.left,
-	                    endTop: _this14.notePoses[elem.end].top - scoreBox.top
+	                    startLeft: _this18.notePoses[elem.start].left - scoreBox.left,
+	                    startTop: _this18.notePoses[elem.start].top - scoreBox.top,
+	                    startCLeft: _this18.notePoses[elem.start].left - scoreBox.left + 5,
+	                    startCTop: _this18.notePoses[elem.start].top - scoreBox.top - 15,
+	                    endCLeft: _this18.notePoses[elem.end].left - scoreBox.left - 5,
+	                    endCTop: _this18.notePoses[elem.end].top - scoreBox.top - 15,
+	                    endLeft: _this18.notePoses[elem.end].left - scoreBox.left,
+	                    endTop: _this18.notePoses[elem.end].top - scoreBox.top
 	                };
 	            });
 	        }
@@ -614,26 +677,31 @@
 	    }, {
 	        key: 'MeasureElems',
 	        value: function MeasureElems() {
+	            var _this19 = this;
+
+	            // console.log(this.props);
 
 	            return [].concat(this.props.measures.map(function (measure, index) {
-	                var elem = void 0;
-	                if (measure[0].beatNote[0].repeat == "open") {
-	                    elem = [Elem(Repeatbar, { key: 5300 + index, direction: "open", initial: true }), Elem(Measure, { ref: "measure-" + index, measure: measure, key: index })];
-	                    index == 0 && elem.push(Elem(Vertbar, { key: 5300 + index - 1 }));
-	                } else if (measure.last().beatNote.last().repeat == "close") {
+	                var elem = [Elem(Measure, { ref: "measure-" + index, measure: measure, parts: _this19.props.parts, key: index })];
 
-	                    elem = [Elem(Measure, { ref: "measure-" + index, measure: measure, key: index }), Elem(Repeatbar, { key: 5300 + index, direction: "closed" })];
-	                } else {
-
-	                    elem = [Elem(Measure, { ref: "measure-" + index, measure: measure, key: index }), Elem(Vertbar, { key: 5300 + index })];
+	                if (measure.measureType == "normal") {
+	                    elem.push(Elem(Vertbar, { key: 5300 + index - 1 }));
+	                } else if (measure.measureType == "rep_start") {
+	                    elem.push(Elem(Repeatbar, { key: 5300 + index - 1, direction: "open" }));
+	                } else if (measure.measureType == "rep_fin") {
+	                    elem.push(Elem(Repeatbar, { key: 5300 + index - 1, direction: "close" }));
+	                } else if (measure.measureType == "fin") {
+	                    elem.push(Elem(Vertbar, { key: 5300 + index - 1 }));
+	                    elem.push(Elem(Finalbar, { key: 6300 }));
 	                }
+
 	                return elem;
-	            })).concat(Elem(Finalbar, { key: 6300 })).concat(this.ConnectElems());
+	            }));
+	            // .concat(this.ConnectElems())
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
-
 	            return Elem('div', { ref: "score", className: "score" }, this.MeasureElems());
 	        }
 	    }, {
@@ -642,31 +710,32 @@
 
 	            var scoreBox = this.refs.score.getBoundingClientRect();
 
-	            this.notePoses = this.GetNotePoses();
+	            // this.notePoses = this.GetNotePoses()
 
 	            this.setState({
-	                connectPoses: this.GetConnectPoses(scoreBox)
+	                // connectPoses:this.GetConnectPoses(scoreBox)
 	            });
 	        }
 	    }]);
 
-	    return Score;
+	    return Chorus;
 	}(_react2.default.Component);
 
-	var Container = function (_React$Component14) {
-	    _inherits(Container, _React$Component14);
+	var Container = function (_React$Component16) {
+	    _inherits(Container, _React$Component16);
 
 	    function Container(props) {
 	        _classCallCheck(this, Container);
 
-	        var _this15 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
+	        // parse(scoreText);
 
-	        (0, _StaccatoParser.parse)(_What_A_Friend2.default);
+	        var _this20 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
-	        // this.state = {
-	        //     sections : this.GetSections(scoreText)
-	        // };
-	        return _this15;
+	        _this20.state = {
+	            text: _What_A_Friend2.default,
+	            score: (0, _StaccatoParser.parse)(_What_A_Friend2.default)
+	        };
+	        return _this20;
 	    }
 
 	    _createClass(Container, [{
@@ -674,69 +743,49 @@
 	        value: function handleChange(event) {
 	            event.persist();
 
-	            var val = event.target.value;
+	            var newText = event.target.value;
 
-	            // this.setState((previousState) => ({
-	            //     text : val,
-	            //     sections : this.GetSections(val)
-	            // }));
-	        }
-	    }, {
-	        key: 'sectionElems',
-	        value: function sectionElems() {
-	            var elems = [];
-
-	            // for (var i = 0; i < this.state.sections.length; i++) {
-	            //     if(this.state.sections[i].name != "score"){
-	            //         elems.push(SectionElem(this.state.sections[i].name, i, this.state.sections[i].body));
-	            //     } else {
-	            //
-	            //         try {
-	            //             console.log(this.state.text);
-	            //             let scoreModel = parse(this.state.text);
-	            //
-	            //             elems.push(
-	            //                 SectionElem(this.state.sections[i].name, i, Elem(Score,
-	            //                     {
-	            //                         measures:scoreModel.measures,
-	            //                         connects : scoreModel.connects
-	            //                     }
-	            //                 ))
-	            //             );
-	            //         } catch (error){
-	            //             console.log(error);
-	            //             elems.push(
-	            //                 SectionElem(this.state.sections[i].name, i, Elem(Score, {}, [this.state.sections[i].body]))
-	            //             );
-	            //         }
-	            //
-	            //     }
-	            //
-	            // }
-
-	            return elems;
+	            this.setState(function (previousState) {
+	                return {
+	                    text: newText,
+	                    score: (0, _StaccatoParser.parse)(newText)
+	                };
+	            });
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this16 = this;
+	            var _this21 = this;
+
+	            var sectionElems = [],
+	                index = 0;
+	            for (var section in this.state.score) {
+	                if (this.state.score.hasOwnProperty(section)) {
+	                    if (section != "chorus") {
+	                        sectionElems.push(SectionElem(section, index, this.state.score[section]));
+	                    } else {
+	                        sectionElems.push(Elem(Chorus, Object.assign(this.state.score.chorus, { key: index })));
+	                    }
+	                    index++;
+	                }
+	            }
 
 	            var editor = Elem('textarea', {
 	                id: 'editor',
-	                className: 'editing',
-	                rows: 60,
+	                className: 'editor',
+	                rows: 30,
 	                placeholder: 'yep',
 	                spellCheck: 'false',
-	                value: this.state.value,
+	                value: this.state.text,
 	                onChange: function onChange(event) {
-	                    return _this16.handleChange(event);
+	                    return _this21.handleChange(event);
 	                }
 	            });
 
 	            var editorWrapper = Elem(_reactBootstrap.Col, {
 	                key: 'editor',
 	                md: 4,
-	                className: "editing-wrapper"
+	                className: "editor-wrapper"
 	            }, editor);
 
 	            var preview = Elem(_reactBootstrap.Col, {
@@ -744,7 +793,7 @@
 	                md: 6,
 	                id: 'preview',
 	                className: 'preview'
-	            }, Elem('div', { ref: "preview", id: 'page', className: 'page' }, this.sectionElems()));
+	            }, Elem('div', { ref: "preview", id: 'page', className: 'page' }, sectionElems));
 
 	            var row = Elem(_reactBootstrap.Row, {}, [editorWrapper, preview]);
 
@@ -754,12 +803,11 @@
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
 
-	            this.setState(function (previousState) {
-	                return {
-	                    value: previousState.text,
-	                    sections: previousState.sections
-	                };
-	            });
+	            // this.setState((previousState) => ({
+	            //     value : previousState.text,
+	            //     sections : previousState.sections
+	            // }));
+
 	        }
 	    }]);
 
@@ -41189,17 +41237,25 @@
 	            }
 
 	            let zippedChorus = zipMeasure(chorus, parts)
-	            console.log(zippedChorus);
 
 	            if(chorus.connections.unison){
 	                if(groupedLyric.unison){
 	                    chorus.connections.unison.slots.forEach((slot, index) =>{
-	                        zippedChorus.measures[slot.measure].beats[slot.beat].lyric = groupedLyric.unison[index]
+	                        // 要把这里换一下，不是直接把index的歌词加进来，而是把属于同一个Beat的歌词加入进来
+	                        // 然后在Beat中进行进一步渲染
+	                        if(!zippedChorus.measures[slot.measure].beats[slot.beat].lyric){
+	                                zippedChorus.measures[slot.measure].beats[slot.beat].lyric = [];
+	                        }
+	                        zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric.unison[index]
 	                    })
 	                }
 	            }
 
-	            return score
+	            // console.log(zippedChorus.measures.map(measure => measure.beats));
+
+	            zippedChorus.parts = parts;
+	            score.chorus = zippedChorus;
+	            return score;
 	        },
 	        peg$c2 = peg$otherExpectation("section that contains different info"),
 	        peg$c3 = "chorus",
@@ -41287,12 +41343,11 @@
 	                }
 	            })
 
-	            let beats = GroupBeat(durationExtendedBeats, 1)
-	            // console.log(JSON.stringify(underbars, null, 4))
+	            let beats = GroupBeat(durationExtendedBeats);
 
 	            return {
 	                beats : beats,
-	                measure : bar
+	                measureType : bar
 	            }
 	        },
 	        peg$c30 = peg$otherExpectation("notes"),
@@ -41419,28 +41474,28 @@
 	        peg$c74 = "-",
 	        peg$c75 = peg$literalExpectation("-", false),
 	        peg$c76 = function() {
-	            return {pitch : text()}
+	            return {pitch : "–"}
 	        },
 	        peg$c77 = peg$otherExpectation("measure bar"),
 	        peg$c78 = "||",
 	        peg$c79 = peg$literalExpectation("||", false),
 	        peg$c80 = function() {
-	            return {measure : "fin"}
+	            return {measureType : "fin"}
 	        },
 	        peg$c81 = ":|",
 	        peg$c82 = peg$literalExpectation(":|", false),
 	        peg$c83 = function() {
-	            return {measure : "rep_fin"}
+	            return {measureType : "rep_fin"}
 	        },
 	        peg$c84 = "|:",
 	        peg$c85 = peg$literalExpectation("|:", false),
 	        peg$c86 = function() {
-	            return {measure : "rep_start"}
+	            return {measureType : "rep_start"}
 	        },
 	        peg$c87 = "|",
 	        peg$c88 = peg$literalExpectation("|", false),
 	        peg$c89 = function() {
-	            return {measure : "normal"}
+	            return {measureType : "normal"}
 	        },
 	        peg$c90 = peg$otherExpectation("whitespace"),
 	        peg$c91 = /^[ \t\n\r]/,
@@ -43145,20 +43200,24 @@
 	                )}, [])
 	        }
 
-	        const GroupBeat = function(notes, length) {
+	        const GroupBeat = function(notes) {
 	            let duration = 0;
 
-	            return notes.reduce(function(measures, note){
-	                if (duration >= length) {
-	                    measures[measures.length - 1].underbar = GetDurations(measures[measures.length - 1].notes);
-	                    measures.push({notes : [note]});
-	                    duration = note.duration;
-	                } else {
-	                    measures[measures.length - 1].notes.push(note);
-	                    duration += note.duration;
+	            let beats = [{notes:[]}];
+	            notes.forEach(note =>{
+	                duration += note.duration;
+	                (duration <= 1) && beats[beats.length - 1].notes.push(note);
+
+	                if(duration == 1){
+	                    duration = 0;
+	                    beats.push({notes : []});
 	                }
-	                return measures;
-	            }, [{notes:[]}]);
+	            })
+
+	            beats.forEach(beat =>{
+	                beat.underbar = GetDurations(beat.notes);
+	            })
+	            return beats;
 	        }
 
 	        let GetDurations = function(notes){
@@ -43210,7 +43269,7 @@
 	                measure.beats.forEach(function(beat, beatIndex){
 	                    beat.notes.forEach(function(note, noteIndex){
 
-	                        if(!isConnecting && note.pitch != "-"){
+	                        if(note.pitch != "–"){
 	                            slots.push({measure:index, beat:beatIndex, note:noteIndex})
 	                        }
 
@@ -43228,7 +43287,6 @@
 	                    })
 	                })
 	            })
-	            console.log(slots.length);
 	            return {ranges:res, slots:slots};
 	        }
 
@@ -43241,7 +43299,7 @@
 	            chorus[parts[0]].measures.forEach( (_, index) => {
 	                parts.forEach(part => {
 	                    chorus.measures[index][part] = chorus[part].measures[index];
-	                    chorus.measures[index].measure = chorus[part].measures[index].measure;
+	                    chorus.measures[index].measureType = chorus[part].measures[index].measureType.measureType;
 	                })
 
 	                chorus.measures[index] = zipBeat(chorus.measures[index], parts)
@@ -43262,8 +43320,6 @@
 	            for (var part of parts) {
 	                delete chorus[part];
 	            }
-
-	            // console.log(JSON.stringify(chorus, null, 4))
 
 	            return chorus;
 	        }
@@ -43368,6 +43424,10 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -43415,7 +43475,7 @@
 	    bottom: 0,
 	    opacity: 0,
 	    visibility: 'hidden',
-	    transition: 'opacity .3s ease-out, visibility .3s ease-out',
+	    transition: 'opacity .3s ease-out',
 	    backgroundColor: 'rgba(0,0,0,.3)'
 	  },
 	  dragHandle: {
@@ -43436,7 +43496,7 @@
 
 	    _this.state = {
 	      // the detected width of the sidebar in pixels
-	      sidebarWidth: props.defaultSidebarWidth,
+	      sidebarWidth: 0,
 
 	      // keep track of touching params
 	      touchIdentifier: null,
@@ -43454,7 +43514,6 @@
 	    _this.onTouchMove = _this.onTouchMove.bind(_this);
 	    _this.onTouchEnd = _this.onTouchEnd.bind(_this);
 	    _this.onScroll = _this.onScroll.bind(_this);
-	    _this.saveSidebarRef = _this.saveSidebarRef.bind(_this);
 	    return _this;
 	  }
 
@@ -43573,16 +43632,11 @@
 	  }, {
 	    key: 'saveSidebarWidth',
 	    value: function saveSidebarWidth() {
-	      var width = this.sidebar.offsetWidth;
+	      var width = _reactDom2.default.findDOMNode(this.refs.sidebar).offsetWidth;
 
 	      if (width !== this.state.sidebarWidth) {
 	        this.setState({ sidebarWidth: width });
 	      }
-	    }
-	  }, {
-	    key: 'saveSidebarRef',
-	    value: function saveSidebarRef(node) {
-	      this.sidebar = node;
 	    }
 
 	    // calculate the sidebarWidth based on current touch info
@@ -43716,7 +43770,7 @@
 	        rootProps,
 	        _react2.default.createElement(
 	          'div',
-	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: this.saveSidebarRef },
+	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: 'sidebar' },
 	          this.props.sidebar
 	        ),
 	        _react2.default.createElement('div', { className: this.props.overlayClassName,
@@ -43791,10 +43845,7 @@
 	  dragToggleDistance: _react2.default.PropTypes.number,
 
 	  // callback called when the overlay is clicked
-	  onSetOpen: _react2.default.PropTypes.func,
-
-	  // Intial sidebar width when page loads
-	  defaultSidebarWidth: _react2.default.PropTypes.number
+	  onSetOpen: _react2.default.PropTypes.func
 	};
 
 	Sidebar.defaultProps = {
@@ -43807,8 +43858,7 @@
 	  shadow: true,
 	  dragToggleDistance: 30,
 	  onSetOpen: function onSetOpen() {},
-	  styles: {},
-	  defaultSidebarWidth: 0
+	  styles: {}
 	};
 
 	exports.default = Sidebar;
