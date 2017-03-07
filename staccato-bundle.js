@@ -119,7 +119,19 @@
 	    _createClass(Vertbar, [{
 	        key: 'render',
 	        value: function render() {
-	            return Elem('div', { className: "vertbar" });
+	            var _this2 = this;
+
+	            var bars = [];
+	            Object.keys(this.props.parts).forEach(function (_, index) {
+	                bars.push(Elem('span', { key: index > 1 ? index + 500 : index, className: "vertbar" }, " "));
+	                if (index == 1) {
+	                    if (_this2.props.lyric) {
+	                        bars.push(Elem(Lyric, Object.assign(_this2.props.lyric, { key: index + 250 })));
+	                    } else bars.push(Elem(Lyric, Object.assign([[" ", " ", " "]], { key: index + 250 })));
+	                }
+	            });
+
+	            return Elem('div', { className: "vertbars" }, bars);
 	        }
 	    }]);
 
@@ -138,7 +150,19 @@
 	    _createClass(Finalbar, [{
 	        key: 'render',
 	        value: function render() {
-	            return Elem('div', { className: "finalbar" });
+	            var _this4 = this;
+
+	            var bars = [];
+	            Object.keys(this.props.parts).forEach(function (_, index) {
+	                bars.push(Elem('span', { key: index > 1 ? index + 500 : index, className: "finalbar" }, " "));
+	                if (index == 1) {
+	                    if (_this4.props.lyric) {
+	                        bars.push(Elem(Lyric, Object.assign(_this4.props.lyric, { key: index + 250 })));
+	                    } else bars.push(Elem(Lyric, Object.assign([[" ", " ", " "]], { key: index + 250 })));
+	                }
+	            });
+
+	            return Elem('div', { className: "finalbars" }, bars);
 	        }
 	    }]);
 
@@ -196,10 +220,10 @@
 	    function Measure(props) {
 	        _classCallCheck(this, Measure);
 
-	        var _this5 = _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
+	        var _this7 = _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
 
-	        _this5.notePoses = {};
-	        return _this5;
+	        _this7.notePoses = {};
+	        return _this7;
 	    }
 
 	    _createClass(Measure, [{
@@ -219,12 +243,12 @@
 	    }, {
 	        key: 'SlotElems',
 	        value: function SlotElems() {
-	            var _this6 = this;
+	            var _this8 = this;
 
 	            return this.props.measure.beats.map(function (slot, index) {
 	                return Elem(Slot, Object.assign(slot, {
 	                    key: index,
-	                    parts: _this6.props.parts
+	                    parts: _this8.props.parts
 	                }));
 	            });
 	        }
@@ -256,19 +280,31 @@
 	    _createClass(Slot, [{
 	        key: 'Elems',
 	        value: function Elems() {
+	            var _this10 = this;
+
 	            var elems = [],
 	                index = 0;
-	            for (var part in this.props) {
-	                if (this.props.hasOwnProperty(part) && this.props[part]) {
-	                    if (part != "lyric" && part != "parts") {
-	                        elems.push(Elem(Beat, Object.assign(this.props[part], { key: index })));
-	                        index++;
-	                    }
-	                    if (part == "lyric") {
-	                        elems.push(Elem(Lyric, Object.assign(this.props[part], { key: index })));
-	                    }
+
+	            this.props.parts.forEach(function (partName, index) {
+	                elems.push(Elem(Beat, Object.assign(_this10.props[partName], { key: index > 1 ? index + 500 : index })));
+	                if (index == 1) {
+	                    if (_this10.props.lyric) {
+	                        elems.push(Elem(Lyric, Object.assign(_this10.props.lyric, { key: index + 250 })));
+	                    } else elems.push(Elem(Lyric, Object.assign([[" ", " ", " "]], { key: index + 250 })));
 	                }
-	            }
+	            });
+
+	            // for (let part in this.props) {
+	            //     if (this.props.hasOwnProperty(part) && this.props[part]) {
+	            //         if(part != "lyric" && part != "parts"){
+	            //             elems.push(Elem(Beat, Object.assign(this.props[part], {key:index})));
+	            //             index++;
+	            //         }
+	            //         if(part == "lyric"){
+	            //             elems.push(Elem(Lyric, Object.assign(this.props[part], {key:index})));
+	            //         }
+	            //     }
+	            // }
 
 	            return elems;
 	        }
@@ -294,22 +330,19 @@
 	    _createClass(Lyric, [{
 	        key: 'LyricChars',
 	        value: function LyricChars(chars) {
-	            console.log(chars);
-	            var res = chars.map(function (c, index) {
-	                return Elem('span', { className: "lyricChar", key: index }, c);
+	            return chars.map(function (c, index) {
+	                return Elem('div', { className: "lyricChar", key: index }, c);
 	            });
-	            console.log(res);
-	            return res;
 	        }
 	    }, {
 	        key: 'Lyrics',
 	        value: function Lyrics() {
-	            var _this9 = this;
+	            var _this12 = this;
 
 	            var elems = [];
 	            Object.keys(this.props).forEach(function (key, index) {
-	                if (key != "children" && _this9.props[key]) {
-	                    elems.push(Elem('span', { className: "lyricSlot", key: index }, _this9.LyricChars(_this9.props[key])));
+	                if (key != "children" && _this12.props[key]) {
+	                    elems.push(Elem('span', { className: "lyricSlot", key: index }, _this12.LyricChars(_this12.props[key])));
 	                }
 	            });
 	            return elems;
@@ -330,14 +363,14 @@
 	    function Beat(props) {
 	        _classCallCheck(this, Beat);
 
-	        var _this10 = _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
+	        var _this13 = _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
 
-	        _this10.state = {
-	            underbarPoses: _this10.props.underbar ? _this10.props.underbar.map(function (elem) {
+	        _this13.state = {
+	            underbarPoses: _this13.props.underbar ? _this13.props.underbar.map(function (elem) {
 	                return { left: 0, width: 0, top: 0 };
 	            }) : []
 	        };
-	        return _this10;
+	        return _this13;
 	    }
 
 	    _createClass(Beat, [{
@@ -431,14 +464,14 @@
 	    function Note(props) {
 	        _classCallCheck(this, Note);
 
-	        var _this12 = _possibleConstructorReturn(this, (Note.__proto__ || Object.getPrototypeOf(Note)).call(this, props));
+	        var _this15 = _possibleConstructorReturn(this, (Note.__proto__ || Object.getPrototypeOf(Note)).call(this, props));
 
-	        _this12.box = { left: 0, right: 0 };
+	        _this15.box = { left: 0, right: 0 };
 
-	        _this12.state = {
+	        _this15.state = {
 	            octaveDotPoses: []
 	        };
-	        return _this12;
+	        return _this15;
 	    }
 
 	    _createClass(Note, [{
@@ -627,12 +660,12 @@
 	    function Chorus(props) {
 	        _classCallCheck(this, Chorus);
 
-	        var _this17 = _possibleConstructorReturn(this, (Chorus.__proto__ || Object.getPrototypeOf(Chorus)).call(this, props));
+	        var _this20 = _possibleConstructorReturn(this, (Chorus.__proto__ || Object.getPrototypeOf(Chorus)).call(this, props));
 
-	        _this17.notePoses = {}, _this17.state = {
+	        _this20.notePoses = {}, _this20.state = {
 	            // connectPoses : this.props.connects.map(elem => ({startLeft:0, startCLeft:0, startTop:0, startCTop:0, endCLeft:0, endCTop:0, endLeft:0, endTop:0}))
 	        };
-	        return _this17;
+	        return _this20;
 	    }
 
 	    _createClass(Chorus, [{
@@ -652,18 +685,18 @@
 	    }, {
 	        key: 'GetConnectPoses',
 	        value: function GetConnectPoses(scoreBox) {
-	            var _this18 = this;
+	            var _this21 = this;
 
 	            return this.props.connects.map(function (elem) {
 	                return {
-	                    startLeft: _this18.notePoses[elem.start].left - scoreBox.left,
-	                    startTop: _this18.notePoses[elem.start].top - scoreBox.top,
-	                    startCLeft: _this18.notePoses[elem.start].left - scoreBox.left + 5,
-	                    startCTop: _this18.notePoses[elem.start].top - scoreBox.top - 15,
-	                    endCLeft: _this18.notePoses[elem.end].left - scoreBox.left - 5,
-	                    endCTop: _this18.notePoses[elem.end].top - scoreBox.top - 15,
-	                    endLeft: _this18.notePoses[elem.end].left - scoreBox.left,
-	                    endTop: _this18.notePoses[elem.end].top - scoreBox.top
+	                    startLeft: _this21.notePoses[elem.start].left - scoreBox.left,
+	                    startTop: _this21.notePoses[elem.start].top - scoreBox.top,
+	                    startCLeft: _this21.notePoses[elem.start].left - scoreBox.left + 5,
+	                    startCTop: _this21.notePoses[elem.start].top - scoreBox.top - 15,
+	                    endCLeft: _this21.notePoses[elem.end].left - scoreBox.left - 5,
+	                    endCTop: _this21.notePoses[elem.end].top - scoreBox.top - 15,
+	                    endLeft: _this21.notePoses[elem.end].left - scoreBox.left,
+	                    endTop: _this21.notePoses[elem.end].top - scoreBox.top
 	                };
 	            });
 	        }
@@ -677,22 +710,22 @@
 	    }, {
 	        key: 'MeasureElems',
 	        value: function MeasureElems() {
-	            var _this19 = this;
+	            var _this22 = this;
 
 	            // console.log(this.props);
 
 	            return [].concat(this.props.measures.map(function (measure, index) {
-	                var elem = [Elem(Measure, { ref: "measure-" + index, measure: measure, parts: _this19.props.parts, key: index })];
+	                var elem = [Elem(Measure, { ref: "measure-" + index, measure: measure, parts: _this22.props.parts, key: index })];
 
 	                if (measure.measureType == "normal") {
-	                    elem.push(Elem(Vertbar, { key: 5300 + index - 1 }));
+	                    elem.push(Elem(Vertbar, { key: 5300 + index - 1, parts: _this22.props.parts }));
 	                } else if (measure.measureType == "rep_start") {
-	                    elem.push(Elem(Repeatbar, { key: 5300 + index - 1, direction: "open" }));
+	                    elem.push(Elem(Repeatbar, { key: 5300 + index - 1, direction: "open", parts: _this22.props.parts }));
 	                } else if (measure.measureType == "rep_fin") {
-	                    elem.push(Elem(Repeatbar, { key: 5300 + index - 1, direction: "close" }));
+	                    elem.push(Elem(Repeatbar, { key: 5300 + index - 1, direction: "close", parts: _this22.props.parts }));
 	                } else if (measure.measureType == "fin") {
-	                    elem.push(Elem(Vertbar, { key: 5300 + index - 1 }));
-	                    elem.push(Elem(Finalbar, { key: 6300 }));
+	                    elem.push(Elem(Vertbar, { key: 5300 + index - 1, parts: _this22.props.parts }));
+	                    elem.push(Elem(Finalbar, { key: 6300, parts: _this22.props.parts }));
 	                }
 
 	                return elem;
@@ -729,13 +762,13 @@
 
 	        // parse(scoreText);
 
-	        var _this20 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
+	        var _this23 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
-	        _this20.state = {
+	        _this23.state = {
 	            text: _What_A_Friend2.default,
 	            score: (0, _StaccatoParser.parse)(_What_A_Friend2.default)
 	        };
-	        return _this20;
+	        return _this23;
 	    }
 
 	    _createClass(Container, [{
@@ -755,7 +788,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this21 = this;
+	            var _this24 = this;
 
 	            var sectionElems = [],
 	                index = 0;
@@ -778,7 +811,7 @@
 	                spellCheck: 'false',
 	                value: this.state.text,
 	                onChange: function onChange(event) {
-	                    return _this21.handleChange(event);
+	                    return _this24.handleChange(event);
 	                }
 	            });
 
@@ -43384,7 +43417,7 @@
 /* 431 */
 /***/ function(module, exports) {
 
-	module.exports = "title {\nWhat A Friend We Have In Jesus\n}\n\nsubtitle {\n}\n\nlyrics {\nScriven 1855\n}\n\ncomposer {\nConverse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto\n}\n\nverse 1 {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 2 {\n有 否 煩 惱 壓 著 心 頭？ 有 否 遇 試 煉 引 誘？\n我 們 切 莫 灰 心 失 望， 仍 到 主 恩 座 前 求！\n何 處 得 此 忠 心 朋 友， 分 擔 一 切 苦 與 憂，\n我 們 弱 點 主 都 知 透， 放 心 到 主 座 前 求。\n}\n\n\nchorus soprano {\n.5 5  (6 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"
+	module.exports = "title {\nWhat A Friend We Have In Jesus\n}\n\nsubtitle {\n}\n\nlyrics {\nScriven 1855\n}\n\ncomposer {\nConverse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nverse 1 {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 2 {\n有 否 煩 惱 壓 著 心 頭？ 有 否 遇 試 煉 引 誘？\n我 們 切 莫 灰 心 失 望， 仍 到 主 恩 座 前 求！\n何 處 得 此 忠 心 朋 友， 分 擔 一 切 苦 與 憂，\n我 們 弱 點 主 都 知 透， 放 心 到 主 座 前 求。\n}\n\nverse 3 {\n勞 苦 多 愁 軟 弱 不 堪， 掛 慮 重 擔 壓 肩 頭，\n主 是 你 我 避 難 處 所， 快 到 主 恩 座 前 求！\n你 若 遭 遇 友 叛 親 離， 來 到 主 恩 座 前 求，\n在 主 懷 中 必 蒙 護 佑， 與 主 同 在 永 無 憂。\n}\n\nchorus soprano {\n.5 5  (6 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (5 3) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"
 
 /***/ },
 /* 432 */

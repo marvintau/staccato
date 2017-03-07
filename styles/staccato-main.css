@@ -50,7 +50,7 @@ body {
 	font-family: "Optima", "Songti TC";
     font-size: 110%;
 	width : 600px;
-	height : 900px;
+	height : 1000px;
 	/*border-style:solid;
 	border-width: 1px;*/
 
@@ -60,7 +60,7 @@ body {
 	margin: 10px;
     position : relative;
     /*width : 100%;*/
-	height: 880px;
+	height: 980px;
     align-content:stretch;
     text-align: justify;
 }
@@ -145,12 +145,17 @@ body {
     display:inline-flex;
     flex-wrap: wrap;
     font-weight: bold;
+    margin-right: -2em;
     /*letter-spacing: -0.3em;*/
     /*font-size: 50%;*/
 }
 
+.lyricChar {
+    white-space: pre;
+}
+
 .lyricSlot{
-    display:inline-flex;
+    display:inline-block;
     flex-direction: column;
 }
 
@@ -172,9 +177,17 @@ body {
     /*border: 1px solid #888888;*/
 }
 
-.vertbar{
-    margin: 15px 0 10px;
+.vertbars{
+    display:inline-flex;
+    flex-direction: column;
+    margin: 18px 0 10px;
     width: 1px;
+}
+
+.vertbar{
+    width:1px;
+    margin: 3px 0 3px;
+    height:1.2em;
     background-color: #000000;
     /*border: 1px solid;*/
 }
@@ -186,14 +199,6 @@ body {
     background-color: #000000;
     /*box-shadow: 0 0 0 1px red;*/
     /*border-right: dotted 9px orange;*/
-}
-
-.initialbar {
-    /*display: inline-flex;*/
-    /*margin-left: -18px;*/
-    /*margin-right: -2px;*/
-    /*position : absolute;*/
-    /*margin : 0;*/
 }
 
 .dot{
@@ -231,9 +236,17 @@ body {
     /*border: 1px solid #888888;*/
 }
 
-.finalbar{
-    margin: 15px -3px 10px -15px;
+.finalbars{
+    display:inline-flex;
+    flex-direction: column;
+    margin: 18px -3px 10px -15px;
     width: 2px;
+}
+
+.finalbar{
+    width: 2px;
+    margin: 3px 0 3px;
+    height:1.2em;
     background-color: #000000;
 }
 

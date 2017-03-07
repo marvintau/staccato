@@ -47,7 +47,20 @@ class Vertbar extends React.Component{
     }
 
     render(){
-        return Elem('div', {className:"vertbar"})
+
+        let bars = [];
+        Object.keys(this.props.parts).forEach((_, index) => {
+            bars.push(Elem('span', {key:index > 1 ? index + 500 : index , className:"vertbar"}, " "));
+            if(index == 1){
+                if(this.props.lyric){
+                    bars.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
+                }
+                else
+                    bars.push(Elem(Lyric, Object.assign([[" ", " ", " "]], {key:index+250})));
+            }
+        });
+
+        return Elem('div', {className:"vertbars"}, bars);
     }
 }
 
@@ -56,7 +69,20 @@ class Finalbar extends React.Component{
         super(props);
     }
     render(){
-        return Elem('div', {className:"finalbar"})
+
+        let bars = [];
+        Object.keys(this.props.parts).forEach((_, index) => {
+            bars.push(Elem('span', {key:index > 1 ? index + 500 : index , className:"finalbar"}, " "));
+            if(index == 1){
+                if(this.props.lyric){
+                    bars.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
+                }
+                else
+                    bars.push(Elem(Lyric, Object.assign([[" ", " ", " "]], {key:index+250})));
+            }
+        });
+
+        return Elem('div', {className:"finalbars"}, bars)
     }
 }
 
@@ -132,17 +158,29 @@ class Slot extends React.Component{
 
     Elems(){
         let elems = [], index = 0;
-        for (let part in this.props) {
-            if (this.props.hasOwnProperty(part) && this.props[part]) {
-                if(part != "lyric" && part != "parts"){
-                    elems.push(Elem(Beat, Object.assign(this.props[part], {key:index})));
-                    index++;
+
+        this.props.parts.forEach((partName, index) => {
+            elems.push(Elem(Beat, Object.assign(this.props[partName], {key:index > 1 ? index + 500 : index})));
+            if(index == 1){
+                if(this.props.lyric){
+                    elems.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
                 }
-                if(part == "lyric"){
-                    elems.push(Elem(Lyric, Object.assign(this.props[part], {key:index})));
-                }
+                else
+                    elems.push(Elem(Lyric, Object.assign([[" ", " ", " "]], {key:index+250})));
             }
-        }
+        })
+
+        // for (let part in this.props) {
+        //     if (this.props.hasOwnProperty(part) && this.props[part]) {
+        //         if(part != "lyric" && part != "parts"){
+        //             elems.push(Elem(Beat, Object.assign(this.props[part], {key:index})));
+        //             index++;
+        //         }
+        //         if(part == "lyric"){
+        //             elems.push(Elem(Lyric, Object.assign(this.props[part], {key:index})));
+        //         }
+        //     }
+        // }
 
         return elems;
     }
@@ -158,10 +196,7 @@ class Lyric extends React.Component{
     }
 
     LyricChars(chars){
-        console.log(chars);
-        let res = chars.map((c, index) => Elem('span', {className:"lyricChar", key:index}, c));
-        console.log(res);
-        return res;
+        return chars.map((c, index) => Elem('div', {className:"lyricChar", key:index}, c));
     }
 
     Lyrics(){
@@ -462,14 +497,14 @@ class Chorus extends React.Component{
                 let elem = [Elem(Measure, {ref:"measure-"+index, measure: measure, parts:this.props.parts, key:index})];
 
                 if(measure.measureType == "normal"){
-                    elem.push(Elem(Vertbar, {key:5300+index-1}))
+                    elem.push(Elem(Vertbar, {key:5300+index-1, parts:this.props.parts}))
                 } else if (measure.measureType == "rep_start"){
-                    elem.push(Elem(Repeatbar, {key:5300+index-1, direction:"open"}))
+                    elem.push(Elem(Repeatbar, {key:5300+index-1, direction:"open", parts:this.props.parts}))
                 } else if (measure.measureType == "rep_fin"){
-                    elem.push(Elem(Repeatbar, {key:5300+index-1, direction:"close"}))
+                    elem.push(Elem(Repeatbar, {key:5300+index-1, direction:"close", parts:this.props.parts}))
                 } else if (measure.measureType == "fin"){
-                    elem.push(Elem(Vertbar, {key:5300+index-1}))
-                    elem.push(Elem(Finalbar, {key:6300}))
+                    elem.push(Elem(Vertbar, {key:5300+index-1, parts:this.props.parts}))
+                    elem.push(Elem(Finalbar, {key:6300, parts:this.props.parts}))
                 }
 
                 return elem;
