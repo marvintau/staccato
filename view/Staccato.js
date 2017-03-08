@@ -9,7 +9,6 @@ import scoreText from '../What_A_Friend.txt';
 
 import {default as Sidebar} from 'react-sidebar';
 
-
 Array.prototype.riffle = function(func){
     let res = [];
 
@@ -23,6 +22,14 @@ Array.prototype.riffle = function(func){
 Array.prototype.last = function(){
     return this[this.length - 1]
 }
+
+Array.prototype.groupBy = function(key) {
+    return this.reduce(function(rv, x) {
+        (rv[x[key]] = rv[x[key]] || []).push(x);
+    return rv;
+  }, {});
+};
+
 
 let Elem = function(component, param, children){
     return React.createElement(component, param, children)
@@ -56,7 +63,7 @@ class Vertbar extends React.Component{
                     bars.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
                 }
                 else
-                    bars.push(Elem(Lyric, Object.assign([[" ", " ", " "]], {key:index+250})));
+                    bars.push(Elem(Lyric, Object.assign([Array(this.props.lyricLines).fill(" ")], {key:index+250})));
             }
         });
 
@@ -78,7 +85,7 @@ class Finalbar extends React.Component{
                     bars.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
                 }
                 else
-                    bars.push(Elem(Lyric, Object.assign([[" ", " ", " "]], {key:index+250})));
+                    bars.push(Elem(Lyric, Object.assign([Array(this.props.lyricLines).fill(" ")], {key:index+250})));
             }
         });
 
@@ -119,6 +126,7 @@ class Measure extends React.Component{
     constructor(props){
         super(props);
         this.notePoses = {}
+        this.box = {}
     }
 
     GetNotePoses(){
@@ -135,19 +143,22 @@ class Measure extends React.Component{
     }
 
     SlotElems(){
+
+        let lyricLines = this.props.measure.beats[0].lyric[0].length;
+
         return this.props.measure.beats.map((slot, index)=>Elem(Slot, Object.assign(slot, {
             key : index,
-            parts : this.props.parts
+            parts : this.props.parts,
+            lyricLines : lyricLines
         })));
     }
 
     render() {
-        // let width = (this.props.measure[0].beatNote.length == 0) ? {minWidth: 0} : {}
         return Elem('div', {style:{}, ref:"measure", className:"measure"}, this.SlotElems());
     }
 
     componentDidMount(){
-        // this.notePoses = this.GetNotePoses()
+        this.box = this.refs.measure.getBoundingClientRect();
     }
 }
 
@@ -166,21 +177,9 @@ class Slot extends React.Component{
                     elems.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
                 }
                 else
-                    elems.push(Elem(Lyric, Object.assign([[" ", " ", " "]], {key:index+250})));
+                    elems.push(Elem(Lyric, Object.assign([Array(this.props.lyricLines).fill(" ")], {key:index+250})));
             }
         })
-
-        // for (let part in this.props) {
-        //     if (this.props.hasOwnProperty(part) && this.props[part]) {
-        //         if(part != "lyric" && part != "parts"){
-        //             elems.push(Elem(Beat, Object.assign(this.props[part], {key:index})));
-        //             index++;
-        //         }
-        //         if(part == "lyric"){
-        //             elems.push(Elem(Lyric, Object.assign(this.props[part], {key:index})));
-        //         }
-        //     }
-        // }
 
         return elems;
     }
@@ -369,6 +368,15 @@ class Accidental extends React.Component {
     }
 }
 
+class Bracket extends React.Component{
+    constructor(props){
+        super(props);
+    }
+    render(){
+        return Elem('span', {style:this.props.pos, className:"bracket"}, "\ue251")
+    }
+}
+
 class Dot extends React.Component {
     constructor(props){
         super(props);
@@ -455,7 +463,7 @@ class Chorus extends React.Component{
         this.notePoses = {},
 
         this.state = {
-            // connectPoses : this.props.connects.map(elem => ({startLeft:0, startCLeft:0, startTop:0, startCTop:0, endCLeft:0, endCTop:0, endLeft:0, endTop:0}))
+            brackets : []
         }
     }
 
@@ -489,26 +497,39 @@ class Chorus extends React.Component{
         return this.state.connectPoses.map((elem, index) => Elem(Connect, Object.assign(elem, {key:206+index})))
     }
 
+    BracketElems(){
+
+
+        return this.state.brackets.map((bracket, index) =>{
+            console.log({top:bracket.top, left:bracket.left, bottom:bracket.bottom})
+            return Elem(Bracket, {pos:{top:bracket.top, left:bracket.left, bottom:bracket.bottom}, key:502+index})
+        });
+    }
+
     MeasureElems(){
-        // console.log(this.props);
+
+
+
+        let lyricLines = this.props.measures[0].beats[0].lyric[0].length;
 
         return []
             .concat(this.props.measures.map((measure,index) =>{
                 let elem = [Elem(Measure, {ref:"measure-"+index, measure: measure, parts:this.props.parts, key:index})];
 
                 if(measure.measureType == "normal"){
-                    elem.push(Elem(Vertbar, {key:5300+index-1, parts:this.props.parts}))
+                    elem.push(Elem(Vertbar, {key:5300+index-1, parts:this.props.parts, lyricLines : lyricLines}))
                 } else if (measure.measureType == "rep_start"){
-                    elem.push(Elem(Repeatbar, {key:5300+index-1, direction:"open", parts:this.props.parts}))
+                    elem.push(Elem(Repeatbar, {key:5300+index-1, direction:"open", parts:this.props.parts, lyricLines : lyricLines}))
                 } else if (measure.measureType == "rep_fin"){
-                    elem.push(Elem(Repeatbar, {key:5300+index-1, direction:"close", parts:this.props.parts}))
+                    elem.push(Elem(Repeatbar, {key:5300+index-1, direction:"close", parts:this.props.parts, lyricLines : lyricLines}))
                 } else if (measure.measureType == "fin"){
-                    elem.push(Elem(Vertbar, {key:5300+index-1, parts:this.props.parts}))
-                    elem.push(Elem(Finalbar, {key:6300, parts:this.props.parts}))
+                    elem.push(Elem(Vertbar, {key:5300+index-1, parts:this.props.parts, lyricLines : lyricLines}))
+                    elem.push(Elem(Finalbar, {key:6300, parts:this.props.parts, lyricLines : lyricLines}))
                 }
 
                 return elem;
-            }));
+            }))
+            .concat(this.BracketElems())
             // .concat(this.ConnectElems())
     }
 
@@ -520,10 +541,22 @@ class Chorus extends React.Component{
 
         let scoreBox = this.refs.score.getBoundingClientRect()
 
-        // this.notePoses = this.GetNotePoses()
+        // for (var i = 0; i < this.props.measures.length; i++) {
+        //     console.log(this.refs["measure-"+i].box)
+        // }
 
+        console.log(scoreBox.left);
+
+        let bracketsBoxes = this.props.measures.map((_, i) => ({
+                left:Math.floor(this.refs["measure-"+i].box.left - scoreBox.left),
+                top:Math.floor(this.refs["measure-"+i].box.top + 65),
+                bottom:Math.floor(this.refs["measure-"+i].box.bottom)
+            })).groupBy("left"),
+            bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
+
+        console.log(bracketsBoxesLeftmost);
         this.setState({
-            // connectPoses:this.GetConnectPoses(scoreBox)
+            brackets : bracketsBoxesLeftmost
         })
 
     }
@@ -581,7 +614,7 @@ class Container extends React.Component {
         const editorWrapper = Elem(Col, {
             key : 'editor',
             md  :  4,
-            className:"editor-wrapper"
+            className:"editor-wrapper noprint"
         }, editor)
 
         let preview = Elem(Col, {
@@ -589,9 +622,9 @@ class Container extends React.Component {
             md  :  6,
             id  : 'preview',
             className:'preview',
-        }, Elem('div', {ref:"preview", id:'page', className:'page'}, sectionElems))
+        }, Elem('div', {ref:"preview", id:'page', className:'page', media:"print"}, sectionElems))
 
-        const row = Elem(Row, {},
+        const row = Elem(Row, {className:"container"},
             [editorWrapper, preview]
         );
 

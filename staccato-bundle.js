@@ -90,6 +90,13 @@
 	    return this[this.length - 1];
 	};
 
+	Array.prototype.groupBy = function (key) {
+	    return this.reduce(function (rv, x) {
+	        (rv[x[key]] = rv[x[key]] || []).push(x);
+	        return rv;
+	    }, {});
+	};
+
 	var Elem = function Elem(component, param, children) {
 	    return _react2.default.createElement(component, param, children);
 	};
@@ -127,7 +134,7 @@
 	                if (index == 1) {
 	                    if (_this2.props.lyric) {
 	                        bars.push(Elem(Lyric, Object.assign(_this2.props.lyric, { key: index + 250 })));
-	                    } else bars.push(Elem(Lyric, Object.assign([[" ", " ", " "]], { key: index + 250 })));
+	                    } else bars.push(Elem(Lyric, Object.assign([Array(_this2.props.lyricLines).fill(" ")], { key: index + 250 })));
 	                }
 	            });
 
@@ -158,7 +165,7 @@
 	                if (index == 1) {
 	                    if (_this4.props.lyric) {
 	                        bars.push(Elem(Lyric, Object.assign(_this4.props.lyric, { key: index + 250 })));
-	                    } else bars.push(Elem(Lyric, Object.assign([[" ", " ", " "]], { key: index + 250 })));
+	                    } else bars.push(Elem(Lyric, Object.assign([Array(_this4.props.lyricLines).fill(" ")], { key: index + 250 })));
 	                }
 	            });
 
@@ -223,6 +230,7 @@
 	        var _this7 = _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
 
 	        _this7.notePoses = {};
+	        _this7.box = {};
 	        return _this7;
 	    }
 
@@ -245,23 +253,25 @@
 	        value: function SlotElems() {
 	            var _this8 = this;
 
+	            var lyricLines = this.props.measure.beats[0].lyric[0].length;
+
 	            return this.props.measure.beats.map(function (slot, index) {
 	                return Elem(Slot, Object.assign(slot, {
 	                    key: index,
-	                    parts: _this8.props.parts
+	                    parts: _this8.props.parts,
+	                    lyricLines: lyricLines
 	                }));
 	            });
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            // let width = (this.props.measure[0].beatNote.length == 0) ? {minWidth: 0} : {}
 	            return Elem('div', { style: {}, ref: "measure", className: "measure" }, this.SlotElems());
 	        }
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            // this.notePoses = this.GetNotePoses()
+	            this.box = this.refs.measure.getBoundingClientRect();
 	        }
 	    }]);
 
@@ -290,21 +300,9 @@
 	                if (index == 1) {
 	                    if (_this10.props.lyric) {
 	                        elems.push(Elem(Lyric, Object.assign(_this10.props.lyric, { key: index + 250 })));
-	                    } else elems.push(Elem(Lyric, Object.assign([[" ", " ", " "]], { key: index + 250 })));
+	                    } else elems.push(Elem(Lyric, Object.assign([Array(_this10.props.lyricLines).fill(" ")], { key: index + 250 })));
 	                }
 	            });
-
-	            // for (let part in this.props) {
-	            //     if (this.props.hasOwnProperty(part) && this.props[part]) {
-	            //         if(part != "lyric" && part != "parts"){
-	            //             elems.push(Elem(Beat, Object.assign(this.props[part], {key:index})));
-	            //             index++;
-	            //         }
-	            //         if(part == "lyric"){
-	            //             elems.push(Elem(Lyric, Object.assign(this.props[part], {key:index})));
-	            //         }
-	            //     }
-	            // }
 
 	            return elems;
 	        }
@@ -559,8 +557,27 @@
 	    return Accidental;
 	}(_react2.default.Component);
 
-	var Dot = function (_React$Component12) {
-	    _inherits(Dot, _React$Component12);
+	var Bracket = function (_React$Component12) {
+	    _inherits(Bracket, _React$Component12);
+
+	    function Bracket(props) {
+	        _classCallCheck(this, Bracket);
+
+	        return _possibleConstructorReturn(this, (Bracket.__proto__ || Object.getPrototypeOf(Bracket)).call(this, props));
+	    }
+
+	    _createClass(Bracket, [{
+	        key: 'render',
+	        value: function render() {
+	            return Elem('span', { style: this.props.pos, className: "bracket" }, '\uE251');
+	        }
+	    }]);
+
+	    return Bracket;
+	}(_react2.default.Component);
+
+	var Dot = function (_React$Component13) {
+	    _inherits(Dot, _React$Component13);
 
 	    function Dot(props) {
 	        _classCallCheck(this, Dot);
@@ -578,8 +595,8 @@
 	    return Dot;
 	}(_react2.default.Component);
 
-	var OctaveDot = function (_React$Component13) {
-	    _inherits(OctaveDot, _React$Component13);
+	var OctaveDot = function (_React$Component14) {
+	    _inherits(OctaveDot, _React$Component14);
 
 	    function OctaveDot(props) {
 	        _classCallCheck(this, OctaveDot);
@@ -597,8 +614,8 @@
 	    return OctaveDot;
 	}(_react2.default.Component);
 
-	var Connect = function (_React$Component14) {
-	    _inherits(Connect, _React$Component14);
+	var Connect = function (_React$Component15) {
+	    _inherits(Connect, _React$Component15);
 
 	    function Connect(props) {
 	        _classCallCheck(this, Connect);
@@ -654,18 +671,18 @@
 	    return Connect;
 	}(_react2.default.Component);
 
-	var Chorus = function (_React$Component15) {
-	    _inherits(Chorus, _React$Component15);
+	var Chorus = function (_React$Component16) {
+	    _inherits(Chorus, _React$Component16);
 
 	    function Chorus(props) {
 	        _classCallCheck(this, Chorus);
 
-	        var _this20 = _possibleConstructorReturn(this, (Chorus.__proto__ || Object.getPrototypeOf(Chorus)).call(this, props));
+	        var _this21 = _possibleConstructorReturn(this, (Chorus.__proto__ || Object.getPrototypeOf(Chorus)).call(this, props));
 
-	        _this20.notePoses = {}, _this20.state = {
-	            // connectPoses : this.props.connects.map(elem => ({startLeft:0, startCLeft:0, startTop:0, startCTop:0, endCLeft:0, endCTop:0, endLeft:0, endTop:0}))
+	        _this21.notePoses = {}, _this21.state = {
+	            brackets: []
 	        };
-	        return _this20;
+	        return _this21;
 	    }
 
 	    _createClass(Chorus, [{
@@ -685,18 +702,18 @@
 	    }, {
 	        key: 'GetConnectPoses',
 	        value: function GetConnectPoses(scoreBox) {
-	            var _this21 = this;
+	            var _this22 = this;
 
 	            return this.props.connects.map(function (elem) {
 	                return {
-	                    startLeft: _this21.notePoses[elem.start].left - scoreBox.left,
-	                    startTop: _this21.notePoses[elem.start].top - scoreBox.top,
-	                    startCLeft: _this21.notePoses[elem.start].left - scoreBox.left + 5,
-	                    startCTop: _this21.notePoses[elem.start].top - scoreBox.top - 15,
-	                    endCLeft: _this21.notePoses[elem.end].left - scoreBox.left - 5,
-	                    endCTop: _this21.notePoses[elem.end].top - scoreBox.top - 15,
-	                    endLeft: _this21.notePoses[elem.end].left - scoreBox.left,
-	                    endTop: _this21.notePoses[elem.end].top - scoreBox.top
+	                    startLeft: _this22.notePoses[elem.start].left - scoreBox.left,
+	                    startTop: _this22.notePoses[elem.start].top - scoreBox.top,
+	                    startCLeft: _this22.notePoses[elem.start].left - scoreBox.left + 5,
+	                    startCTop: _this22.notePoses[elem.start].top - scoreBox.top - 15,
+	                    endCLeft: _this22.notePoses[elem.end].left - scoreBox.left - 5,
+	                    endCTop: _this22.notePoses[elem.end].top - scoreBox.top - 15,
+	                    endLeft: _this22.notePoses[elem.end].left - scoreBox.left,
+	                    endTop: _this22.notePoses[elem.end].top - scoreBox.top
 	                };
 	            });
 	        }
@@ -708,28 +725,37 @@
 	            });
 	        }
 	    }, {
+	        key: 'BracketElems',
+	        value: function BracketElems() {
+
+	            return this.state.brackets.map(function (bracket, index) {
+	                console.log({ top: bracket.top, left: bracket.left, bottom: bracket.bottom });
+	                return Elem(Bracket, { pos: { top: bracket.top, left: bracket.left, bottom: bracket.bottom }, key: 502 + index });
+	            });
+	        }
+	    }, {
 	        key: 'MeasureElems',
 	        value: function MeasureElems() {
-	            var _this22 = this;
+	            var _this23 = this;
 
-	            // console.log(this.props);
+	            var lyricLines = this.props.measures[0].beats[0].lyric[0].length;
 
 	            return [].concat(this.props.measures.map(function (measure, index) {
-	                var elem = [Elem(Measure, { ref: "measure-" + index, measure: measure, parts: _this22.props.parts, key: index })];
+	                var elem = [Elem(Measure, { ref: "measure-" + index, measure: measure, parts: _this23.props.parts, key: index })];
 
 	                if (measure.measureType == "normal") {
-	                    elem.push(Elem(Vertbar, { key: 5300 + index - 1, parts: _this22.props.parts }));
+	                    elem.push(Elem(Vertbar, { key: 5300 + index - 1, parts: _this23.props.parts, lyricLines: lyricLines }));
 	                } else if (measure.measureType == "rep_start") {
-	                    elem.push(Elem(Repeatbar, { key: 5300 + index - 1, direction: "open", parts: _this22.props.parts }));
+	                    elem.push(Elem(Repeatbar, { key: 5300 + index - 1, direction: "open", parts: _this23.props.parts, lyricLines: lyricLines }));
 	                } else if (measure.measureType == "rep_fin") {
-	                    elem.push(Elem(Repeatbar, { key: 5300 + index - 1, direction: "close", parts: _this22.props.parts }));
+	                    elem.push(Elem(Repeatbar, { key: 5300 + index - 1, direction: "close", parts: _this23.props.parts, lyricLines: lyricLines }));
 	                } else if (measure.measureType == "fin") {
-	                    elem.push(Elem(Vertbar, { key: 5300 + index - 1, parts: _this22.props.parts }));
-	                    elem.push(Elem(Finalbar, { key: 6300, parts: _this22.props.parts }));
+	                    elem.push(Elem(Vertbar, { key: 5300 + index - 1, parts: _this23.props.parts, lyricLines: lyricLines }));
+	                    elem.push(Elem(Finalbar, { key: 6300, parts: _this23.props.parts, lyricLines: lyricLines }));
 	                }
 
 	                return elem;
-	            }));
+	            })).concat(this.BracketElems());
 	            // .concat(this.ConnectElems())
 	        }
 	    }, {
@@ -740,13 +766,28 @@
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
+	            var _this24 = this;
 
 	            var scoreBox = this.refs.score.getBoundingClientRect();
 
-	            // this.notePoses = this.GetNotePoses()
+	            // for (var i = 0; i < this.props.measures.length; i++) {
+	            //     console.log(this.refs["measure-"+i].box)
+	            // }
 
+	            console.log(scoreBox.left);
+
+	            var bracketsBoxes = this.props.measures.map(function (_, i) {
+	                return {
+	                    left: Math.floor(_this24.refs["measure-" + i].box.left - scoreBox.left),
+	                    top: Math.floor(_this24.refs["measure-" + i].box.top + 65),
+	                    bottom: Math.floor(_this24.refs["measure-" + i].box.bottom)
+	                };
+	            }).groupBy("left"),
+	                bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
+
+	            console.log(bracketsBoxesLeftmost);
 	            this.setState({
-	                // connectPoses:this.GetConnectPoses(scoreBox)
+	                brackets: bracketsBoxesLeftmost
 	            });
 	        }
 	    }]);
@@ -754,21 +795,21 @@
 	    return Chorus;
 	}(_react2.default.Component);
 
-	var Container = function (_React$Component16) {
-	    _inherits(Container, _React$Component16);
+	var Container = function (_React$Component17) {
+	    _inherits(Container, _React$Component17);
 
 	    function Container(props) {
 	        _classCallCheck(this, Container);
 
 	        // parse(scoreText);
 
-	        var _this23 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
+	        var _this25 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
-	        _this23.state = {
+	        _this25.state = {
 	            text: _What_A_Friend2.default,
 	            score: (0, _StaccatoParser.parse)(_What_A_Friend2.default)
 	        };
-	        return _this23;
+	        return _this25;
 	    }
 
 	    _createClass(Container, [{
@@ -788,7 +829,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this24 = this;
+	            var _this26 = this;
 
 	            var sectionElems = [],
 	                index = 0;
@@ -811,14 +852,14 @@
 	                spellCheck: 'false',
 	                value: this.state.text,
 	                onChange: function onChange(event) {
-	                    return _this24.handleChange(event);
+	                    return _this26.handleChange(event);
 	                }
 	            });
 
 	            var editorWrapper = Elem(_reactBootstrap.Col, {
 	                key: 'editor',
 	                md: 4,
-	                className: "editor-wrapper"
+	                className: "editor-wrapper noprint"
 	            }, editor);
 
 	            var preview = Elem(_reactBootstrap.Col, {
@@ -826,9 +867,9 @@
 	                md: 6,
 	                id: 'preview',
 	                className: 'preview'
-	            }, Elem('div', { ref: "preview", id: 'page', className: 'page' }, sectionElems));
+	            }, Elem('div', { ref: "preview", id: 'page', className: 'page', media: "print" }, sectionElems));
 
-	            var row = Elem(_reactBootstrap.Row, {}, [editorWrapper, preview]);
+	            var row = Elem(_reactBootstrap.Row, { className: "container" }, [editorWrapper, preview]);
 
 	            return row;
 	        }
@@ -43417,7 +43458,7 @@
 /* 431 */
 /***/ function(module, exports) {
 
-	module.exports = "title {\nWhat A Friend We Have In Jesus\n}\n\nsubtitle {\n}\n\nlyrics {\nScriven 1855\n}\n\ncomposer {\nConverse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nverse 1 {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 2 {\n有 否 煩 惱 壓 著 心 頭？ 有 否 遇 試 煉 引 誘？\n我 們 切 莫 灰 心 失 望， 仍 到 主 恩 座 前 求！\n何 處 得 此 忠 心 朋 友， 分 擔 一 切 苦 與 憂，\n我 們 弱 點 主 都 知 透， 放 心 到 主 座 前 求。\n}\n\nverse 3 {\n勞 苦 多 愁 軟 弱 不 堪， 掛 慮 重 擔 壓 肩 頭，\n主 是 你 我 避 難 處 所， 快 到 主 恩 座 前 求！\n你 若 遭 遇 友 叛 親 離， 來 到 主 恩 座 前 求，\n在 主 懷 中 必 蒙 護 佑， 與 主 同 在 永 無 憂。\n}\n\nchorus soprano {\n.5 5  (6 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (5 3) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"
+	module.exports = "title {\n恩 友 歌\n}\n\nsubtitle {\nWhat a Friend We Have in Jesus\n}\n\nlyrics {\nJ. Scriven 1855\n}\n\ncomposer {\nA. C. Converse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nverse 1 {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 2 {\n有 否 煩 惱 壓 著 心 頭？ 有 否 遇 試 煉 引 誘？\n我 們 切 莫 灰 心 失 望， 仍 到 主 恩 座 前 求！\n何 處 得 此 忠 心 朋 友， 分 擔 一 切 苦 與 憂，\n我 們 弱 點 主 都 知 透， 放 心 到 主 座 前 求。\n}\n\nverse 3 {\n勞 苦 多 愁 軟 弱 不 堪， 掛 慮 重 擔 壓 肩 頭，\n主 是 你 我 避 難 處 所， 快 到 主 恩 座 前 求！\n你 若 遭 遇 友 叛 親 離， 來 到 主 恩 座 前 求，\n在 主 懷 中 必 蒙 護 佑， 與 主 同 在 永 無 憂。\n}\n\nchorus soprano {\n.5 5  (6 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (5 3) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"
 
 /***/ },
 /* 432 */
@@ -43456,10 +43497,6 @@
 	var _react = __webpack_require__(1);
 
 	var _react2 = _interopRequireDefault(_react);
-
-	var _reactDom = __webpack_require__(32);
-
-	var _reactDom2 = _interopRequireDefault(_reactDom);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -43508,7 +43545,7 @@
 	    bottom: 0,
 	    opacity: 0,
 	    visibility: 'hidden',
-	    transition: 'opacity .3s ease-out',
+	    transition: 'opacity .3s ease-out, visibility .3s ease-out',
 	    backgroundColor: 'rgba(0,0,0,.3)'
 	  },
 	  dragHandle: {
@@ -43529,7 +43566,7 @@
 
 	    _this.state = {
 	      // the detected width of the sidebar in pixels
-	      sidebarWidth: 0,
+	      sidebarWidth: props.defaultSidebarWidth,
 
 	      // keep track of touching params
 	      touchIdentifier: null,
@@ -43547,6 +43584,7 @@
 	    _this.onTouchMove = _this.onTouchMove.bind(_this);
 	    _this.onTouchEnd = _this.onTouchEnd.bind(_this);
 	    _this.onScroll = _this.onScroll.bind(_this);
+	    _this.saveSidebarRef = _this.saveSidebarRef.bind(_this);
 	    return _this;
 	  }
 
@@ -43665,11 +43703,16 @@
 	  }, {
 	    key: 'saveSidebarWidth',
 	    value: function saveSidebarWidth() {
-	      var width = _reactDom2.default.findDOMNode(this.refs.sidebar).offsetWidth;
+	      var width = this.sidebar.offsetWidth;
 
 	      if (width !== this.state.sidebarWidth) {
 	        this.setState({ sidebarWidth: width });
 	      }
+	    }
+	  }, {
+	    key: 'saveSidebarRef',
+	    value: function saveSidebarRef(node) {
+	      this.sidebar = node;
 	    }
 
 	    // calculate the sidebarWidth based on current touch info
@@ -43803,7 +43846,7 @@
 	        rootProps,
 	        _react2.default.createElement(
 	          'div',
-	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: 'sidebar' },
+	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: this.saveSidebarRef },
 	          this.props.sidebar
 	        ),
 	        _react2.default.createElement('div', { className: this.props.overlayClassName,
@@ -43878,7 +43921,10 @@
 	  dragToggleDistance: _react2.default.PropTypes.number,
 
 	  // callback called when the overlay is clicked
-	  onSetOpen: _react2.default.PropTypes.func
+	  onSetOpen: _react2.default.PropTypes.func,
+
+	  // Intial sidebar width when page loads
+	  defaultSidebarWidth: _react2.default.PropTypes.number
 	};
 
 	Sidebar.defaultProps = {
@@ -43891,7 +43937,8 @@
 	  shadow: true,
 	  dragToggleDistance: 30,
 	  onSetOpen: function onSetOpen() {},
-	  styles: {}
+	  styles: {},
+	  defaultSidebarWidth: 0
 	};
 
 	exports.default = Sidebar;

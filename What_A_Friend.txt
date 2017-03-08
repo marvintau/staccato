@@ -1,16 +1,17 @@
 title {
-What A Friend We Have In Jesus
+恩 友 歌
 }
 
 subtitle {
+What a Friend We Have in Jesus
 }
 
 lyrics {
-Scriven 1855
+J. Scriven 1855
 }
 
 composer {
-Converse 1868
+A. C. Converse 1868
 }
 
 beats {
