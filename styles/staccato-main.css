@@ -15,6 +15,8 @@
 
 body {
   /*margin: 20px;*/
+  /*display:flex;*/
+  color: #222222;
   background-color: #F6F4F4;
 }
 
@@ -26,7 +28,7 @@ body {
     /*position:absolute;*/
 	background-color : #FFFFFF;
 	border-radius: 5px;
-	height:600px;
+	height:900px;
 }
 
 .editor{
@@ -58,7 +60,7 @@ body {
 	background-color : #FFFFFF;
 	font-family: "Optima", "Songti TC";
     font-size: 110%;
-	width : 600px;
+	/*width : 900px;*/
 	/*height : 1000px;*/
 	/*border-style:solid;
 	border-width: 1px;*/
@@ -68,7 +70,7 @@ body {
 .page{
 	margin: 10px 0 50px;
     position : relative;
-    /*width : 100%;*/
+    /*width : 140%;*/
 	/*height: 980px;*/
     text-align: justify;
 }
@@ -86,15 +88,15 @@ body {
 .title{
     font-weight: bold;
     text-align: center;
-    letter-spacing: -2.5px;
+    /*letter-spacing: -2.5px;*/
     font-size: 40px;
 }
 
 .subtitle{
-    margin-top : -15px;
+    margin-top : -5px;
     text-align: center;
-    letter-spacing: -1.5px;
-    font-size: 25px;
+    letter-spacing: -0.05em;
+    font-size: 100%;
 }
 
 
@@ -119,13 +121,12 @@ body {
 }
 
 .score{
-    /*width : inherit;*/
-    display: flex;
-    margin-left: 10px;
+    display: inline-flex;
+    margin-left: 0px;
     font-weight: bold;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: space-around;
+    justify-content: left;
     /*border: 1px solid #888888;*/
 
 }
@@ -133,7 +134,7 @@ body {
 .measure {
     display:inline-flex;
     min-width: 20%;
-    max-width: 25%;
+    max-width: 30%;
     flex-direction: row;
     justify-content: space-around;
     margin-top:10px;
@@ -154,6 +155,7 @@ body {
     display:inline-flex;
     flex-wrap: wrap;
     font-weight: bold;
+    font-size: 90%;
     margin-right: -2em;
     /*letter-spacing: -0.3em;*/
     /*font-size: 50%;*/
@@ -169,6 +171,7 @@ body {
 }
 
 .beat {
+    margin-top: 4px;
     position: relative;
     display:inline-flex;
     flex-direction: row;
@@ -195,9 +198,9 @@ body {
 
 .vertbar{
     width:1px;
-    margin: 3px 0 3px;
+    margin: 7px 0 3px;
     height:1.2em;
-    background-color: #000000;
+    background-color: #222222;
     /*border: 1px solid;*/
 }
 
@@ -205,7 +208,7 @@ body {
     display: inline;
     margin:15px -5px 10px;
     width: 15px;
-    background-color: #000000;
+    background-color: #222222;
     /*box-shadow: 0 0 0 1px red;*/
     /*border-right: dotted 9px orange;*/
 }
@@ -223,7 +226,7 @@ body {
     margin-top : -2px;
     height: 2px;
     /*border: 1px solid #888888;*/
-    background-color: #000000;
+    background-color: #222222;
 }
 
 .dot{
@@ -240,7 +243,7 @@ body {
 }
 
 .bracket{
-    padding: 10px 0px 10px;
+    padding: 20px 0px 10px;
     position: absolute;
     font-family: brace;
     font-size : 1.2em;
@@ -256,19 +259,22 @@ body {
 .finalbars{
     display:inline-flex;
     flex-direction: column;
-    margin: 18px -3px 10px -11px;
+    margin: 18px 3px 10px 3px;
     width: 2px;
 }
 
 .finalbar{
     width: 2px;
-    margin: 3px 0 3px;
+    margin: 7px 0 3px;
     height:1.2em;
-    background-color: #000000;
+    background-color: #222222;
 }
 
-.container{
+.con{
     /*text-align: center;*/
+    margin-top: 20px;
+    margin-left: 20px;
+    -webkit-print-color-adjust:exact;
 }
 
 svg{

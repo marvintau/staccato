@@ -60,13 +60,21 @@
 
 	var _StaccatoParser = __webpack_require__(430);
 
-	var _What_A_Friend = __webpack_require__(431);
+	var _Since_Jesus_Came = __webpack_require__(431);
 
-	var _What_A_Friend2 = _interopRequireDefault(_What_A_Friend);
+	var _Since_Jesus_Came2 = _interopRequireDefault(_Since_Jesus_Came);
 
 	var _reactSidebar = __webpack_require__(432);
 
 	var _reactSidebar2 = _interopRequireDefault(_reactSidebar);
+
+	var _General = __webpack_require__(435);
+
+	var _Bars = __webpack_require__(436);
+
+	var _Measure = __webpack_require__(442);
+
+	var _Connect = __webpack_require__(443);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -97,468 +105,8 @@
 	    }, {});
 	};
 
-	var Elem = function Elem(component, param, children) {
-	    return _react2.default.createElement(component, param, children);
-	};
-
-	var SectionElem = function SectionElem(sectionName, key, children) {
-	    return Elem('div', {
-	        key: key,
-	        ref: sectionName,
-	        id: sectionName,
-	        className: sectionName
-	    }, children);
-	};
-
-	var Draw = function Draw(component, param, children, to) {
-	    _reactDom2.default.render(Elem(component, param, children), document.getElementById(to));
-	};
-
-	var Vertbar = function (_React$Component) {
-	    _inherits(Vertbar, _React$Component);
-
-	    function Vertbar(props) {
-	        _classCallCheck(this, Vertbar);
-
-	        return _possibleConstructorReturn(this, (Vertbar.__proto__ || Object.getPrototypeOf(Vertbar)).call(this, props));
-	    }
-
-	    _createClass(Vertbar, [{
-	        key: 'render',
-	        value: function render() {
-	            var _this2 = this;
-
-	            var bars = [];
-	            Object.keys(this.props.parts).forEach(function (_, index) {
-	                bars.push(Elem('span', { key: index > 1 ? index + 500 : index, className: "vertbar" }, " "));
-	                if (index == 1) {
-	                    if (_this2.props.lyric) {
-	                        bars.push(Elem(Lyric, Object.assign(_this2.props.lyric, { key: index + 250 })));
-	                    } else bars.push(Elem(Lyric, Object.assign([Array(_this2.props.lyricLines).fill(" ")], { key: index + 250 })));
-	                }
-	            });
-
-	            return Elem('div', { className: "vertbars" }, bars);
-	        }
-	    }]);
-
-	    return Vertbar;
-	}(_react2.default.Component);
-
-	var Finalbar = function (_React$Component2) {
-	    _inherits(Finalbar, _React$Component2);
-
-	    function Finalbar(props) {
-	        _classCallCheck(this, Finalbar);
-
-	        return _possibleConstructorReturn(this, (Finalbar.__proto__ || Object.getPrototypeOf(Finalbar)).call(this, props));
-	    }
-
-	    _createClass(Finalbar, [{
-	        key: 'render',
-	        value: function render() {
-	            var _this4 = this;
-
-	            var bars = [];
-	            Object.keys(this.props.parts).forEach(function (_, index) {
-	                bars.push(Elem('span', { key: index > 1 ? index + 500 : index, className: "finalbar" }, " "));
-	                if (index == 1) {
-	                    if (_this4.props.lyric) {
-	                        bars.push(Elem(Lyric, Object.assign(_this4.props.lyric, { key: index + 250 })));
-	                    } else bars.push(Elem(Lyric, Object.assign([Array(_this4.props.lyricLines).fill(" ")], { key: index + 250 })));
-	                }
-	            });
-
-	            return Elem('div', { className: "finalbars" }, bars);
-	        }
-	    }]);
-
-	    return Finalbar;
-	}(_react2.default.Component);
-
-	var Underbar = function (_React$Component3) {
-	    _inherits(Underbar, _React$Component3);
-
-	    function Underbar(props) {
-	        _classCallCheck(this, Underbar);
-
-	        return _possibleConstructorReturn(this, (Underbar.__proto__ || Object.getPrototypeOf(Underbar)).call(this, props));
-	    }
-
-	    _createClass(Underbar, [{
-	        key: 'render',
-	        value: function render() {
-
-	            var style = {
-	                left: this.props.left,
-	                width: this.props.width,
-	                top: this.props.top
-	            };
-
-	            return Elem('div', { style: style, className: "underbar" });
-	        }
-	    }]);
-
-	    return Underbar;
-	}(_react2.default.Component);
-
-	var Repeatbar = function (_React$Component4) {
-	    _inherits(Repeatbar, _React$Component4);
-
-	    function Repeatbar(props) {
-	        _classCallCheck(this, Repeatbar);
-
-	        return _possibleConstructorReturn(this, (Repeatbar.__proto__ || Object.getPrototypeOf(Repeatbar)).call(this, props));
-	    }
-
-	    _createClass(Repeatbar, [{
-	        key: 'render',
-	        value: function render() {
-	            return Elem('span', { className: "repeatbar" + (this.props.initial ? " initialbar" : "") }, [Elem('span', { className: "dotUpper", key: 42944 })]);
-	        }
-	    }]);
-
-	    return Repeatbar;
-	}(_react2.default.Component);
-
-	var Measure = function (_React$Component5) {
-	    _inherits(Measure, _React$Component5);
-
-	    function Measure(props) {
-	        _classCallCheck(this, Measure);
-
-	        var _this7 = _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
-
-	        _this7.notePoses = {};
-	        _this7.box = {};
-	        return _this7;
-	    }
-
-	    _createClass(Measure, [{
-	        key: 'GetNotePoses',
-	        value: function GetNotePoses() {
-	            var notePoses = {};
-
-	            for (var ithBeat in this.refs) {
-	                if (ithBeat != "measure") {
-	                    var elem = this.refs[ithBeat];
-	                    Object.assign(notePoses, elem.notePoses);
-	                }
-	            }
-
-	            return notePoses;
-	        }
-	    }, {
-	        key: 'SlotElems',
-	        value: function SlotElems() {
-	            var _this8 = this;
-
-	            var lyricLines = this.props.measure.beats[0].lyric[0].length;
-
-	            return this.props.measure.beats.map(function (slot, index) {
-	                return Elem(Slot, Object.assign(slot, {
-	                    key: index,
-	                    parts: _this8.props.parts,
-	                    lyricLines: lyricLines
-	                }));
-	            });
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-	            return Elem('div', { style: {}, ref: "measure", className: "measure" }, this.SlotElems());
-	        }
-	    }, {
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-	            this.box = this.refs.measure.getBoundingClientRect();
-	        }
-	    }]);
-
-	    return Measure;
-	}(_react2.default.Component);
-
-	var Slot = function (_React$Component6) {
-	    _inherits(Slot, _React$Component6);
-
-	    function Slot(props) {
-	        _classCallCheck(this, Slot);
-
-	        return _possibleConstructorReturn(this, (Slot.__proto__ || Object.getPrototypeOf(Slot)).call(this, props));
-	    }
-
-	    _createClass(Slot, [{
-	        key: 'Elems',
-	        value: function Elems() {
-	            var _this10 = this;
-
-	            var elems = [],
-	                index = 0;
-
-	            this.props.parts.forEach(function (partName, index) {
-	                elems.push(Elem(Beat, Object.assign(_this10.props[partName], { key: index > 1 ? index + 500 : index })));
-	                if (index == 1) {
-	                    if (_this10.props.lyric) {
-	                        elems.push(Elem(Lyric, Object.assign(_this10.props.lyric, { key: index + 250 })));
-	                    } else elems.push(Elem(Lyric, Object.assign([Array(_this10.props.lyricLines).fill(" ")], { key: index + 250 })));
-	                }
-	            });
-
-	            return elems;
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-	            return Elem('div', { style: {}, ref: "slot", className: "slot" }, this.Elems());
-	        }
-	    }]);
-
-	    return Slot;
-	}(_react2.default.Component);
-
-	var Lyric = function (_React$Component7) {
-	    _inherits(Lyric, _React$Component7);
-
-	    function Lyric(props) {
-	        _classCallCheck(this, Lyric);
-
-	        return _possibleConstructorReturn(this, (Lyric.__proto__ || Object.getPrototypeOf(Lyric)).call(this, props));
-	    }
-
-	    _createClass(Lyric, [{
-	        key: 'LyricChars',
-	        value: function LyricChars(chars) {
-	            return chars.map(function (c, index) {
-	                return Elem('div', { className: "lyricChar", key: index }, c);
-	            });
-	        }
-	    }, {
-	        key: 'Lyrics',
-	        value: function Lyrics() {
-	            var _this12 = this;
-
-	            var elems = [];
-	            Object.keys(this.props).forEach(function (key, index) {
-	                if (key != "children" && _this12.props[key]) {
-	                    elems.push(Elem('span', { className: "lyricSlot", key: index }, _this12.LyricChars(_this12.props[key])));
-	                }
-	            });
-	            return elems;
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-	            return Elem('span', { ref: "lyric", className: "lyricBeat" }, this.Lyrics());
-	        }
-	    }]);
-
-	    return Lyric;
-	}(_react2.default.Component);
-
-	var Beat = function (_React$Component8) {
-	    _inherits(Beat, _React$Component8);
-
-	    function Beat(props) {
-	        _classCallCheck(this, Beat);
-
-	        var _this13 = _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
-
-	        _this13.state = {
-	            underbarPoses: _this13.props.underbar ? _this13.props.underbar.map(function (elem) {
-	                return { left: 0, width: 0, top: 0 };
-	            }) : []
-	        };
-	        return _this13;
-	    }
-
-	    _createClass(Beat, [{
-	        key: 'GetNotePoses',
-	        value: function GetNotePoses() {
-
-	            var notePoses = {};
-
-	            for (var ithNote in this.refs) {
-	                if (ithNote != "beat") {
-	                    notePoses[ithNote] = this.refs[ithNote].box;
-	                }
-	            }
-
-	            return notePoses;
-	        }
-	    }, {
-	        key: 'GetUnderbarPoses',
-	        value: function GetUnderbarPoses(notePoses, beatBox) {
-
-	            // by subtracting the score position from the underbar position,
-	            // we made the new undarbar position relative to score element.
-
-	            return this.props.underbar.map(function (elem) {
-	                return {
-	                    left: notePoses[elem.start].left - beatBox.left,
-	                    width: notePoses[elem.end].right - notePoses[elem.start].left,
-	                    top: notePoses[elem.start].bottom + elem.level * 3 - beatBox.top };
-	            });
-	        }
-	    }, {
-	        key: 'NoteElems',
-	        value: function NoteElems() {
-	            return this.props.notes.map(function (note, index) {
-	                return Elem(Note, { ref: index, key: index, note: note });
-	            });
-	        }
-	    }, {
-	        key: 'UnderbarElems',
-	        value: function UnderbarElems(offset) {
-	            return this.state.underbarPoses.map(function (elem, index) {
-	                return Elem(Underbar, { key: index + offset, left: elem.left, width: elem.width, top: elem.top });
-	            });
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-
-	            // console.log(this.props)
-
-	            var underbarElems = this.UnderbarElems(this.NoteElems().length);
-	            var noteElems = this.NoteElems().concat(underbarElems);
-
-	            return Elem('span', { ref: "beat", className: "beat" }, noteElems);
-	        }
-	    }, {
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-
-	            var beatBox = this.refs.beat.getBoundingClientRect();
-
-	            this.setState({ underbarPoses: this.props.underbar ? this.GetUnderbarPoses(this.GetNotePoses(), beatBox) : [] });
-	        }
-	    }]);
-
-	    return Beat;
-	}(_react2.default.Component);
-
-	var Pitch = function (_React$Component9) {
-	    _inherits(Pitch, _React$Component9);
-
-	    function Pitch(props) {
-	        _classCallCheck(this, Pitch);
-
-	        return _possibleConstructorReturn(this, (Pitch.__proto__ || Object.getPrototypeOf(Pitch)).call(this, props));
-	    }
-
-	    _createClass(Pitch, [{
-	        key: 'render',
-	        value: function render() {
-	            return Elem('span', { ref: "pitch", className: "pitch" }, this.props.pitch);
-	        }
-	    }]);
-
-	    return Pitch;
-	}(_react2.default.Component);
-
-	var Note = function (_React$Component10) {
-	    _inherits(Note, _React$Component10);
-
-	    function Note(props) {
-	        _classCallCheck(this, Note);
-
-	        var _this15 = _possibleConstructorReturn(this, (Note.__proto__ || Object.getPrototypeOf(Note)).call(this, props));
-
-	        _this15.box = { left: 0, right: 0 };
-
-	        _this15.state = {
-	            octaveDotPoses: []
-	        };
-	        return _this15;
-	    }
-
-	    _createClass(Note, [{
-	        key: 'GetOctaveDotPoses',
-	        value: function GetOctaveDotPoses() {
-
-	            var octaveDotPoses = [];
-	            if (this.props.note.octave && this.props.note.octave.nums) {
-	                var octave = this.props.note.octave;
-	                for (var i = 0; i < Math.abs(octave.nums); i++) {
-	                    octaveDotPoses.push({
-	                        index: this.props.note.pitch,
-	                        left: (this.box.right - this.box.left) / 2,
-	                        top: octave.nums >= 0 ? -5 * i - this.box.height / 2 : 3 * octave.start + 5 * i + this.box.height / 2
-	                    });
-	                }
-	            }
-
-	            return octaveDotPoses;
-	        }
-	    }, {
-	        key: 'PitchElem',
-	        value: function PitchElem() {
-	            return Elem(Pitch, { key: 0, ref: "note", className: "note", pitch: this.props.note.pitch });
-	        }
-	    }, {
-	        key: 'OctaveDotElem',
-	        value: function OctaveDotElem() {
-	            return this.state.octaveDotPoses.map(function (elem, index) {
-	                return Elem(OctaveDot, { key: 1 + index, ref: "dot-" + index, pos: elem });
-	            });
-	        }
-	    }, {
-	        key: 'AccidentalElem',
-	        value: function AccidentalElem() {
-	            return this.props.note.accidental ? [Elem(Accidental, { key: 205, ref: "acc", acc: this.props.note.accidental })] : [];
-	        }
-	    }, {
-	        key: 'DotElem',
-	        value: function DotElem() {
-	            return this.props.note.dotted ? [Elem(Dot, { key: 204, ref: "dot" })] : [];
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-	            //
-	            // let style = {
-	            //     marginLeft : -this.props.note.conn.length *0.7,
-	            //     marginRight : -this.props.note.conn.length *0.7
-	            // }
-
-	            return Elem('span', { style: {}, className: "note" }, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()).concat(this.OctaveDotElem()));
-	        }
-	    }, {
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-	            this.box = this.refs.note.refs.pitch.getBoundingClientRect();
-
-	            this.setState({ octaveDotPoses: this.GetOctaveDotPoses() });
-	        }
-	    }]);
-
-	    return Note;
-	}(_react2.default.Component);
-
-	var Accidental = function (_React$Component11) {
-	    _inherits(Accidental, _React$Component11);
-
-	    function Accidental(props) {
-	        _classCallCheck(this, Accidental);
-
-	        return _possibleConstructorReturn(this, (Accidental.__proto__ || Object.getPrototypeOf(Accidental)).call(this, props));
-	    }
-
-	    _createClass(Accidental, [{
-	        key: 'render',
-	        value: function render() {
-	            // console.log(this.props.acc)
-	            var accidental = this.props.acc == "#" ? '\uE10F' : '\uE11B';
-
-	            return Elem('span', { className: "accidental" }, accidental);
-	        }
-	    }]);
-
-	    return Accidental;
-	}(_react2.default.Component);
-
-	var Bracket = function (_React$Component12) {
-	    _inherits(Bracket, _React$Component12);
+	var Bracket = function (_React$Component) {
+	    _inherits(Bracket, _React$Component);
 
 	    function Bracket(props) {
 	        _classCallCheck(this, Bracket);
@@ -569,247 +117,35 @@
 	    _createClass(Bracket, [{
 	        key: 'render',
 	        value: function render() {
-	            return Elem('span', { style: this.props.pos, className: "bracket" }, '\uE251');
+	            return (0, _General.Elem)('span', { style: this.props.pos, className: "bracket" }, '\uE27F');
 	        }
 	    }]);
 
 	    return Bracket;
 	}(_react2.default.Component);
 
-	var Dot = function (_React$Component13) {
-	    _inherits(Dot, _React$Component13);
-
-	    function Dot(props) {
-	        _classCallCheck(this, Dot);
-
-	        return _possibleConstructorReturn(this, (Dot.__proto__ || Object.getPrototypeOf(Dot)).call(this, props));
-	    }
-
-	    _createClass(Dot, [{
-	        key: 'render',
-	        value: function render() {
-	            return Elem('span', { className: "dot" }, "·");
-	        }
-	    }]);
-
-	    return Dot;
-	}(_react2.default.Component);
-
-	var OctaveDot = function (_React$Component14) {
-	    _inherits(OctaveDot, _React$Component14);
-
-	    function OctaveDot(props) {
-	        _classCallCheck(this, OctaveDot);
-
-	        return _possibleConstructorReturn(this, (OctaveDot.__proto__ || Object.getPrototypeOf(OctaveDot)).call(this, props));
-	    }
-
-	    _createClass(OctaveDot, [{
-	        key: 'render',
-	        value: function render() {
-	            return Elem('span', { style: this.props.pos, className: "octavedot" }, "·");
-	        }
-	    }]);
-
-	    return OctaveDot;
-	}(_react2.default.Component);
-
-	var Connect = function (_React$Component15) {
-	    _inherits(Connect, _React$Component15);
-
-	    function Connect(props) {
-	        _classCallCheck(this, Connect);
-
-	        return _possibleConstructorReturn(this, (Connect.__proto__ || Object.getPrototypeOf(Connect)).call(this, props));
-	    }
-
-	    _createClass(Connect, [{
-	        key: 'GetSVGCurveText',
-	        value: function GetSVGCurveText(AX, AY, CAX, CAY, CBX, CBY, BX, BY, thickness) {
-	            return "M" + AX + " " + AY + "C" + CAX + " " + CAY + "," + CBX + " " + CBY + "," + BX + " " + BY + "C" + CBX + " " + (CBY + thickness) + "," + CAX + " " + (CAY + thickness) + "," + AX + " " + AY + "Z";
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-
-	            var startX = this.props.startLeft,
-	                startY = this.props.startTop,
-	                startCX = this.props.startCLeft,
-	                startCY = this.props.startCTop,
-	                endX = this.props.endLeft,
-	                endY = this.props.endTop,
-	                endCX = this.props.endCLeft,
-	                endCY = this.props.endCTop,
-	                fakeStartX = endX - 200,
-	                fakeEndX = startX + 200,
-	                fakeStartY = endY,
-	                fakeEndY = startY,
-	                fakeStartCX = endCX - 180,
-	                fakeEndCX = startCX + 180,
-	                fakeStartCY = endCY,
-	                fakeEndCY = startCY;
-
-	            var elem = void 0;
-	            if (startY == endY) {
-	                elem = Elem('svg', {
-	                    xmlns: "http://www.w3.org/2000/svg" }, Elem('path', {
-	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, endCX, endCY, endX, endY, 2),
-	                    fill: "black"
-	                }));
-	            } else {
-	                elem = Elem('svg', {
-	                    xmlns: "http://www.w3.org/2000/svg" }, Elem('path', {
-	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 2) + this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 2),
-	                    fill: "black"
-	                }));
-	            }
-
-	            return elem;
-	        }
-	    }]);
-
-	    return Connect;
-	}(_react2.default.Component);
-
-	var Chorus = function (_React$Component16) {
-	    _inherits(Chorus, _React$Component16);
-
-	    function Chorus(props) {
-	        _classCallCheck(this, Chorus);
-
-	        var _this21 = _possibleConstructorReturn(this, (Chorus.__proto__ || Object.getPrototypeOf(Chorus)).call(this, props));
-
-	        _this21.notePoses = {}, _this21.state = {
-	            brackets: []
-	        };
-	        return _this21;
-	    }
-
-	    _createClass(Chorus, [{
-	        key: 'GetNotePoses',
-	        value: function GetNotePoses() {
-	            var notePoses = {};
-
-	            for (var ithMeasure in this.refs) {
-	                if (ithMeasure != "score") {
-	                    var elem = this.refs[ithMeasure];
-	                    Object.assign(notePoses, elem.notePoses);
-	                }
-	            }
-
-	            return notePoses;
-	        }
-	    }, {
-	        key: 'GetConnectPoses',
-	        value: function GetConnectPoses(scoreBox) {
-	            var _this22 = this;
-
-	            return this.props.connects.map(function (elem) {
-	                return {
-	                    startLeft: _this22.notePoses[elem.start].left - scoreBox.left,
-	                    startTop: _this22.notePoses[elem.start].top - scoreBox.top,
-	                    startCLeft: _this22.notePoses[elem.start].left - scoreBox.left + 5,
-	                    startCTop: _this22.notePoses[elem.start].top - scoreBox.top - 15,
-	                    endCLeft: _this22.notePoses[elem.end].left - scoreBox.left - 5,
-	                    endCTop: _this22.notePoses[elem.end].top - scoreBox.top - 15,
-	                    endLeft: _this22.notePoses[elem.end].left - scoreBox.left,
-	                    endTop: _this22.notePoses[elem.end].top - scoreBox.top
-	                };
-	            });
-	        }
-	    }, {
-	        key: 'ConnectElems',
-	        value: function ConnectElems() {
-	            return this.state.connectPoses.map(function (elem, index) {
-	                return Elem(Connect, Object.assign(elem, { key: 206 + index }));
-	            });
-	        }
-	    }, {
-	        key: 'BracketElems',
-	        value: function BracketElems() {
-
-	            return this.state.brackets.map(function (bracket, index) {
-	                console.log({ top: bracket.top, left: bracket.left, bottom: bracket.bottom });
-	                return Elem(Bracket, { pos: { top: bracket.top, left: bracket.left, bottom: bracket.bottom }, key: 502 + index });
-	            });
-	        }
-	    }, {
-	        key: 'MeasureElems',
-	        value: function MeasureElems() {
-	            var _this23 = this;
-
-	            var lyricLines = this.props.measures[0].beats[0].lyric[0].length;
-
-	            return [].concat(this.props.measures.map(function (measure, index) {
-	                var elem = [Elem(Measure, { ref: "measure-" + index, measure: measure, parts: _this23.props.parts, key: index })];
-
-	                if (measure.measureType == "normal") {
-	                    elem.push(Elem(Vertbar, { key: 5300 + index - 1, parts: _this23.props.parts, lyricLines: lyricLines }));
-	                } else if (measure.measureType == "rep_start") {
-	                    elem.push(Elem(Repeatbar, { key: 5300 + index - 1, direction: "open", parts: _this23.props.parts, lyricLines: lyricLines }));
-	                } else if (measure.measureType == "rep_fin") {
-	                    elem.push(Elem(Repeatbar, { key: 5300 + index - 1, direction: "close", parts: _this23.props.parts, lyricLines: lyricLines }));
-	                } else if (measure.measureType == "fin") {
-	                    elem.push(Elem(Vertbar, { key: 5300 + index - 1, parts: _this23.props.parts, lyricLines: lyricLines }));
-	                    elem.push(Elem(Finalbar, { key: 6300, parts: _this23.props.parts, lyricLines: lyricLines }));
-	                }
-
-	                return elem;
-	            })).concat(this.BracketElems());
-	            // .concat(this.ConnectElems())
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-	            return Elem('div', { ref: "score", className: "score" }, this.MeasureElems());
-	        }
-	    }, {
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-	            var _this24 = this;
-
-	            var scoreBox = this.refs.score.getBoundingClientRect();
-
-	            // for (var i = 0; i < this.props.measures.length; i++) {
-	            //     console.log(this.refs["measure-"+i].box)
-	            // }
-
-	            console.log(scoreBox.left);
-
-	            var bracketsBoxes = this.props.measures.map(function (_, i) {
-	                return {
-	                    left: Math.floor(_this24.refs["measure-" + i].box.left - scoreBox.left),
-	                    top: Math.floor(_this24.refs["measure-" + i].box.top + 65),
-	                    bottom: Math.floor(_this24.refs["measure-" + i].box.bottom)
-	                };
-	            }).groupBy("left"),
-	                bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
-
-	            console.log(bracketsBoxesLeftmost);
-	            this.setState({
-	                brackets: bracketsBoxesLeftmost
-	            });
-	        }
-	    }]);
-
-	    return Chorus;
-	}(_react2.default.Component);
-
-	var Container = function (_React$Component17) {
-	    _inherits(Container, _React$Component17);
+	var Container = function (_React$Component2) {
+	    _inherits(Container, _React$Component2);
 
 	    function Container(props) {
 	        _classCallCheck(this, Container);
 
-	        // parse(scoreText);
+	        var _this2 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
-	        var _this25 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
+	        var scoreParsed = void 0;
 
-	        _this25.state = {
-	            text: _What_A_Friend2.default,
-	            score: (0, _StaccatoParser.parse)(_What_A_Friend2.default)
+	        try {
+	            scoreParsed = (0, _StaccatoParser.parse)(_Since_Jesus_Came2.default);
+	        } catch (err) {
+	            scoreParsed = "err";
+	            console.log(err);
+	        }
+
+	        _this2.state = {
+	            text: _Since_Jesus_Came2.default,
+	            score: scoreParsed
 	        };
-	        return _this25;
+	        return _this2;
 	    }
 
 	    _createClass(Container, [{
@@ -819,76 +155,77 @@
 
 	            var newText = event.target.value;
 
+	            var scoreParsed = void 0;
+
+	            try {
+	                scoreParsed = (0, _StaccatoParser.parse)(newText);
+	            } catch (err) {
+	                console.log(scoreParsed);
+	            }
+
 	            this.setState(function (previousState) {
 	                return {
 	                    text: newText,
-	                    score: (0, _StaccatoParser.parse)(newText)
+	                    score: scoreParsed
 	                };
 	            });
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this26 = this;
+	            var _this3 = this;
 
 	            var sectionElems = [],
 	                index = 0;
 	            for (var section in this.state.score) {
 	                if (this.state.score.hasOwnProperty(section)) {
 	                    if (section != "chorus") {
-	                        sectionElems.push(SectionElem(section, index, this.state.score[section]));
+	                        sectionElems.push((0, _General.SectionElem)(section, index, this.state.score[section]));
 	                    } else {
-	                        sectionElems.push(Elem(Chorus, Object.assign(this.state.score.chorus, { key: index })));
+	                        sectionElems.push((0, _General.Elem)(Chorus, Object.assign(this.state.score.chorus, { key: index })));
 	                    }
 	                    index++;
 	                }
 	            }
 
-	            var editor = Elem('textarea', {
+	            var editor = (0, _General.Elem)('textarea', {
 	                id: 'editor',
 	                className: 'editor',
-	                rows: 30,
+	                rows: 45,
 	                placeholder: 'yep',
 	                spellCheck: 'false',
 	                value: this.state.text,
 	                onChange: function onChange(event) {
-	                    return _this26.handleChange(event);
+	                    return _this3.handleChange(event);
 	                }
 	            });
 
-	            var editorWrapper = Elem(_reactBootstrap.Col, {
+	            var editorWrapper = (0, _General.Elem)(_reactBootstrap.Col, {
 	                key: 'editor',
 	                md: 4,
 	                className: "editor-wrapper noprint"
 	            }, editor);
 
-	            var preview = Elem(_reactBootstrap.Col, {
+	            var preview = (0, _General.Elem)(_reactBootstrap.Col, {
 	                key: 'viewer',
-	                md: 6,
+	                md: 7,
 	                id: 'preview',
 	                className: 'preview'
-	            }, Elem('div', { ref: "preview", id: 'page', className: 'page', media: "print" }, sectionElems));
+	            }, (0, _General.Elem)('div', { ref: "preview", id: 'page', className: 'page' }, sectionElems));
 
-	            var row = Elem(_reactBootstrap.Row, { className: "container" }, [editorWrapper, preview]);
+	            var row = (0, _General.Elem)(_reactBootstrap.Row, { className: "con container" }, [editorWrapper, preview]);
 
 	            return row;
 	        }
 	    }, {
 	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-
-	            // this.setState((previousState) => ({
-	            //     value : previousState.text,
-	            //     sections : previousState.sections
-	            // }));
-
-	        }
+	        value: function componentDidMount() {}
 	    }]);
 
 	    return Container;
 	}(_react2.default.Component);
 
-	Draw(Container, {}, "null", 'container');
+	(0, _General.Draw)(Container, {}, "null", 'container');
 
 /***/ },
 /* 1 */
@@ -41312,18 +40649,19 @@
 
 	            let zippedChorus = zipMeasure(chorus, parts)
 
-	            if(chorus.connections.unison){
-	                if(groupedLyric.unison){
-	                    chorus.connections.unison.slots.forEach((slot, index) =>{
-	                        // 要把这里换一下，不是直接把index的歌词加进来，而是把属于同一个Beat的歌词加入进来
-	                        // 然后在Beat中进行进一步渲染
-	                        if(!zippedChorus.measures[slot.measure].beats[slot.beat].lyric){
-	                                zippedChorus.measures[slot.measure].beats[slot.beat].lyric = [];
-	                        }
-	                        zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric.unison[index]
-	                    })
+	            chorus.connections[parts[0]].slots.forEach((slot, index) =>{
+	                if(!zippedChorus.measures[slot.measure].beats[slot.beat].lyric){
+	                        zippedChorus.measures[slot.measure].beats[slot.beat].lyric = {};
 	                }
-	            }
+	                if(groupedLyric.unison){
+	                    zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric.unison[index]
+	                } else {
+	                    for(part of parts){
+	                        zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric[part] ? groupedLyric[part][index] : {}
+	                    }
+	                }
+	            })
+
 
 	            // console.log(zippedChorus.measures.map(measure => measure.beats));
 
@@ -41440,7 +40778,15 @@
 	        peg$c34 = peg$literalExpectation("(", false),
 	        peg$c35 = ")",
 	        peg$c36 = peg$literalExpectation(")", false),
-	        peg$c37 = function(first, next) {
+	        peg$c37 = function(first) {
+
+	            return {
+	                notes : [first],
+	                factor : 2,
+	                conn : ["halfed"]
+	            }
+	        },
+	        peg$c38 = function(first, next) {
 
 	            return {
 	                notes : [first, next],
@@ -41448,7 +40794,7 @@
 	                conn : ["halfed"]
 	            }
 	        },
-	        peg$c38 = function(first, next, last) {
+	        peg$c39 = function(first, next, last) {
 
 	            first.tripleConn = "open",
 	            last.tripleConn = "close"
@@ -41459,10 +40805,10 @@
 	                conn : ["triple"]
 	            }
 	        },
-	        peg$c39 = peg$otherExpectation("dotted"),
-	        peg$c40 = ".",
-	        peg$c41 = peg$literalExpectation(".", false),
-	        peg$c42 = function(first, next) {
+	        peg$c40 = peg$otherExpectation("dotted"),
+	        peg$c41 = ".",
+	        peg$c42 = peg$literalExpectation(".", false),
+	        peg$c43 = function(first, next) {
 
 	            first.dotted = true;
 
@@ -41474,106 +40820,106 @@
 	                conn : []
 	            }
 	        },
-	        peg$c43 = peg$otherExpectation("note"),
-	        peg$c44 = function(note) {
+	        peg$c44 = peg$otherExpectation("note"),
+	        peg$c45 = function(note) {
 	            return note;
 	        },
-	        peg$c45 = function(halfed) {
+	        peg$c46 = function(halfed) {
 	            return halfed;
 	        },
-	        peg$c46 = function(dotted) {
+	        peg$c47 = function(dotted) {
 	            return dotted;
 	        },
-	        peg$c47 = peg$otherExpectation("fixed"),
-	        peg$c48 = "/",
-	        peg$c49 = peg$literalExpectation("/", false),
-	        peg$c50 = function(note) {
+	        peg$c48 = peg$otherExpectation("fixed"),
+	        peg$c49 = "/",
+	        peg$c50 = peg$literalExpectation("/", false),
+	        peg$c51 = function(note) {
 	            note.duration = 1;
 	            note.upperConn = "open";
 	            note.conn = []
 	            return note;
 	        },
-	        peg$c51 = "\\",
-	        peg$c52 = peg$literalExpectation("\\", false),
-	        peg$c53 = function(note) {
+	        peg$c52 = "\\",
+	        peg$c53 = peg$literalExpectation("\\", false),
+	        peg$c54 = function(note) {
 	            note.duration = 1;
 	            note.upperConn = "close";
 	            note.conn = []
 	            return note;
 	        },
-	        peg$c54 = function(note) {
+	        peg$c55 = function(note) {
 	            note.duration = 1;
 	            note.conn = []
 	            return note
 	        },
-	        peg$c55 = peg$otherExpectation("modified_pitch"),
-	        peg$c56 = function(acc, pitch, octave) {
+	        peg$c56 = peg$otherExpectation("modified_pitch"),
+	        peg$c57 = function(acc, pitch, octave) {
 	            pitch.accidental = acc;
 	            pitch.octave = octave;
 	            return pitch;
 	        },
-	        peg$c57 = function(acc, pitch) {
+	        peg$c58 = function(acc, pitch) {
 	            pitch.accidental = acc;
 	            return pitch;
 	        },
-	        peg$c58 = function(pitch, octave) {
+	        peg$c59 = function(pitch, octave) {
 	            pitch.octave = octave;
 	            return pitch
 	        },
-	        peg$c59 = function(pitch) {
+	        peg$c60 = function(pitch) {
 	            return pitch
 	        },
-	        peg$c60 = peg$otherExpectation("octave"),
-	        peg$c61 = /^[,']/,
-	        peg$c62 = peg$classExpectation([",", "'"], false, false),
-	        peg$c63 = /^[1-3]/,
-	        peg$c64 = peg$classExpectation([["1", "3"]], false, false),
-	        peg$c65 = function() {
+	        peg$c61 = peg$otherExpectation("octave"),
+	        peg$c62 = /^[,']/,
+	        peg$c63 = peg$classExpectation([",", "'"], false, false),
+	        peg$c64 = /^[1-3]/,
+	        peg$c65 = peg$classExpectation([["1", "3"]], false, false),
+	        peg$c66 = function() {
 
 	            return (text()[0] == ',') ? - parseInt(text()[1]) : parseInt(text()[1])
 
 	        },
-	        peg$c66 = peg$otherExpectation("accidental"),
-	        peg$c67 = /^[b#n]/,
-	        peg$c68 = peg$classExpectation(["b", "#", "n"], false, false),
-	        peg$c69 = function() {
+	        peg$c67 = peg$otherExpectation("accidental"),
+	        peg$c68 = /^[b#n]/,
+	        peg$c69 = peg$classExpectation(["b", "#", "n"], false, false),
+	        peg$c70 = function() {
 	            return text();
 	        },
-	        peg$c70 = peg$otherExpectation("pitch"),
-	        peg$c71 = /^[0-7]/,
-	        peg$c72 = peg$classExpectation([["0", "7"]], false, false),
-	        peg$c73 = function() {
+	        peg$c71 = peg$otherExpectation("pitch"),
+	        peg$c72 = /^[0-7]/,
+	        peg$c73 = peg$classExpectation([["0", "7"]], false, false),
+	        peg$c74 = function() {
 	            return {pitch : parseInt(text())};
 	        },
-	        peg$c74 = "-",
-	        peg$c75 = peg$literalExpectation("-", false),
-	        peg$c76 = function() {
+	        peg$c75 = "-",
+	        peg$c76 = peg$literalExpectation("-", false),
+	        peg$c77 = function() {
 	            return {pitch : "–"}
 	        },
-	        peg$c77 = peg$otherExpectation("measure bar"),
-	        peg$c78 = "||",
-	        peg$c79 = peg$literalExpectation("||", false),
-	        peg$c80 = function() {
+	        peg$c78 = peg$otherExpectation("measure bar"),
+	        peg$c79 = "||",
+	        peg$c80 = peg$literalExpectation("||", false),
+	        peg$c81 = function() {
 	            return {measureType : "fin"}
 	        },
-	        peg$c81 = ":|",
-	        peg$c82 = peg$literalExpectation(":|", false),
-	        peg$c83 = function() {
+	        peg$c82 = ":|",
+	        peg$c83 = peg$literalExpectation(":|", false),
+	        peg$c84 = function() {
 	            return {measureType : "rep_fin"}
 	        },
-	        peg$c84 = "|:",
-	        peg$c85 = peg$literalExpectation("|:", false),
-	        peg$c86 = function() {
+	        peg$c85 = "|:",
+	        peg$c86 = peg$literalExpectation("|:", false),
+	        peg$c87 = function() {
 	            return {measureType : "rep_start"}
 	        },
-	        peg$c87 = "|",
-	        peg$c88 = peg$literalExpectation("|", false),
-	        peg$c89 = function() {
+	        peg$c88 = "|",
+	        peg$c89 = peg$literalExpectation("|", false),
+	        peg$c90 = function() {
 	            return {measureType : "normal"}
 	        },
-	        peg$c90 = peg$otherExpectation("whitespace"),
-	        peg$c91 = /^[ \t\n\r]/,
-	        peg$c92 = peg$classExpectation([" ", "\t", "\n", "\r"], false, false),
+	        peg$c91 = peg$otherExpectation("whitespace"),
+	        peg$c92 = /^[ \t\n\r]/,
+	        peg$c93 = peg$classExpectation([" ", "\t", "\n", "\r"], false, false),
 
 	        peg$currPos          = 0,
 	        peg$savedPos         = 0,
@@ -42622,29 +41968,17 @@
 	          if (s3 !== peg$FAILED) {
 	            s4 = peg$parse_();
 	            if (s4 !== peg$FAILED) {
-	              s5 = peg$parseNote();
+	              if (input.charCodeAt(peg$currPos) === 41) {
+	                s5 = peg$c35;
+	                peg$currPos++;
+	              } else {
+	                s5 = peg$FAILED;
+	                if (peg$silentFails === 0) { peg$fail(peg$c36); }
+	              }
 	              if (s5 !== peg$FAILED) {
-	                s6 = peg$parse_();
-	                if (s6 !== peg$FAILED) {
-	                  if (input.charCodeAt(peg$currPos) === 41) {
-	                    s7 = peg$c35;
-	                    peg$currPos++;
-	                  } else {
-	                    s7 = peg$FAILED;
-	                    if (peg$silentFails === 0) { peg$fail(peg$c36); }
-	                  }
-	                  if (s7 !== peg$FAILED) {
-	                    peg$savedPos = s0;
-	                    s1 = peg$c37(s3, s5);
-	                    s0 = s1;
-	                  } else {
-	                    peg$currPos = s0;
-	                    s0 = peg$FAILED;
-	                  }
-	                } else {
-	                  peg$currPos = s0;
-	                  s0 = peg$FAILED;
-	                }
+	                peg$savedPos = s0;
+	                s1 = peg$c37(s3);
+	                s0 = s1;
 	              } else {
 	                peg$currPos = s0;
 	                s0 = peg$FAILED;
@@ -42685,21 +42019,84 @@
 	                if (s5 !== peg$FAILED) {
 	                  s6 = peg$parse_();
 	                  if (s6 !== peg$FAILED) {
-	                    s7 = peg$parseNote();
+	                    if (input.charCodeAt(peg$currPos) === 41) {
+	                      s7 = peg$c35;
+	                      peg$currPos++;
+	                    } else {
+	                      s7 = peg$FAILED;
+	                      if (peg$silentFails === 0) { peg$fail(peg$c36); }
+	                    }
 	                    if (s7 !== peg$FAILED) {
-	                      s8 = peg$parse_();
-	                      if (s8 !== peg$FAILED) {
-	                        if (input.charCodeAt(peg$currPos) === 41) {
-	                          s9 = peg$c35;
-	                          peg$currPos++;
-	                        } else {
-	                          s9 = peg$FAILED;
-	                          if (peg$silentFails === 0) { peg$fail(peg$c36); }
-	                        }
-	                        if (s9 !== peg$FAILED) {
-	                          peg$savedPos = s0;
-	                          s1 = peg$c38(s3, s5, s7);
-	                          s0 = s1;
+	                      peg$savedPos = s0;
+	                      s1 = peg$c38(s3, s5);
+	                      s0 = s1;
+	                    } else {
+	                      peg$currPos = s0;
+	                      s0 = peg$FAILED;
+	                    }
+	                  } else {
+	                    peg$currPos = s0;
+	                    s0 = peg$FAILED;
+	                  }
+	                } else {
+	                  peg$currPos = s0;
+	                  s0 = peg$FAILED;
+	                }
+	              } else {
+	                peg$currPos = s0;
+	                s0 = peg$FAILED;
+	              }
+	            } else {
+	              peg$currPos = s0;
+	              s0 = peg$FAILED;
+	            }
+	          } else {
+	            peg$currPos = s0;
+	            s0 = peg$FAILED;
+	          }
+	        } else {
+	          peg$currPos = s0;
+	          s0 = peg$FAILED;
+	        }
+	        if (s0 === peg$FAILED) {
+	          s0 = peg$currPos;
+	          if (input.charCodeAt(peg$currPos) === 40) {
+	            s1 = peg$c33;
+	            peg$currPos++;
+	          } else {
+	            s1 = peg$FAILED;
+	            if (peg$silentFails === 0) { peg$fail(peg$c34); }
+	          }
+	          if (s1 !== peg$FAILED) {
+	            s2 = peg$parse_();
+	            if (s2 !== peg$FAILED) {
+	              s3 = peg$parseNote();
+	              if (s3 !== peg$FAILED) {
+	                s4 = peg$parse_();
+	                if (s4 !== peg$FAILED) {
+	                  s5 = peg$parseNote();
+	                  if (s5 !== peg$FAILED) {
+	                    s6 = peg$parse_();
+	                    if (s6 !== peg$FAILED) {
+	                      s7 = peg$parseNote();
+	                      if (s7 !== peg$FAILED) {
+	                        s8 = peg$parse_();
+	                        if (s8 !== peg$FAILED) {
+	                          if (input.charCodeAt(peg$currPos) === 41) {
+	                            s9 = peg$c35;
+	                            peg$currPos++;
+	                          } else {
+	                            s9 = peg$FAILED;
+	                            if (peg$silentFails === 0) { peg$fail(peg$c36); }
+	                          }
+	                          if (s9 !== peg$FAILED) {
+	                            peg$savedPos = s0;
+	                            s1 = peg$c39(s3, s5, s7);
+	                            s0 = s1;
+	                          } else {
+	                            peg$currPos = s0;
+	                            s0 = peg$FAILED;
+	                          }
 	                        } else {
 	                          peg$currPos = s0;
 	                          s0 = peg$FAILED;
@@ -42732,9 +42129,6 @@
 	            peg$currPos = s0;
 	            s0 = peg$FAILED;
 	          }
-	        } else {
-	          peg$currPos = s0;
-	          s0 = peg$FAILED;
 	        }
 	      }
 	      peg$silentFails--;
@@ -42752,11 +42146,11 @@
 	      peg$silentFails++;
 	      s0 = peg$currPos;
 	      if (input.charCodeAt(peg$currPos) === 46) {
-	        s1 = peg$c40;
+	        s1 = peg$c41;
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c41); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c42); }
 	      }
 	      if (s1 !== peg$FAILED) {
 	        s2 = peg$parseFixedNote();
@@ -42766,7 +42160,7 @@
 	            s4 = peg$parseFixedNote();
 	            if (s4 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c42(s2, s4);
+	              s1 = peg$c43(s2, s4);
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -42787,7 +42181,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c39); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c40); }
 	      }
 
 	      return s0;
@@ -42803,7 +42197,7 @@
 	        s2 = peg$parse_();
 	        if (s2 !== peg$FAILED) {
 	          peg$savedPos = s0;
-	          s1 = peg$c44(s1);
+	          s1 = peg$c45(s1);
 	          s0 = s1;
 	        } else {
 	          peg$currPos = s0;
@@ -42818,7 +42212,7 @@
 	        s1 = peg$parseHalfedNote();
 	        if (s1 !== peg$FAILED) {
 	          peg$savedPos = s0;
-	          s1 = peg$c45(s1);
+	          s1 = peg$c46(s1);
 	        }
 	        s0 = s1;
 	        if (s0 === peg$FAILED) {
@@ -42826,7 +42220,7 @@
 	          s1 = peg$parseDottedNote();
 	          if (s1 !== peg$FAILED) {
 	            peg$savedPos = s0;
-	            s1 = peg$c46(s1);
+	            s1 = peg$c47(s1);
 	          }
 	          s0 = s1;
 	        }
@@ -42834,7 +42228,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c43); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c44); }
 	      }
 
 	      return s0;
@@ -42846,11 +42240,11 @@
 	      peg$silentFails++;
 	      s0 = peg$currPos;
 	      if (input.charCodeAt(peg$currPos) === 47) {
-	        s1 = peg$c48;
+	        s1 = peg$c49;
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c49); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c50); }
 	      }
 	      if (s1 !== peg$FAILED) {
 	        s2 = peg$parseModifiedPitch();
@@ -42858,7 +42252,7 @@
 	          s3 = peg$parse_();
 	          if (s3 !== peg$FAILED) {
 	            peg$savedPos = s0;
-	            s1 = peg$c50(s2);
+	            s1 = peg$c51(s2);
 	            s0 = s1;
 	          } else {
 	            peg$currPos = s0;
@@ -42877,17 +42271,17 @@
 	        s1 = peg$parseModifiedPitch();
 	        if (s1 !== peg$FAILED) {
 	          if (input.charCodeAt(peg$currPos) === 92) {
-	            s2 = peg$c51;
+	            s2 = peg$c52;
 	            peg$currPos++;
 	          } else {
 	            s2 = peg$FAILED;
-	            if (peg$silentFails === 0) { peg$fail(peg$c52); }
+	            if (peg$silentFails === 0) { peg$fail(peg$c53); }
 	          }
 	          if (s2 !== peg$FAILED) {
 	            s3 = peg$parse_();
 	            if (s3 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c53(s1);
+	              s1 = peg$c54(s1);
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -42908,7 +42302,7 @@
 	            s2 = peg$parse_();
 	            if (s2 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c54(s1);
+	              s1 = peg$c55(s1);
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -42923,7 +42317,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c47); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c48); }
 	      }
 
 	      return s0;
@@ -42941,7 +42335,7 @@
 	          s3 = peg$parseOctave();
 	          if (s3 !== peg$FAILED) {
 	            peg$savedPos = s0;
-	            s1 = peg$c56(s1, s2, s3);
+	            s1 = peg$c57(s1, s2, s3);
 	            s0 = s1;
 	          } else {
 	            peg$currPos = s0;
@@ -42962,7 +42356,7 @@
 	          s2 = peg$parsePitch();
 	          if (s2 !== peg$FAILED) {
 	            peg$savedPos = s0;
-	            s1 = peg$c57(s1, s2);
+	            s1 = peg$c58(s1, s2);
 	            s0 = s1;
 	          } else {
 	            peg$currPos = s0;
@@ -42979,7 +42373,7 @@
 	            s2 = peg$parseOctave();
 	            if (s2 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c58(s1, s2);
+	              s1 = peg$c59(s1, s2);
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -42994,7 +42388,7 @@
 	            s1 = peg$parsePitch();
 	            if (s1 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c59(s1);
+	              s1 = peg$c60(s1);
 	            }
 	            s0 = s1;
 	          }
@@ -43003,7 +42397,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c55); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c56); }
 	      }
 
 	      return s0;
@@ -43014,24 +42408,24 @@
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
-	      if (peg$c61.test(input.charAt(peg$currPos))) {
+	      if (peg$c62.test(input.charAt(peg$currPos))) {
 	        s1 = input.charAt(peg$currPos);
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c62); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c63); }
 	      }
 	      if (s1 !== peg$FAILED) {
-	        if (peg$c63.test(input.charAt(peg$currPos))) {
+	        if (peg$c64.test(input.charAt(peg$currPos))) {
 	          s2 = input.charAt(peg$currPos);
 	          peg$currPos++;
 	        } else {
 	          s2 = peg$FAILED;
-	          if (peg$silentFails === 0) { peg$fail(peg$c64); }
+	          if (peg$silentFails === 0) { peg$fail(peg$c65); }
 	        }
 	        if (s2 !== peg$FAILED) {
 	          peg$savedPos = s0;
-	          s1 = peg$c65();
+	          s1 = peg$c66();
 	          s0 = s1;
 	        } else {
 	          peg$currPos = s0;
@@ -43044,7 +42438,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c60); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c61); }
 	      }
 
 	      return s0;
@@ -43055,22 +42449,22 @@
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
-	      if (peg$c67.test(input.charAt(peg$currPos))) {
+	      if (peg$c68.test(input.charAt(peg$currPos))) {
 	        s1 = input.charAt(peg$currPos);
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c68); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c69); }
 	      }
 	      if (s1 !== peg$FAILED) {
 	        peg$savedPos = s0;
-	        s1 = peg$c69();
+	        s1 = peg$c70();
 	      }
 	      s0 = s1;
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c66); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c67); }
 	      }
 
 	      return s0;
@@ -43081,37 +42475,37 @@
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
-	      if (peg$c71.test(input.charAt(peg$currPos))) {
+	      if (peg$c72.test(input.charAt(peg$currPos))) {
 	        s1 = input.charAt(peg$currPos);
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c72); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c73); }
 	      }
 	      if (s1 !== peg$FAILED) {
 	        peg$savedPos = s0;
-	        s1 = peg$c73();
+	        s1 = peg$c74();
 	      }
 	      s0 = s1;
 	      if (s0 === peg$FAILED) {
 	        s0 = peg$currPos;
 	        if (input.charCodeAt(peg$currPos) === 45) {
-	          s1 = peg$c74;
+	          s1 = peg$c75;
 	          peg$currPos++;
 	        } else {
 	          s1 = peg$FAILED;
-	          if (peg$silentFails === 0) { peg$fail(peg$c75); }
+	          if (peg$silentFails === 0) { peg$fail(peg$c76); }
 	        }
 	        if (s1 !== peg$FAILED) {
 	          peg$savedPos = s0;
-	          s1 = peg$c76();
+	          s1 = peg$c77();
 	        }
 	        s0 = s1;
 	      }
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c70); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c71); }
 	      }
 
 	      return s0;
@@ -43122,18 +42516,18 @@
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
-	      if (input.substr(peg$currPos, 2) === peg$c78) {
-	        s1 = peg$c78;
+	      if (input.substr(peg$currPos, 2) === peg$c79) {
+	        s1 = peg$c79;
 	        peg$currPos += 2;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c79); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c80); }
 	      }
 	      if (s1 !== peg$FAILED) {
 	        s2 = peg$parse_();
 	        if (s2 !== peg$FAILED) {
 	          peg$savedPos = s0;
-	          s1 = peg$c80();
+	          s1 = peg$c81();
 	          s0 = s1;
 	        } else {
 	          peg$currPos = s0;
@@ -43145,18 +42539,18 @@
 	      }
 	      if (s0 === peg$FAILED) {
 	        s0 = peg$currPos;
-	        if (input.substr(peg$currPos, 2) === peg$c81) {
-	          s1 = peg$c81;
+	        if (input.substr(peg$currPos, 2) === peg$c82) {
+	          s1 = peg$c82;
 	          peg$currPos += 2;
 	        } else {
 	          s1 = peg$FAILED;
-	          if (peg$silentFails === 0) { peg$fail(peg$c82); }
+	          if (peg$silentFails === 0) { peg$fail(peg$c83); }
 	        }
 	        if (s1 !== peg$FAILED) {
 	          s2 = peg$parse_();
 	          if (s2 !== peg$FAILED) {
 	            peg$savedPos = s0;
-	            s1 = peg$c83();
+	            s1 = peg$c84();
 	            s0 = s1;
 	          } else {
 	            peg$currPos = s0;
@@ -43168,18 +42562,18 @@
 	        }
 	        if (s0 === peg$FAILED) {
 	          s0 = peg$currPos;
-	          if (input.substr(peg$currPos, 2) === peg$c84) {
-	            s1 = peg$c84;
+	          if (input.substr(peg$currPos, 2) === peg$c85) {
+	            s1 = peg$c85;
 	            peg$currPos += 2;
 	          } else {
 	            s1 = peg$FAILED;
-	            if (peg$silentFails === 0) { peg$fail(peg$c85); }
+	            if (peg$silentFails === 0) { peg$fail(peg$c86); }
 	          }
 	          if (s1 !== peg$FAILED) {
 	            s2 = peg$parse_();
 	            if (s2 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c86();
+	              s1 = peg$c87();
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -43192,17 +42586,17 @@
 	          if (s0 === peg$FAILED) {
 	            s0 = peg$currPos;
 	            if (input.charCodeAt(peg$currPos) === 124) {
-	              s1 = peg$c87;
+	              s1 = peg$c88;
 	              peg$currPos++;
 	            } else {
 	              s1 = peg$FAILED;
-	              if (peg$silentFails === 0) { peg$fail(peg$c88); }
+	              if (peg$silentFails === 0) { peg$fail(peg$c89); }
 	            }
 	            if (s1 !== peg$FAILED) {
 	              s2 = peg$parse_();
 	              if (s2 !== peg$FAILED) {
 	                peg$savedPos = s0;
-	                s1 = peg$c89();
+	                s1 = peg$c90();
 	                s0 = s1;
 	              } else {
 	                peg$currPos = s0;
@@ -43218,7 +42612,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c77); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c78); }
 	      }
 
 	      return s0;
@@ -43229,27 +42623,27 @@
 
 	      peg$silentFails++;
 	      s0 = [];
-	      if (peg$c91.test(input.charAt(peg$currPos))) {
+	      if (peg$c92.test(input.charAt(peg$currPos))) {
 	        s1 = input.charAt(peg$currPos);
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c92); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c93); }
 	      }
 	      while (s1 !== peg$FAILED) {
 	        s0.push(s1);
-	        if (peg$c91.test(input.charAt(peg$currPos))) {
+	        if (peg$c92.test(input.charAt(peg$currPos))) {
 	          s1 = input.charAt(peg$currPos);
 	          peg$currPos++;
 	        } else {
 	          s1 = peg$FAILED;
-	          if (peg$silentFails === 0) { peg$fail(peg$c92); }
+	          if (peg$silentFails === 0) { peg$fail(peg$c93); }
 	        }
 	      }
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c90); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c91); }
 	      }
 
 	      return s0;
@@ -43343,7 +42737,7 @@
 	                measure.beats.forEach(function(beat, beatIndex){
 	                    beat.notes.forEach(function(note, noteIndex){
 
-	                        if(note.pitch != "–"){
+	                        if(note.pitch != "–" && !isConnecting){
 	                            slots.push({measure:index, beat:beatIndex, note:noteIndex})
 	                        }
 
@@ -43379,17 +42773,9 @@
 	                chorus.measures[index] = zipBeat(chorus.measures[index], parts)
 	            })
 
-	            let identical = parts.every(part => {
-	                return JSON.stringify(chorus[part].connections.slots) == JSON.stringify(chorus[parts[0]].connections.slots)
+	            parts.forEach(part => {
+	                chorus.connections[part] = chorus[part].connections
 	            })
-
-	            if(identical){
-	                chorus.connections.unison = chorus[parts[0]].connections;
-	            } else {
-	                parts.forEach(part => {
-	                    chorus.connections[part] = chorus[part].connections
-	                })
-	            }
 
 	            for (var part of parts) {
 	                delete chorus[part];
@@ -43458,7 +42844,7 @@
 /* 431 */
 /***/ function(module, exports) {
 
-	module.exports = "title {\n恩 友 歌\n}\n\nsubtitle {\nWhat a Friend We Have in Jesus\n}\n\nlyrics {\nJ. Scriven 1855\n}\n\ncomposer {\nA. C. Converse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nverse 1 {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 2 {\n有 否 煩 惱 壓 著 心 頭？ 有 否 遇 試 煉 引 誘？\n我 們 切 莫 灰 心 失 望， 仍 到 主 恩 座 前 求！\n何 處 得 此 忠 心 朋 友， 分 擔 一 切 苦 與 憂，\n我 們 弱 點 主 都 知 透， 放 心 到 主 座 前 求。\n}\n\nverse 3 {\n勞 苦 多 愁 軟 弱 不 堪， 掛 慮 重 擔 壓 肩 頭，\n主 是 你 我 避 難 處 所， 快 到 主 恩 座 前 求！\n你 若 遭 遇 友 叛 親 離， 來 到 主 恩 座 前 求，\n在 主 懷 中 必 蒙 護 佑， 與 主 同 在 永 無 憂。\n}\n\nchorus soprano {\n.5 5  (6 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (5 3) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"
+	module.exports = "title {\r\n自 耶 稣 住 在 我 心\r\n}\r\n\r\nsubtitle {\r\nSince Jesus Came Into My Heart\r\n}\r\n\r\nlyrics {\r\nRufus H. McDaniel\r\n}\r\n\r\ncomposer {\r\nCharles H. Gabriel\r\n}\r\n\r\nbeats {\r\n1=A   4/4\r\n}\r\n\r\nparts {\r\n    soprano bass\r\n}\r\n\r\nverse 1 {\r\n\t\r\n}\r\n\r\nchorus soprano {\r\n0 0 0 (3 4) | 5 (6 7) 1 (1 2) | 3 (3 4) .3 2  | (1 /1) (1\\ 6) (1 /1) (1\\ 1) |\r\n5 - - (3 4) | 5 (6 7) 1 (1 2) | 3 (3 4) .3 3  | (3 /2) (2\\ 2) (#4 /#4) (#4\\ 2) |\r\n5 - -  5    | (3 /3) (3\\ 1) (3 /3) (3\\ 1)     |\r\n3 - -  2    | (1 /1) (1\\ 6,1) (1 /1) (1\\ 1)   |\r\n5 - - (3 4) | 5 (6 7) 1 (1 2) | 3 (3 4)  5 4  | (3 /3) (3\\ 1) (3 /3) (3\\ 2)     |  \r\n1 - - -     ||\r\n}\r\n\r\nchorus bass {\r\n0 0 0 (3 4) | 5 (6 7) 1 (1 2) | 3 (3 4) .3 2  | (1 /1) (1\\ 6) (1 /1) (1\\ 1) |\r\n5 - - (3 4) | 5 (6 7) 1 (1 2) | 3 (3 4) .3 3  | (3 /2) (2\\ 2) (#4 /#4) (#4\\ 2) |\r\n5 - -  5    | (3 /3) (3\\ 1) (3 /3) (3\\ 1)     |\r\n3 - -  2    | (1 /1) (1\\ 6,1) (1 /1) (1\\ 1)   |\r\n5 - - (3 4) | 5 (6 7) 1 (1 2) | 3 (3 4)  5 4  | (3 /3) (3\\ 1) (3 /3) (3\\ 2)     |  \r\n1 - - -     ||\r\n}"
 
 /***/ },
 /* 432 */
@@ -43942,6 +43328,866 @@
 	};
 
 	exports.default = Sidebar;
+
+/***/ },
+/* 434 */,
+/* 435 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Draw = exports.SectionElem = exports.Elem = undefined;
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var Elem = function Elem(component, param, children) {
+	    return _react2.default.createElement(component, param, children);
+	};
+
+	var SectionElem = function SectionElem(sectionName, key, children) {
+	    return Elem('div', {
+	        key: key,
+	        ref: sectionName,
+	        id: sectionName,
+	        className: sectionName
+	    }, children);
+	};
+
+	var Draw = function Draw(component, param, children, to) {
+	    _reactDom2.default.render(Elem(component, param, children), document.getElementById(to));
+	};
+
+	exports.Elem = Elem;
+	exports.SectionElem = SectionElem;
+	exports.Draw = Draw;
+
+/***/ },
+/* 436 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Repeatbar = exports.Finalbar = exports.Vertbar = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(435);
+
+	var _Lyric = __webpack_require__(437);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Vertbar = function (_React$Component) {
+	    _inherits(Vertbar, _React$Component);
+
+	    function Vertbar(props) {
+	        _classCallCheck(this, Vertbar);
+
+	        return _possibleConstructorReturn(this, (Vertbar.__proto__ || Object.getPrototypeOf(Vertbar)).call(this, props));
+	    }
+
+	    _createClass(Vertbar, [{
+	        key: 'render',
+	        value: function render() {
+	            var _this2 = this;
+
+	            var bars = [];
+	            Object.keys(this.props.parts).forEach(function (_, index) {
+	                bars.push((0, _General.Elem)('span', { key: index > 1 ? index + 500 : index, className: "vertbar" }, " "));
+	                if (index == 1) {
+	                    if (_this2.props.lyric) {
+	                        bars.push((0, _General.Elem)(_Lyric.Lyric, Object.assign(_this2.props.lyric, { key: index + 250 })));
+	                    } else bars.push((0, _General.Elem)(_Lyric.Lyric, Object.assign([Array(_this2.props.lyricLines).fill(" ")], { key: index + 250 })));
+	                }
+	            });
+
+	            return (0, _General.Elem)('div', { className: "vertbars" }, bars);
+	        }
+	    }]);
+
+	    return Vertbar;
+	}(_react2.default.Component);
+
+	var Finalbar = function (_React$Component2) {
+	    _inherits(Finalbar, _React$Component2);
+
+	    function Finalbar(props) {
+	        _classCallCheck(this, Finalbar);
+
+	        return _possibleConstructorReturn(this, (Finalbar.__proto__ || Object.getPrototypeOf(Finalbar)).call(this, props));
+	    }
+
+	    _createClass(Finalbar, [{
+	        key: 'render',
+	        value: function render() {
+	            var _this4 = this;
+
+	            var bars = [];
+	            Object.keys(this.props.parts).forEach(function (_, index) {
+	                bars.push((0, _General.Elem)('span', { key: index > 1 ? index + 500 : index, className: "finalbar" }, " "));
+	                if (index == 1) {
+	                    if (_this4.props.lyric) {
+	                        bars.push((0, _General.Elem)(_Lyric.Lyric, Object.assign(_this4.props.lyric, { key: index + 250 })));
+	                    } else bars.push((0, _General.Elem)(_Lyric.Lyric, Object.assign([Array(_this4.props.lyricLines).fill(" ")], { key: index + 250 })));
+	                }
+	            });
+
+	            return (0, _General.Elem)('div', { className: "finalbars" }, bars);
+	        }
+	    }]);
+
+	    return Finalbar;
+	}(_react2.default.Component);
+
+	var Repeatbar = function (_React$Component3) {
+	    _inherits(Repeatbar, _React$Component3);
+
+	    function Repeatbar(props) {
+	        _classCallCheck(this, Repeatbar);
+
+	        return _possibleConstructorReturn(this, (Repeatbar.__proto__ || Object.getPrototypeOf(Repeatbar)).call(this, props));
+	    }
+
+	    _createClass(Repeatbar, [{
+	        key: 'render',
+	        value: function render() {
+	            return (0, _General.Elem)('span', { className: "repeatbar" + (this.props.initial ? " initialbar" : "") }, [(0, _General.Elem)('span', { className: "dotUpper", key: 42944 })]);
+	        }
+	    }]);
+
+	    return Repeatbar;
+	}(_react2.default.Component);
+
+	exports.Vertbar = Vertbar;
+	exports.Finalbar = Finalbar;
+	exports.Repeatbar = Repeatbar;
+
+/***/ },
+/* 437 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Lyric = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(435);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Lyric = function (_React$Component) {
+	    _inherits(Lyric, _React$Component);
+
+	    function Lyric(props) {
+	        _classCallCheck(this, Lyric);
+
+	        return _possibleConstructorReturn(this, (Lyric.__proto__ || Object.getPrototypeOf(Lyric)).call(this, props));
+	    }
+
+	    _createClass(Lyric, [{
+	        key: 'LyricChars',
+	        value: function LyricChars(chars) {
+	            return chars.map(function (c, index) {
+	                return (0, _General.Elem)('div', { className: "lyricChar", key: index }, c);
+	            });
+	        }
+	    }, {
+	        key: 'Lyrics',
+	        value: function Lyrics() {
+	            var _this2 = this;
+
+	            var elems = [];
+	            Object.keys(this.props).forEach(function (key, index) {
+	                if (key != "children" && _this2.props[key]) {
+	                    elems.push((0, _General.Elem)('span', { className: "lyricSlot", key: index }, _this2.LyricChars(_this2.props[key])));
+	                }
+	            });
+	            return elems;
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return (0, _General.Elem)('span', { ref: "lyric", className: "lyricBeat" }, this.Lyrics());
+	        }
+	    }]);
+
+	    return Lyric;
+	}(_react2.default.Component);
+
+	exports.Lyric = Lyric;
+
+/***/ },
+/* 438 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Slot = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(435);
+
+	var _Lyric = __webpack_require__(437);
+
+	var _Beat = __webpack_require__(439);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Slot = function (_React$Component) {
+	    _inherits(Slot, _React$Component);
+
+	    function Slot(props) {
+	        _classCallCheck(this, Slot);
+
+	        return _possibleConstructorReturn(this, (Slot.__proto__ || Object.getPrototypeOf(Slot)).call(this, props));
+	    }
+
+	    _createClass(Slot, [{
+	        key: 'Elems',
+	        value: function Elems() {
+	            var _this2 = this;
+
+	            var elems = [],
+	                index = 0;
+
+	            this.props.parts.forEach(function (partName, index) {
+
+	                elems.push((0, _General.Elem)(_Beat.Beat, Object.assign(_this2.props[partName], { key: index > 1 ? index + 500 : index, ref: partName })));
+
+	                if (index == 1) {
+	                    if (_this2.props.lyric) {
+	                        elems.push((0, _General.Elem)(_Lyric.Lyric, Object.assign(_this2.props.lyric, { key: index + 250 })));
+	                    } else elems.push((0, _General.Elem)(_Lyric.Lyric, Object.assign([Array(_this2.props.lyricLines).fill(" ")], { key: index + 250 })));
+	                }
+	            });
+
+	            return elems;
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return (0, _General.Elem)('div', { style: {}, ref: "slot", className: "slot" }, this.Elems());
+	        }
+	    }]);
+
+	    return Slot;
+	}(_react2.default.Component);
+
+	exports.Slot = Slot;
+
+/***/ },
+/* 439 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Beat = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(435);
+
+	var _Note = __webpack_require__(440);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Underbar = function (_React$Component) {
+	    _inherits(Underbar, _React$Component);
+
+	    function Underbar(props) {
+	        _classCallCheck(this, Underbar);
+
+	        return _possibleConstructorReturn(this, (Underbar.__proto__ || Object.getPrototypeOf(Underbar)).call(this, props));
+	    }
+
+	    _createClass(Underbar, [{
+	        key: 'render',
+	        value: function render() {
+
+	            var style = {
+	                left: this.props.left,
+	                width: this.props.width,
+	                top: this.props.top
+	            };
+
+	            return (0, _General.Elem)('div', { style: style, className: "underbar" });
+	        }
+	    }]);
+
+	    return Underbar;
+	}(_react2.default.Component);
+
+	var Beat = function (_React$Component2) {
+	    _inherits(Beat, _React$Component2);
+
+	    function Beat(props) {
+	        _classCallCheck(this, Beat);
+
+	        var _this2 = _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
+
+	        _this2.state = {
+	            underbarPoses: _this2.props.underbar ? _this2.props.underbar.map(function (elem) {
+	                return { left: 0, width: 0, top: 0 };
+	            }) : []
+	        };
+
+	        return _this2;
+	    }
+
+	    _createClass(Beat, [{
+	        key: 'GetNotePoses',
+	        value: function GetNotePoses() {
+
+	            var notePoses = {};
+
+	            for (var ithNote in this.refs) {
+	                if (ithNote != "beat") {
+	                    notePoses[ithNote] = this.refs[ithNote].box;
+	                }
+	            }
+
+	            return notePoses;
+	        }
+	    }, {
+	        key: 'GetUnderbarPoses',
+	        value: function GetUnderbarPoses(notePoses, beatBox) {
+
+	            // by subtracting the score position from the underbar position,
+	            // we made the new undarbar position relative to score element.
+
+	            return this.props.underbar.map(function (elem) {
+	                return {
+	                    left: notePoses[elem.start].left - beatBox.left,
+	                    width: notePoses[elem.end].right - notePoses[elem.start].left,
+	                    top: notePoses[elem.start].bottom + elem.level * 3 - beatBox.top };
+	            });
+	        }
+	    }, {
+	        key: 'NoteElems',
+	        value: function NoteElems() {
+	            return this.props.notes.map(function (note, index) {
+	                return (0, _General.Elem)(_Note.Note, { ref: index, key: index, note: note });
+	            });
+	        }
+	    }, {
+	        key: 'UnderbarElems',
+	        value: function UnderbarElems(offset) {
+	            return this.state.underbarPoses.map(function (elem, index) {
+	                return (0, _General.Elem)(Underbar, { key: index + offset, left: elem.left, width: elem.width, top: elem.top });
+	            });
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+
+	            // console.log(this.props)
+
+	            var underbarElems = this.UnderbarElems(this.NoteElems().length);
+	            var noteElems = this.NoteElems().concat(underbarElems);
+
+	            return (0, _General.Elem)('span', { ref: "beat", className: "beat" }, noteElems);
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+
+	            var beatBox = this.refs.beat.getBoundingClientRect();
+
+	            this.setState({ underbarPoses: this.props.underbar ? this.GetUnderbarPoses(this.GetNotePoses(), beatBox) : [] });
+	        }
+	    }]);
+
+	    return Beat;
+	}(_react2.default.Component);
+
+	exports.Beat = Beat;
+
+/***/ },
+/* 440 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Note = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(435);
+
+	var _Signs = __webpack_require__(441);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Note = function (_React$Component) {
+	    _inherits(Note, _React$Component);
+
+	    function Note(props) {
+	        _classCallCheck(this, Note);
+
+	        var _this = _possibleConstructorReturn(this, (Note.__proto__ || Object.getPrototypeOf(Note)).call(this, props));
+
+	        _this.box = { left: 0, right: 0 };
+
+	        _this.state = {
+	            octaveDotPoses: []
+	        };
+	        return _this;
+	    }
+
+	    _createClass(Note, [{
+	        key: 'GetOctaveDotPoses',
+	        value: function GetOctaveDotPoses() {
+
+	            var octaveDotPoses = [];
+	            if (this.props.note.octave && this.props.note.octave.nums) {
+	                var octave = this.props.note.octave;
+	                for (var i = 0; i < Math.abs(octave.nums); i++) {
+	                    octaveDotPoses.push({
+	                        index: this.props.note.pitch,
+	                        left: (this.box.right - this.box.left) / 2,
+	                        top: octave.nums >= 0 ? -5 * i - this.box.height / 2 : 3 * octave.start + 5 * i + this.box.height / 2
+	                    });
+	                }
+	            }
+
+	            return octaveDotPoses;
+	        }
+	    }, {
+	        key: 'PitchElem',
+	        value: function PitchElem() {
+	            return (0, _General.Elem)(_Signs.Pitch, { key: 0, ref: "note", className: "note", pitch: this.props.note.pitch });
+	        }
+	    }, {
+	        key: 'OctaveDotElem',
+	        value: function OctaveDotElem() {
+	            return this.state.octaveDotPoses.map(function (elem, index) {
+	                return (0, _General.Elem)(_Signs.OctaveDot, { key: 1 + index, ref: "dot-" + index, pos: elem });
+	            });
+	        }
+	    }, {
+	        key: 'AccidentalElem',
+	        value: function AccidentalElem() {
+	            return this.props.note.accidental ? [(0, _General.Elem)(_Signs.Accidental, { key: 205, ref: "acc", acc: this.props.note.accidental })] : [];
+	        }
+	    }, {
+	        key: 'DotElem',
+	        value: function DotElem() {
+	            return this.props.note.dotted ? [(0, _General.Elem)(_Signs.Dot, { key: 204, ref: "dot" })] : [];
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return (0, _General.Elem)('span', { style: {}, className: "note" }, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()).concat(this.OctaveDotElem()));
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            this.box = this.refs.note.refs.pitch.getBoundingClientRect();
+
+	            this.setState({ octaveDotPoses: this.GetOctaveDotPoses() });
+	        }
+	    }]);
+
+	    return Note;
+	}(_react2.default.Component);
+
+	exports.Note = Note;
+
+/***/ },
+/* 441 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Pitch = exports.OctaveDot = exports.Dot = exports.Accidental = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(435);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Accidental = function (_React$Component) {
+	    _inherits(Accidental, _React$Component);
+
+	    function Accidental(props) {
+	        _classCallCheck(this, Accidental);
+
+	        return _possibleConstructorReturn(this, (Accidental.__proto__ || Object.getPrototypeOf(Accidental)).call(this, props));
+	    }
+
+	    _createClass(Accidental, [{
+	        key: 'render',
+	        value: function render() {
+	            // console.log(this.props.acc)
+	            var accidental = this.props.acc == "#" ? '\uE10F' : '\uE11B';
+
+	            return (0, _General.Elem)('span', { className: "accidental" }, accidental);
+	        }
+	    }]);
+
+	    return Accidental;
+	}(_react2.default.Component);
+
+	var Dot = function (_React$Component2) {
+	    _inherits(Dot, _React$Component2);
+
+	    function Dot(props) {
+	        _classCallCheck(this, Dot);
+
+	        return _possibleConstructorReturn(this, (Dot.__proto__ || Object.getPrototypeOf(Dot)).call(this, props));
+	    }
+
+	    _createClass(Dot, [{
+	        key: 'render',
+	        value: function render() {
+	            return (0, _General.Elem)('span', { className: "dot" }, "·");
+	        }
+	    }]);
+
+	    return Dot;
+	}(_react2.default.Component);
+
+	var OctaveDot = function (_React$Component3) {
+	    _inherits(OctaveDot, _React$Component3);
+
+	    function OctaveDot(props) {
+	        _classCallCheck(this, OctaveDot);
+
+	        return _possibleConstructorReturn(this, (OctaveDot.__proto__ || Object.getPrototypeOf(OctaveDot)).call(this, props));
+	    }
+
+	    _createClass(OctaveDot, [{
+	        key: 'render',
+	        value: function render() {
+	            return (0, _General.Elem)('span', { style: this.props.pos, className: "octavedot" }, "·");
+	        }
+	    }]);
+
+	    return OctaveDot;
+	}(_react2.default.Component);
+
+	var Pitch = function (_React$Component4) {
+	    _inherits(Pitch, _React$Component4);
+
+	    function Pitch(props) {
+	        _classCallCheck(this, Pitch);
+
+	        return _possibleConstructorReturn(this, (Pitch.__proto__ || Object.getPrototypeOf(Pitch)).call(this, props));
+	    }
+
+	    _createClass(Pitch, [{
+	        key: 'render',
+	        value: function render() {
+	            return (0, _General.Elem)('span', { ref: "pitch", className: "pitch" }, this.props.pitch);
+	        }
+	    }]);
+
+	    return Pitch;
+	}(_react2.default.Component);
+
+	exports.Accidental = Accidental;
+	exports.Dot = Dot;
+	exports.OctaveDot = OctaveDot;
+	exports.Pitch = Pitch;
+
+/***/ },
+/* 442 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Measure = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(435);
+
+	var _Slot = __webpack_require__(438);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Measure = function (_React$Component) {
+	    _inherits(Measure, _React$Component);
+
+	    function Measure(props) {
+	        _classCallCheck(this, Measure);
+
+	        var _this = _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
+
+	        _this.notePoses = {};
+	        _this.box = {};
+	        return _this;
+	    }
+
+	    _createClass(Measure, [{
+	        key: 'GetNotePoses',
+	        value: function GetNotePoses() {
+	            var notePoses = {};
+
+	            for (var ithBeat in this.refs) {
+	                if (ithBeat != "measure") {
+	                    var elem = this.refs[ithBeat];
+	                    Object.assign(notePoses, elem.notePoses);
+	                }
+	            }
+
+	            return notePoses;
+	        }
+	    }, {
+	        key: 'SlotElems',
+	        value: function SlotElems() {
+	            var _this2 = this;
+
+	            var lyricLines = this.props.measure.beats[0].lyric[0] ? this.props.measure.beats[0].lyric[0].length : 0;
+
+	            return this.props.measure.beats.map(function (slot, index) {
+	                return (0, _General.Elem)(_Slot.Slot, Object.assign(slot, {
+	                    key: index,
+	                    ref: "slot-" + index,
+	                    parts: _this2.props.parts,
+	                    lyricLines: lyricLines
+	                }));
+	            });
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return (0, _General.Elem)('div', { style: {}, ref: "measure", className: "measure" }, this.SlotElems());
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            this.box = this.refs.measure.getBoundingClientRect();
+	        }
+	    }]);
+
+	    return Measure;
+	}(_react2.default.Component);
+
+	exports.Measure = Measure;
+
+/***/ },
+/* 443 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Connect = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(435);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Connect = function (_React$Component) {
+	    _inherits(Connect, _React$Component);
+
+	    function Connect(props) {
+	        _classCallCheck(this, Connect);
+
+	        return _possibleConstructorReturn(this, (Connect.__proto__ || Object.getPrototypeOf(Connect)).call(this, props));
+	    }
+
+	    _createClass(Connect, [{
+	        key: 'GetSVGCurveText',
+	        value: function GetSVGCurveText(AX, AY, CAX, CAY, CBX, CBY, BX, BY, thickness) {
+	            return "M" + AX + " " + AY + "C" + CAX + " " + CAY + "," + CBX + " " + CBY + "," + BX + " " + BY + "C" + CBX + " " + (CBY + thickness) + "," + CAX + " " + (CAY + thickness) + "," + AX + " " + AY + "Z";
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+
+	            var startX = this.props.startLeft,
+	                startY = this.props.startTop,
+	                startCX = this.props.startCLeft,
+	                startCY = this.props.startCTop,
+	                endX = this.props.endLeft,
+	                endY = this.props.endTop,
+	                endCX = this.props.endCLeft,
+	                endCY = this.props.endCTop,
+	                fakeStartX = endX - 200,
+	                fakeEndX = startX + 200,
+	                fakeStartY = endY,
+	                fakeEndY = startY,
+	                fakeStartCX = endCX - 180,
+	                fakeEndCX = startCX + 180,
+	                fakeStartCY = endCY,
+	                fakeEndCY = startCY;
+
+	            var elem = void 0;
+	            if (startY == endY) {
+	                elem = (0, _General.Elem)('svg', {
+	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
+	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, endCX, endCY, endX, endY, 3),
+	                    fill: "black"
+	                }));
+	            } else {
+	                elem = (0, _General.Elem)('svg', {
+	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
+	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 2) + this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 2),
+	                    fill: "black"
+	                }));
+	            }
+
+	            return elem;
+	        }
+	    }]);
+
+	    return Connect;
+	}(_react2.default.Component);
+
+	exports.Connect = Connect;
 
 /***/ }
 /******/ ]);

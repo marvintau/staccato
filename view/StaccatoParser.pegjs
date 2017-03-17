@@ -86,7 +86,7 @@
             measure.beats.forEach(function(beat, beatIndex){
                 beat.notes.forEach(function(note, noteIndex){
 
-                    if(note.pitch != "–"){
+                    if(note.pitch != "–" && !isConnecting){
                         slots.push({measure:index, beat:beatIndex, note:noteIndex})
                     }
 
@@ -122,17 +122,9 @@
             chorus.measures[index] = zipBeat(chorus.measures[index], parts)
         })
 
-        let identical = parts.every(part => {
-            return JSON.stringify(chorus[part].connections.slots) == JSON.stringify(chorus[parts[0]].connections.slots)
+        parts.forEach(part => {
+            chorus.connections[part] = chorus[part].connections
         })
-
-        if(identical){
-            chorus.connections.unison = chorus[parts[0]].connections;
-        } else {
-            parts.forEach(part => {
-                chorus.connections[part] = chorus[part].connections
-            })
-        }
 
         for (var part of parts) {
             delete chorus[part];
@@ -195,18 +187,19 @@ Sections "all sections"
 
     let zippedChorus = zipMeasure(chorus, parts)
 
-    if(chorus.connections.unison){
-        if(groupedLyric.unison){
-            chorus.connections.unison.slots.forEach((slot, index) =>{
-                // 要把这里换一下，不是直接把index的歌词加进来，而是把属于同一个Beat的歌词加入进来
-                // 然后在Beat中进行进一步渲染
-                if(!zippedChorus.measures[slot.measure].beats[slot.beat].lyric){
-                        zippedChorus.measures[slot.measure].beats[slot.beat].lyric = [];
-                }
-                zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric.unison[index]
-            })
+    chorus.connections[parts[0]].slots.forEach((slot, index) =>{
+        if(!zippedChorus.measures[slot.measure].beats[slot.beat].lyric){
+                zippedChorus.measures[slot.measure].beats[slot.beat].lyric = {};
         }
-    }
+        if(groupedLyric.unison){
+            zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric.unison[index]
+        } else {
+            for(part of parts){
+                zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric[part] ? groupedLyric[part][index] : {}
+            }
+        }
+    })
+
 
     // console.log(zippedChorus.measures.map(measure => measure.beats));
 
@@ -306,7 +299,15 @@ Notes "notes"
 }
 
 HalfedNote "duration"
-= "(" _  first:Note _ next:Note _ ")" {
+="(" _  first:Note _ ")" {
+
+    return {
+        notes : [first],
+        factor : 2,
+        conn : ["halfed"]
+    }
+} 
+/"(" _  first:Note _ next:Note _ ")" {
 
     return {
         notes : [first, next],
