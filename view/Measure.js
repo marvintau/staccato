@@ -26,18 +26,17 @@ class Measure extends React.Component{
 
     SlotElems(){
 
-        let lyricLines = this.props.measure.beats[0].lyric[0] ? this.props.measure.beats[0].lyric[0].length : 0;
-
         return this.props.measure.beats.map((slot, index)=>Elem(Slot, Object.assign(slot, {
             key : index,
             ref : "slot-" + index,
             parts : this.props.parts,
-            lyricLines : lyricLines
+            lyricLines : this.props.lyricLines
         })));
     }
 
     render() {
-        return Elem('div', {style:{}, ref:"measure", className:"measure"}, this.SlotElems());
+        let slotElems = this.SlotElems();
+        return Elem('div', {style:{minWidth:slotElems.length/4*15+"%"}, ref:"measure", className:"measure"}, slotElems);
     }
 
     componentDidMount(){

@@ -5,49 +5,15 @@ import { Row, Col, Button } from 'react-bootstrap';
 
 import {parse} from './StaccatoParser.pegjs';
 
-import scoreText from '../Since_Jesus_Came.txt';
+import scoreText from '../Lords_Prayer.txt';
 
 import {default as Sidebar} from 'react-sidebar';
 
 import {Elem, SectionElem, Draw} from "./General.js";
 
-import {Vertbar, Finalbar, Repeatbar} from "./Bars.js";
+import {Chorus} from "./Chorus.js";
 
-import {Measure} from "./Measure.js";
-
-import {Connect} from "./Connect.js";
-
-Array.prototype.riffle = function(func){
-    let res = [];
-
-    for(let i=0; i < this.length; i++){
-        res.push(this[i]); res.push(func(this[i], i, this.length))
-    }
-
-    return res
-}
-
-Array.prototype.last = function(){
-    return this[this.length - 1]
-}
-
-Array.prototype.groupBy = function(key) {
-    return this.reduce(function(rv, x) {
-        (rv[x[key]] = rv[x[key]] || []).push(x);
-    return rv;
-  }, {});
-};
-
-class Bracket extends React.Component{
-    constructor(props){
-        super(props);
-    }
-    render(){
-        return Elem('span', {style:this.props.pos, className:"bracket"}, "\ue27f")
-    }
-}
-
-
+import {processSections} from "./StaccatoModel.js";
 
 class Container extends React.Component {
 
@@ -58,6 +24,7 @@ class Container extends React.Component {
 
         try {
             scoreParsed = parse(scoreText);
+            console.log(scoreParsed);
         } catch(err){
             scoreParsed = "err";
             console.log(err);
@@ -97,7 +64,7 @@ class Container extends React.Component {
                 if(section != "chorus"){
                     sectionElems.push(SectionElem(section, index, this.state.score[section]));
                 } else {
-                    sectionElems.push(Elem(Chorus, Object.assign(this.state.score.chorus, {key:index})));
+                    sectionElems.push(Elem(Chorus, Object.assign(this.state.score.chorus, {key:index, lyricLines : this.state.score.lyricLines})));
                 }
                 index++;
             }

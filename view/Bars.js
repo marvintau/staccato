@@ -8,14 +8,18 @@ import {Lyric} from "./Lyric.js";
 class Vertbar extends React.Component{
     constructor(props){
         super(props);
+        console.log(this.props.lyricLines);
     }
 
     render(){
 
         let bars = [];
+
+        let center = this.props.parts.length/2 - 1;
+
         Object.keys(this.props.parts).forEach((_, index) => {
-            bars.push(Elem('span', {key:index > 1 ? index + 500 : index , className:"vertbar"}, " "));
-            if(index == 1){
+            bars.push(Elem('span', {key:index > center ? index + 500 : index , className:"vertbar"}, " "));
+            if(index == center){
                 if(this.props.lyric){
                     bars.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
                 }
@@ -35,9 +39,12 @@ class Finalbar extends React.Component{
     render(){
 
         let bars = [];
+
+        let center = this.props.parts.length/2 - 1;
+
         Object.keys(this.props.parts).forEach((_, index) => {
-            bars.push(Elem('span', {key:index > 1 ? index + 500 : index , className:"finalbar"}, " "));
-            if(index == 1){
+            bars.push(Elem('span', {key:index > center ? index + 500 : index , className:"finalbar"}, " "));
+            if(index == center){
                 if(this.props.lyric){
                     bars.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
                 }

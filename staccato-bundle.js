@@ -60,21 +60,19 @@
 
 	var _StaccatoParser = __webpack_require__(430);
 
-	var _Since_Jesus_Came = __webpack_require__(431);
+	var _Lords_Prayer = __webpack_require__(431);
 
-	var _Since_Jesus_Came2 = _interopRequireDefault(_Since_Jesus_Came);
+	var _Lords_Prayer2 = _interopRequireDefault(_Lords_Prayer);
 
 	var _reactSidebar = __webpack_require__(432);
 
 	var _reactSidebar2 = _interopRequireDefault(_reactSidebar);
 
-	var _General = __webpack_require__(435);
+	var _General = __webpack_require__(434);
 
-	var _Bars = __webpack_require__(436);
+	var _Chorus = __webpack_require__(435);
 
-	var _Measure = __webpack_require__(442);
-
-	var _Connect = __webpack_require__(443);
+	var _StaccatoModel = __webpack_require__(444);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -84,68 +82,29 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	Array.prototype.riffle = function (func) {
-	    var res = [];
-
-	    for (var i = 0; i < this.length; i++) {
-	        res.push(this[i]);res.push(func(this[i], i, this.length));
-	    }
-
-	    return res;
-	};
-
-	Array.prototype.last = function () {
-	    return this[this.length - 1];
-	};
-
-	Array.prototype.groupBy = function (key) {
-	    return this.reduce(function (rv, x) {
-	        (rv[x[key]] = rv[x[key]] || []).push(x);
-	        return rv;
-	    }, {});
-	};
-
-	var Bracket = function (_React$Component) {
-	    _inherits(Bracket, _React$Component);
-
-	    function Bracket(props) {
-	        _classCallCheck(this, Bracket);
-
-	        return _possibleConstructorReturn(this, (Bracket.__proto__ || Object.getPrototypeOf(Bracket)).call(this, props));
-	    }
-
-	    _createClass(Bracket, [{
-	        key: 'render',
-	        value: function render() {
-	            return (0, _General.Elem)('span', { style: this.props.pos, className: "bracket" }, '\uE27F');
-	        }
-	    }]);
-
-	    return Bracket;
-	}(_react2.default.Component);
-
-	var Container = function (_React$Component2) {
-	    _inherits(Container, _React$Component2);
+	var Container = function (_React$Component) {
+	    _inherits(Container, _React$Component);
 
 	    function Container(props) {
 	        _classCallCheck(this, Container);
 
-	        var _this2 = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
+	        var _this = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
 	        var scoreParsed = void 0;
 
 	        try {
-	            scoreParsed = (0, _StaccatoParser.parse)(_Since_Jesus_Came2.default);
+	            scoreParsed = (0, _StaccatoParser.parse)(_Lords_Prayer2.default);
+	            console.log(scoreParsed);
 	        } catch (err) {
 	            scoreParsed = "err";
 	            console.log(err);
 	        }
 
-	        _this2.state = {
-	            text: _Since_Jesus_Came2.default,
+	        _this.state = {
+	            text: _Lords_Prayer2.default,
 	            score: scoreParsed
 	        };
-	        return _this2;
+	        return _this;
 	    }
 
 	    _createClass(Container, [{
@@ -173,7 +132,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this3 = this;
+	            var _this2 = this;
 
 	            var sectionElems = [],
 	                index = 0;
@@ -182,7 +141,7 @@
 	                    if (section != "chorus") {
 	                        sectionElems.push((0, _General.SectionElem)(section, index, this.state.score[section]));
 	                    } else {
-	                        sectionElems.push((0, _General.Elem)(Chorus, Object.assign(this.state.score.chorus, { key: index })));
+	                        sectionElems.push((0, _General.Elem)(_Chorus.Chorus, Object.assign(this.state.score.chorus, { key: index, lyricLines: this.state.score.lyricLines })));
 	                    }
 	                    index++;
 	                }
@@ -196,7 +155,7 @@
 	                spellCheck: 'false',
 	                value: this.state.text,
 	                onChange: function onChange(event) {
-	                    return _this3.handleChange(event);
+	                    return _this2.handleChange(event);
 	                }
 	            });
 
@@ -40628,46 +40587,7 @@
 
 	        peg$c0 = peg$otherExpectation("all sections"),
 	        peg$c1 = function(sections) {
-
-	            let score = {}, chorus={}, parts = [], verses= [];
-	            sections.forEach(elem => {
-	                if(elem.name == "parts"){
-	                    parts = elem.parts;
-	                } else if(elem.name == "verse"){
-	                    verses.push(elem);
-	                } else if(elem.name == "chorus"){
-	                    chorus[elem.part] = elem.content;
-	                } else {
-	                    score[elem.name] = elem.content
-	                }
-	            })
-
-	            let groupedLyric = groupBy(verses, 'part')
-	            for(var part in groupedLyric){
-	                groupedLyric[part] = zipLyric(groupedLyric[part].map(lyric => lyric.verse))
-	            }
-
-	            let zippedChorus = zipMeasure(chorus, parts)
-
-	            chorus.connections[parts[0]].slots.forEach((slot, index) =>{
-	                if(!zippedChorus.measures[slot.measure].beats[slot.beat].lyric){
-	                        zippedChorus.measures[slot.measure].beats[slot.beat].lyric = {};
-	                }
-	                if(groupedLyric.unison){
-	                    zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric.unison[index]
-	                } else {
-	                    for(part of parts){
-	                        zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric[part] ? groupedLyric[part][index] : {}
-	                    }
-	                }
-	            })
-
-
-	            // console.log(zippedChorus.measures.map(measure => measure.beats));
-
-	            zippedChorus.parts = parts;
-	            score.chorus = zippedChorus;
-	            return score;
+	            return sections
 	        },
 	        peg$c2 = peg$otherExpectation("section that contains different info"),
 	        peg$c3 = "chorus",
@@ -40721,49 +40641,16 @@
 	                content : content.join("")
 	            }
 	        },
-	        peg$c26 = peg$otherExpectation("measures"),
-	        peg$c27 = function(measures) {
-
-	            let measureList = {
-	                measures : measures,
-	                connections : GetConnectionRanges(measures)
-	            }
-
-	            return measureList
-	        },
-	        peg$c28 = peg$otherExpectation("measure"),
-	        peg$c29 = function(notes, bar) {
-
-	            let flattenedNotes = Flatten(notes, 1, []).map((note, index) =>
-	                Object.assign(note, {
-	                    octave: note.octave ? {start:(note.octave>0 ? 0 : note.conn.length), nums:note.octave} : undefined
-	                })
-	            );
-	            let durationExtendedBeats = [];
-
-	            flattenedNotes.forEach(note => {
-	                durationExtendedBeats.push(note);
-	                for (let i = 0; i < note.duration - 1; i++) {
-	                    durationExtendedBeats.push({
-	                        pitch : "-",
-	                        duration : 1
-	                    })
-	                }
-
-	                if(note.duration > 1){
-	                    note.duration = 1
-	                }
-	            })
-
-	            let beats = GroupBeat(durationExtendedBeats);
+	        peg$c26 = peg$otherExpectation("measure"),
+	        peg$c27 = function(notes, bar) {
 
 	            return {
-	                beats : beats,
+	                beats : notes,
 	                measureType : bar
 	            }
 	        },
-	        peg$c30 = peg$otherExpectation("notes"),
-	        peg$c31 = function(first, rest) {
+	        peg$c28 = peg$otherExpectation("notes"),
+	        peg$c29 = function(first, rest) {
 
 	            var all = [first];
 
@@ -40773,36 +40660,37 @@
 
 	            return all;
 	        },
-	        peg$c32 = peg$otherExpectation("duration"),
-	        peg$c33 = "(",
-	        peg$c34 = peg$literalExpectation("(", false),
-	        peg$c35 = ")",
-	        peg$c36 = peg$literalExpectation(")", false),
-	        peg$c37 = function(first) {
-
-	            return {
-	                notes : [first],
-	                factor : 2,
-	                conn : ["halfed"]
-	            }
+	        peg$c30 = peg$otherExpectation("note"),
+	        peg$c31 = function(note) {
+	            return note;
 	        },
-	        peg$c38 = function(first, next) {
-
-	            return {
-	                notes : [first, next],
-	                factor : 2,
-	                conn : ["halfed"]
-	            }
+	        peg$c32 = function(halfed) {
+	            return halfed;
 	        },
-	        peg$c39 = function(first, next, last) {
+	        peg$c33 = function(dotted) {
+	            return dotted;
+	        },
+	        peg$c34 = peg$otherExpectation("duration"),
+	        peg$c35 = "(",
+	        peg$c36 = peg$literalExpectation("(", false),
+	        peg$c37 = ")",
+	        peg$c38 = peg$literalExpectation(")", false),
+	        peg$c39 = function(notes) {
 
-	            first.tripleConn = "open",
-	            last.tripleConn = "close"
+	            // 去掉空格，并确保不超过三个
+	            let processed = notes.map(note => note[0]).slice(0, 4);
+	            processed.forEach(note => note.duration = 1/notes.length);
+
+	            if(processed.length == 3) {
+	                processed[0].tripledConn = "open";
+	                processed[2].tripledConn = "closed";
+	            }
+
+	            console.log(processed);
 
 	            return {
-	                notes : [first, next, last],
-	                factor : 3,
-	                conn : ["triple"]
+	                notes:processed,
+	                underbar : 1
 	            }
 	        },
 	        peg$c40 = peg$otherExpectation("dotted"),
@@ -40812,114 +40700,110 @@
 
 	            first.dotted = true;
 
-	            next.conn.push("halfed");
+	            next.underbar = 1;
 
 	            return {
 	                notes : [first, next],
 	                factor : 1,
-	                conn : []
+	                underbar : 0
 	            }
 	        },
-	        peg$c44 = peg$otherExpectation("note"),
-	        peg$c45 = function(note) {
-	            return note;
-	        },
-	        peg$c46 = function(halfed) {
-	            return halfed;
-	        },
-	        peg$c47 = function(dotted) {
-	            return dotted;
-	        },
-	        peg$c48 = peg$otherExpectation("fixed"),
-	        peg$c49 = "/",
-	        peg$c50 = peg$literalExpectation("/", false),
-	        peg$c51 = function(note) {
+	        peg$c44 = peg$otherExpectation("fixed"),
+	        peg$c45 = "/",
+	        peg$c46 = peg$literalExpectation("/", false),
+	        peg$c47 = function(note) {
 	            note.duration = 1;
 	            note.upperConn = "open";
-	            note.conn = []
+	            note.underbar = 0;
 	            return note;
 	        },
-	        peg$c52 = "\\",
-	        peg$c53 = peg$literalExpectation("\\", false),
-	        peg$c54 = function(note) {
+	        peg$c48 = "\\",
+	        peg$c49 = peg$literalExpectation("\\", false),
+	        peg$c50 = function(note) {
 	            note.duration = 1;
 	            note.upperConn = "close";
-	            note.conn = []
+	            note.underbar = 0
 	            return note;
 	        },
-	        peg$c55 = function(note) {
+	        peg$c51 = function(note) {
 	            note.duration = 1;
-	            note.conn = []
+	            note.underbar = 0
 	            return note
 	        },
-	        peg$c56 = peg$otherExpectation("modified_pitch"),
-	        peg$c57 = function(acc, pitch, octave) {
+	        peg$c52 = peg$otherExpectation("modified_pitch"),
+	        peg$c53 = function(acc, pitch, octave) {
 	            pitch.accidental = acc;
 	            pitch.octave = octave;
 	            return pitch;
 	        },
-	        peg$c58 = function(acc, pitch) {
+	        peg$c54 = function(acc, pitch) {
 	            pitch.accidental = acc;
 	            return pitch;
 	        },
-	        peg$c59 = function(pitch, octave) {
+	        peg$c55 = function(pitch, octave) {
 	            pitch.octave = octave;
 	            return pitch
 	        },
-	        peg$c60 = function(pitch) {
+	        peg$c56 = function(pitch) {
 	            return pitch
 	        },
-	        peg$c61 = peg$otherExpectation("octave"),
-	        peg$c62 = /^[,']/,
-	        peg$c63 = peg$classExpectation([",", "'"], false, false),
-	        peg$c64 = /^[1-3]/,
-	        peg$c65 = peg$classExpectation([["1", "3"]], false, false),
-	        peg$c66 = function() {
+	        peg$c57 = peg$otherExpectation("octave"),
+	        peg$c58 = /^[,']/,
+	        peg$c59 = peg$classExpectation([",", "'"], false, false),
+	        peg$c60 = /^[1-3]/,
+	        peg$c61 = peg$classExpectation([["1", "3"]], false, false),
+	        peg$c62 = function() {
 
 	            return (text()[0] == ',') ? - parseInt(text()[1]) : parseInt(text()[1])
 
 	        },
-	        peg$c67 = peg$otherExpectation("accidental"),
-	        peg$c68 = /^[b#n]/,
-	        peg$c69 = peg$classExpectation(["b", "#", "n"], false, false),
-	        peg$c70 = function() {
+	        peg$c63 = peg$otherExpectation("accidental"),
+	        peg$c64 = /^[b#n]/,
+	        peg$c65 = peg$classExpectation(["b", "#", "n"], false, false),
+	        peg$c66 = function() {
 	            return text();
 	        },
-	        peg$c71 = peg$otherExpectation("pitch"),
-	        peg$c72 = /^[0-7]/,
-	        peg$c73 = peg$classExpectation([["0", "7"]], false, false),
-	        peg$c74 = function() {
+	        peg$c67 = peg$otherExpectation("pitch"),
+	        peg$c68 = /^[0-7]/,
+	        peg$c69 = peg$classExpectation([["0", "7"]], false, false),
+	        peg$c70 = function() {
 	            return {pitch : parseInt(text())};
 	        },
-	        peg$c75 = "-",
-	        peg$c76 = peg$literalExpectation("-", false),
-	        peg$c77 = function() {
+	        peg$c71 = "-",
+	        peg$c72 = peg$literalExpectation("-", false),
+	        peg$c73 = function() {
 	            return {pitch : "–"}
 	        },
-	        peg$c78 = peg$otherExpectation("measure bar"),
-	        peg$c79 = "||",
-	        peg$c80 = peg$literalExpectation("||", false),
-	        peg$c81 = function() {
+	        peg$c74 = /^[a-zA-Z89]/,
+	        peg$c75 = peg$classExpectation([["a", "z"], ["A", "Z"], "8", "9"], false, false),
+	        peg$c76 = function(pitch) {
+	            console.log('invalid pitch found: ' + pitch);
+	            return {pitch : "X"}
+	        },
+	        peg$c77 = peg$otherExpectation("measure bar"),
+	        peg$c78 = "||",
+	        peg$c79 = peg$literalExpectation("||", false),
+	        peg$c80 = function() {
 	            return {measureType : "fin"}
 	        },
-	        peg$c82 = ":|",
-	        peg$c83 = peg$literalExpectation(":|", false),
-	        peg$c84 = function() {
+	        peg$c81 = ":|",
+	        peg$c82 = peg$literalExpectation(":|", false),
+	        peg$c83 = function() {
 	            return {measureType : "rep_fin"}
 	        },
-	        peg$c85 = "|:",
-	        peg$c86 = peg$literalExpectation("|:", false),
-	        peg$c87 = function() {
+	        peg$c84 = "|:",
+	        peg$c85 = peg$literalExpectation("|:", false),
+	        peg$c86 = function() {
 	            return {measureType : "rep_start"}
 	        },
-	        peg$c88 = "|",
-	        peg$c89 = peg$literalExpectation("|", false),
-	        peg$c90 = function() {
+	        peg$c87 = "|",
+	        peg$c88 = peg$literalExpectation("|", false),
+	        peg$c89 = function() {
 	            return {measureType : "normal"}
 	        },
-	        peg$c91 = peg$otherExpectation("whitespace"),
-	        peg$c92 = /^[ \t\n\r]/,
-	        peg$c93 = peg$classExpectation([" ", "\t", "\n", "\r"], false, false),
+	        peg$c90 = peg$otherExpectation("whitespace"),
+	        peg$c91 = /^[ \t\n\r]/,
+	        peg$c92 = peg$classExpectation([" ", "\t", "\n", "\r"], false, false),
 
 	        peg$currPos          = 0,
 	        peg$savedPos         = 0,
@@ -41139,7 +41023,12 @@
 	                if (peg$silentFails === 0) { peg$fail(peg$c8); }
 	              }
 	              if (s5 !== peg$FAILED) {
-	                s6 = peg$parseMeasures();
+	                s6 = [];
+	                s7 = peg$parseMeasure();
+	                while (s7 !== peg$FAILED) {
+	                  s6.push(s7);
+	                  s7 = peg$parseMeasure();
+	                }
 	                if (s6 !== peg$FAILED) {
 	                  if (input.charCodeAt(peg$currPos) === 125) {
 	                    s7 = peg$c9;
@@ -41809,31 +41698,6 @@
 	      return s0;
 	    }
 
-	    function peg$parseMeasures() {
-	      var s0, s1, s2;
-
-	      peg$silentFails++;
-	      s0 = peg$currPos;
-	      s1 = [];
-	      s2 = peg$parseMeasure();
-	      while (s2 !== peg$FAILED) {
-	        s1.push(s2);
-	        s2 = peg$parseMeasure();
-	      }
-	      if (s1 !== peg$FAILED) {
-	        peg$savedPos = s0;
-	        s1 = peg$c27(s1);
-	      }
-	      s0 = s1;
-	      peg$silentFails--;
-	      if (s0 === peg$FAILED) {
-	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c26); }
-	      }
-
-	      return s0;
-	    }
-
 	    function peg$parseMeasure() {
 	      var s0, s1, s2, s3, s4;
 
@@ -41848,7 +41712,7 @@
 	            s4 = peg$parse_();
 	            if (s4 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c29(s1, s3);
+	              s1 = peg$c27(s1, s3);
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -41869,7 +41733,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c28); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c26); }
 	      }
 
 	      return s0;
@@ -41922,7 +41786,7 @@
 	            s4 = peg$parse_();
 	            if (s4 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c31(s2, s3);
+	              s1 = peg$c29(s2, s3);
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -41943,6 +41807,53 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
+	        if (peg$silentFails === 0) { peg$fail(peg$c28); }
+	      }
+
+	      return s0;
+	    }
+
+	    function peg$parseNote() {
+	      var s0, s1, s2;
+
+	      peg$silentFails++;
+	      s0 = peg$currPos;
+	      s1 = peg$parseFixedNote();
+	      if (s1 !== peg$FAILED) {
+	        s2 = peg$parse_();
+	        if (s2 !== peg$FAILED) {
+	          peg$savedPos = s0;
+	          s1 = peg$c31(s1);
+	          s0 = s1;
+	        } else {
+	          peg$currPos = s0;
+	          s0 = peg$FAILED;
+	        }
+	      } else {
+	        peg$currPos = s0;
+	        s0 = peg$FAILED;
+	      }
+	      if (s0 === peg$FAILED) {
+	        s0 = peg$currPos;
+	        s1 = peg$parseHalfedNote();
+	        if (s1 !== peg$FAILED) {
+	          peg$savedPos = s0;
+	          s1 = peg$c32(s1);
+	        }
+	        s0 = s1;
+	        if (s0 === peg$FAILED) {
+	          s0 = peg$currPos;
+	          s1 = peg$parseDottedNote();
+	          if (s1 !== peg$FAILED) {
+	            peg$savedPos = s0;
+	            s1 = peg$c33(s1);
+	          }
+	          s0 = s1;
+	        }
+	      }
+	      peg$silentFails--;
+	      if (s0 === peg$FAILED) {
+	        s1 = peg$FAILED;
 	        if (peg$silentFails === 0) { peg$fail(peg$c30); }
 	      }
 
@@ -41950,39 +41861,70 @@
 	    }
 
 	    function peg$parseHalfedNote() {
-	      var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9;
+	      var s0, s1, s2, s3, s4, s5, s6;
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
 	      if (input.charCodeAt(peg$currPos) === 40) {
-	        s1 = peg$c33;
+	        s1 = peg$c35;
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c34); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c36); }
 	      }
 	      if (s1 !== peg$FAILED) {
 	        s2 = peg$parse_();
 	        if (s2 !== peg$FAILED) {
-	          s3 = peg$parseNote();
-	          if (s3 !== peg$FAILED) {
-	            s4 = peg$parse_();
-	            if (s4 !== peg$FAILED) {
-	              if (input.charCodeAt(peg$currPos) === 41) {
-	                s5 = peg$c35;
-	                peg$currPos++;
-	              } else {
-	                s5 = peg$FAILED;
-	                if (peg$silentFails === 0) { peg$fail(peg$c36); }
-	              }
+	          s3 = [];
+	          s4 = peg$currPos;
+	          s5 = peg$parseNote();
+	          if (s5 !== peg$FAILED) {
+	            s6 = peg$parse_();
+	            if (s6 !== peg$FAILED) {
+	              s5 = [s5, s6];
+	              s4 = s5;
+	            } else {
+	              peg$currPos = s4;
+	              s4 = peg$FAILED;
+	            }
+	          } else {
+	            peg$currPos = s4;
+	            s4 = peg$FAILED;
+	          }
+	          if (s4 !== peg$FAILED) {
+	            while (s4 !== peg$FAILED) {
+	              s3.push(s4);
+	              s4 = peg$currPos;
+	              s5 = peg$parseNote();
 	              if (s5 !== peg$FAILED) {
-	                peg$savedPos = s0;
-	                s1 = peg$c37(s3);
-	                s0 = s1;
+	                s6 = peg$parse_();
+	                if (s6 !== peg$FAILED) {
+	                  s5 = [s5, s6];
+	                  s4 = s5;
+	                } else {
+	                  peg$currPos = s4;
+	                  s4 = peg$FAILED;
+	                }
 	              } else {
-	                peg$currPos = s0;
-	                s0 = peg$FAILED;
+	                peg$currPos = s4;
+	                s4 = peg$FAILED;
 	              }
+	            }
+	          } else {
+	            s3 = peg$FAILED;
+	          }
+	          if (s3 !== peg$FAILED) {
+	            if (input.charCodeAt(peg$currPos) === 41) {
+	              s4 = peg$c37;
+	              peg$currPos++;
+	            } else {
+	              s4 = peg$FAILED;
+	              if (peg$silentFails === 0) { peg$fail(peg$c38); }
+	            }
+	            if (s4 !== peg$FAILED) {
+	              peg$savedPos = s0;
+	              s1 = peg$c39(s3);
+	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
 	              s0 = peg$FAILED;
@@ -41999,142 +41941,10 @@
 	        peg$currPos = s0;
 	        s0 = peg$FAILED;
 	      }
-	      if (s0 === peg$FAILED) {
-	        s0 = peg$currPos;
-	        if (input.charCodeAt(peg$currPos) === 40) {
-	          s1 = peg$c33;
-	          peg$currPos++;
-	        } else {
-	          s1 = peg$FAILED;
-	          if (peg$silentFails === 0) { peg$fail(peg$c34); }
-	        }
-	        if (s1 !== peg$FAILED) {
-	          s2 = peg$parse_();
-	          if (s2 !== peg$FAILED) {
-	            s3 = peg$parseNote();
-	            if (s3 !== peg$FAILED) {
-	              s4 = peg$parse_();
-	              if (s4 !== peg$FAILED) {
-	                s5 = peg$parseNote();
-	                if (s5 !== peg$FAILED) {
-	                  s6 = peg$parse_();
-	                  if (s6 !== peg$FAILED) {
-	                    if (input.charCodeAt(peg$currPos) === 41) {
-	                      s7 = peg$c35;
-	                      peg$currPos++;
-	                    } else {
-	                      s7 = peg$FAILED;
-	                      if (peg$silentFails === 0) { peg$fail(peg$c36); }
-	                    }
-	                    if (s7 !== peg$FAILED) {
-	                      peg$savedPos = s0;
-	                      s1 = peg$c38(s3, s5);
-	                      s0 = s1;
-	                    } else {
-	                      peg$currPos = s0;
-	                      s0 = peg$FAILED;
-	                    }
-	                  } else {
-	                    peg$currPos = s0;
-	                    s0 = peg$FAILED;
-	                  }
-	                } else {
-	                  peg$currPos = s0;
-	                  s0 = peg$FAILED;
-	                }
-	              } else {
-	                peg$currPos = s0;
-	                s0 = peg$FAILED;
-	              }
-	            } else {
-	              peg$currPos = s0;
-	              s0 = peg$FAILED;
-	            }
-	          } else {
-	            peg$currPos = s0;
-	            s0 = peg$FAILED;
-	          }
-	        } else {
-	          peg$currPos = s0;
-	          s0 = peg$FAILED;
-	        }
-	        if (s0 === peg$FAILED) {
-	          s0 = peg$currPos;
-	          if (input.charCodeAt(peg$currPos) === 40) {
-	            s1 = peg$c33;
-	            peg$currPos++;
-	          } else {
-	            s1 = peg$FAILED;
-	            if (peg$silentFails === 0) { peg$fail(peg$c34); }
-	          }
-	          if (s1 !== peg$FAILED) {
-	            s2 = peg$parse_();
-	            if (s2 !== peg$FAILED) {
-	              s3 = peg$parseNote();
-	              if (s3 !== peg$FAILED) {
-	                s4 = peg$parse_();
-	                if (s4 !== peg$FAILED) {
-	                  s5 = peg$parseNote();
-	                  if (s5 !== peg$FAILED) {
-	                    s6 = peg$parse_();
-	                    if (s6 !== peg$FAILED) {
-	                      s7 = peg$parseNote();
-	                      if (s7 !== peg$FAILED) {
-	                        s8 = peg$parse_();
-	                        if (s8 !== peg$FAILED) {
-	                          if (input.charCodeAt(peg$currPos) === 41) {
-	                            s9 = peg$c35;
-	                            peg$currPos++;
-	                          } else {
-	                            s9 = peg$FAILED;
-	                            if (peg$silentFails === 0) { peg$fail(peg$c36); }
-	                          }
-	                          if (s9 !== peg$FAILED) {
-	                            peg$savedPos = s0;
-	                            s1 = peg$c39(s3, s5, s7);
-	                            s0 = s1;
-	                          } else {
-	                            peg$currPos = s0;
-	                            s0 = peg$FAILED;
-	                          }
-	                        } else {
-	                          peg$currPos = s0;
-	                          s0 = peg$FAILED;
-	                        }
-	                      } else {
-	                        peg$currPos = s0;
-	                        s0 = peg$FAILED;
-	                      }
-	                    } else {
-	                      peg$currPos = s0;
-	                      s0 = peg$FAILED;
-	                    }
-	                  } else {
-	                    peg$currPos = s0;
-	                    s0 = peg$FAILED;
-	                  }
-	                } else {
-	                  peg$currPos = s0;
-	                  s0 = peg$FAILED;
-	                }
-	              } else {
-	                peg$currPos = s0;
-	                s0 = peg$FAILED;
-	              }
-	            } else {
-	              peg$currPos = s0;
-	              s0 = peg$FAILED;
-	            }
-	          } else {
-	            peg$currPos = s0;
-	            s0 = peg$FAILED;
-	          }
-	        }
-	      }
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c32); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c34); }
 	      }
 
 	      return s0;
@@ -42187,64 +41997,17 @@
 	      return s0;
 	    }
 
-	    function peg$parseNote() {
-	      var s0, s1, s2;
-
-	      peg$silentFails++;
-	      s0 = peg$currPos;
-	      s1 = peg$parseFixedNote();
-	      if (s1 !== peg$FAILED) {
-	        s2 = peg$parse_();
-	        if (s2 !== peg$FAILED) {
-	          peg$savedPos = s0;
-	          s1 = peg$c45(s1);
-	          s0 = s1;
-	        } else {
-	          peg$currPos = s0;
-	          s0 = peg$FAILED;
-	        }
-	      } else {
-	        peg$currPos = s0;
-	        s0 = peg$FAILED;
-	      }
-	      if (s0 === peg$FAILED) {
-	        s0 = peg$currPos;
-	        s1 = peg$parseHalfedNote();
-	        if (s1 !== peg$FAILED) {
-	          peg$savedPos = s0;
-	          s1 = peg$c46(s1);
-	        }
-	        s0 = s1;
-	        if (s0 === peg$FAILED) {
-	          s0 = peg$currPos;
-	          s1 = peg$parseDottedNote();
-	          if (s1 !== peg$FAILED) {
-	            peg$savedPos = s0;
-	            s1 = peg$c47(s1);
-	          }
-	          s0 = s1;
-	        }
-	      }
-	      peg$silentFails--;
-	      if (s0 === peg$FAILED) {
-	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c44); }
-	      }
-
-	      return s0;
-	    }
-
 	    function peg$parseFixedNote() {
 	      var s0, s1, s2, s3;
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
 	      if (input.charCodeAt(peg$currPos) === 47) {
-	        s1 = peg$c49;
+	        s1 = peg$c45;
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c50); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c46); }
 	      }
 	      if (s1 !== peg$FAILED) {
 	        s2 = peg$parseModifiedPitch();
@@ -42252,7 +42015,7 @@
 	          s3 = peg$parse_();
 	          if (s3 !== peg$FAILED) {
 	            peg$savedPos = s0;
-	            s1 = peg$c51(s2);
+	            s1 = peg$c47(s2);
 	            s0 = s1;
 	          } else {
 	            peg$currPos = s0;
@@ -42271,17 +42034,17 @@
 	        s1 = peg$parseModifiedPitch();
 	        if (s1 !== peg$FAILED) {
 	          if (input.charCodeAt(peg$currPos) === 92) {
-	            s2 = peg$c52;
+	            s2 = peg$c48;
 	            peg$currPos++;
 	          } else {
 	            s2 = peg$FAILED;
-	            if (peg$silentFails === 0) { peg$fail(peg$c53); }
+	            if (peg$silentFails === 0) { peg$fail(peg$c49); }
 	          }
 	          if (s2 !== peg$FAILED) {
 	            s3 = peg$parse_();
 	            if (s3 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c54(s1);
+	              s1 = peg$c50(s1);
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -42302,7 +42065,7 @@
 	            s2 = peg$parse_();
 	            if (s2 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c55(s1);
+	              s1 = peg$c51(s1);
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -42317,7 +42080,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c48); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c44); }
 	      }
 
 	      return s0;
@@ -42335,7 +42098,7 @@
 	          s3 = peg$parseOctave();
 	          if (s3 !== peg$FAILED) {
 	            peg$savedPos = s0;
-	            s1 = peg$c57(s1, s2, s3);
+	            s1 = peg$c53(s1, s2, s3);
 	            s0 = s1;
 	          } else {
 	            peg$currPos = s0;
@@ -42356,7 +42119,7 @@
 	          s2 = peg$parsePitch();
 	          if (s2 !== peg$FAILED) {
 	            peg$savedPos = s0;
-	            s1 = peg$c58(s1, s2);
+	            s1 = peg$c54(s1, s2);
 	            s0 = s1;
 	          } else {
 	            peg$currPos = s0;
@@ -42373,7 +42136,7 @@
 	            s2 = peg$parseOctave();
 	            if (s2 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c59(s1, s2);
+	              s1 = peg$c55(s1, s2);
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -42388,7 +42151,7 @@
 	            s1 = peg$parsePitch();
 	            if (s1 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c60(s1);
+	              s1 = peg$c56(s1);
 	            }
 	            s0 = s1;
 	          }
@@ -42397,7 +42160,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c56); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c52); }
 	      }
 
 	      return s0;
@@ -42408,24 +42171,24 @@
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
-	      if (peg$c62.test(input.charAt(peg$currPos))) {
+	      if (peg$c58.test(input.charAt(peg$currPos))) {
 	        s1 = input.charAt(peg$currPos);
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c63); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c59); }
 	      }
 	      if (s1 !== peg$FAILED) {
-	        if (peg$c64.test(input.charAt(peg$currPos))) {
+	        if (peg$c60.test(input.charAt(peg$currPos))) {
 	          s2 = input.charAt(peg$currPos);
 	          peg$currPos++;
 	        } else {
 	          s2 = peg$FAILED;
-	          if (peg$silentFails === 0) { peg$fail(peg$c65); }
+	          if (peg$silentFails === 0) { peg$fail(peg$c61); }
 	        }
 	        if (s2 !== peg$FAILED) {
 	          peg$savedPos = s0;
-	          s1 = peg$c66();
+	          s1 = peg$c62();
 	          s0 = s1;
 	        } else {
 	          peg$currPos = s0;
@@ -42438,7 +42201,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c61); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c57); }
 	      }
 
 	      return s0;
@@ -42446,6 +42209,32 @@
 
 	    function peg$parseAccidental() {
 	      var s0, s1;
+
+	      peg$silentFails++;
+	      s0 = peg$currPos;
+	      if (peg$c64.test(input.charAt(peg$currPos))) {
+	        s1 = input.charAt(peg$currPos);
+	        peg$currPos++;
+	      } else {
+	        s1 = peg$FAILED;
+	        if (peg$silentFails === 0) { peg$fail(peg$c65); }
+	      }
+	      if (s1 !== peg$FAILED) {
+	        peg$savedPos = s0;
+	        s1 = peg$c66();
+	      }
+	      s0 = s1;
+	      peg$silentFails--;
+	      if (s0 === peg$FAILED) {
+	        s1 = peg$FAILED;
+	        if (peg$silentFails === 0) { peg$fail(peg$c63); }
+	      }
+
+	      return s0;
+	    }
+
+	    function peg$parsePitch() {
+	      var s0, s1, s2;
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
@@ -42461,51 +42250,55 @@
 	        s1 = peg$c70();
 	      }
 	      s0 = s1;
+	      if (s0 === peg$FAILED) {
+	        s0 = peg$currPos;
+	        if (input.charCodeAt(peg$currPos) === 45) {
+	          s1 = peg$c71;
+	          peg$currPos++;
+	        } else {
+	          s1 = peg$FAILED;
+	          if (peg$silentFails === 0) { peg$fail(peg$c72); }
+	        }
+	        if (s1 !== peg$FAILED) {
+	          peg$savedPos = s0;
+	          s1 = peg$c73();
+	        }
+	        s0 = s1;
+	        if (s0 === peg$FAILED) {
+	          s0 = peg$currPos;
+	          s1 = [];
+	          if (peg$c74.test(input.charAt(peg$currPos))) {
+	            s2 = input.charAt(peg$currPos);
+	            peg$currPos++;
+	          } else {
+	            s2 = peg$FAILED;
+	            if (peg$silentFails === 0) { peg$fail(peg$c75); }
+	          }
+	          if (s2 !== peg$FAILED) {
+	            while (s2 !== peg$FAILED) {
+	              s1.push(s2);
+	              if (peg$c74.test(input.charAt(peg$currPos))) {
+	                s2 = input.charAt(peg$currPos);
+	                peg$currPos++;
+	              } else {
+	                s2 = peg$FAILED;
+	                if (peg$silentFails === 0) { peg$fail(peg$c75); }
+	              }
+	            }
+	          } else {
+	            s1 = peg$FAILED;
+	          }
+	          if (s1 !== peg$FAILED) {
+	            peg$savedPos = s0;
+	            s1 = peg$c76(s1);
+	          }
+	          s0 = s1;
+	        }
+	      }
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
 	        if (peg$silentFails === 0) { peg$fail(peg$c67); }
-	      }
-
-	      return s0;
-	    }
-
-	    function peg$parsePitch() {
-	      var s0, s1;
-
-	      peg$silentFails++;
-	      s0 = peg$currPos;
-	      if (peg$c72.test(input.charAt(peg$currPos))) {
-	        s1 = input.charAt(peg$currPos);
-	        peg$currPos++;
-	      } else {
-	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c73); }
-	      }
-	      if (s1 !== peg$FAILED) {
-	        peg$savedPos = s0;
-	        s1 = peg$c74();
-	      }
-	      s0 = s1;
-	      if (s0 === peg$FAILED) {
-	        s0 = peg$currPos;
-	        if (input.charCodeAt(peg$currPos) === 45) {
-	          s1 = peg$c75;
-	          peg$currPos++;
-	        } else {
-	          s1 = peg$FAILED;
-	          if (peg$silentFails === 0) { peg$fail(peg$c76); }
-	        }
-	        if (s1 !== peg$FAILED) {
-	          peg$savedPos = s0;
-	          s1 = peg$c77();
-	        }
-	        s0 = s1;
-	      }
-	      peg$silentFails--;
-	      if (s0 === peg$FAILED) {
-	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c71); }
 	      }
 
 	      return s0;
@@ -42516,18 +42309,18 @@
 
 	      peg$silentFails++;
 	      s0 = peg$currPos;
-	      if (input.substr(peg$currPos, 2) === peg$c79) {
-	        s1 = peg$c79;
+	      if (input.substr(peg$currPos, 2) === peg$c78) {
+	        s1 = peg$c78;
 	        peg$currPos += 2;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c80); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c79); }
 	      }
 	      if (s1 !== peg$FAILED) {
 	        s2 = peg$parse_();
 	        if (s2 !== peg$FAILED) {
 	          peg$savedPos = s0;
-	          s1 = peg$c81();
+	          s1 = peg$c80();
 	          s0 = s1;
 	        } else {
 	          peg$currPos = s0;
@@ -42539,18 +42332,18 @@
 	      }
 	      if (s0 === peg$FAILED) {
 	        s0 = peg$currPos;
-	        if (input.substr(peg$currPos, 2) === peg$c82) {
-	          s1 = peg$c82;
+	        if (input.substr(peg$currPos, 2) === peg$c81) {
+	          s1 = peg$c81;
 	          peg$currPos += 2;
 	        } else {
 	          s1 = peg$FAILED;
-	          if (peg$silentFails === 0) { peg$fail(peg$c83); }
+	          if (peg$silentFails === 0) { peg$fail(peg$c82); }
 	        }
 	        if (s1 !== peg$FAILED) {
 	          s2 = peg$parse_();
 	          if (s2 !== peg$FAILED) {
 	            peg$savedPos = s0;
-	            s1 = peg$c84();
+	            s1 = peg$c83();
 	            s0 = s1;
 	          } else {
 	            peg$currPos = s0;
@@ -42562,18 +42355,18 @@
 	        }
 	        if (s0 === peg$FAILED) {
 	          s0 = peg$currPos;
-	          if (input.substr(peg$currPos, 2) === peg$c85) {
-	            s1 = peg$c85;
+	          if (input.substr(peg$currPos, 2) === peg$c84) {
+	            s1 = peg$c84;
 	            peg$currPos += 2;
 	          } else {
 	            s1 = peg$FAILED;
-	            if (peg$silentFails === 0) { peg$fail(peg$c86); }
+	            if (peg$silentFails === 0) { peg$fail(peg$c85); }
 	          }
 	          if (s1 !== peg$FAILED) {
 	            s2 = peg$parse_();
 	            if (s2 !== peg$FAILED) {
 	              peg$savedPos = s0;
-	              s1 = peg$c87();
+	              s1 = peg$c86();
 	              s0 = s1;
 	            } else {
 	              peg$currPos = s0;
@@ -42586,17 +42379,17 @@
 	          if (s0 === peg$FAILED) {
 	            s0 = peg$currPos;
 	            if (input.charCodeAt(peg$currPos) === 124) {
-	              s1 = peg$c88;
+	              s1 = peg$c87;
 	              peg$currPos++;
 	            } else {
 	              s1 = peg$FAILED;
-	              if (peg$silentFails === 0) { peg$fail(peg$c89); }
+	              if (peg$silentFails === 0) { peg$fail(peg$c88); }
 	            }
 	            if (s1 !== peg$FAILED) {
 	              s2 = peg$parse_();
 	              if (s2 !== peg$FAILED) {
 	                peg$savedPos = s0;
-	                s1 = peg$c90();
+	                s1 = peg$c89();
 	                s0 = s1;
 	              } else {
 	                peg$currPos = s0;
@@ -42612,7 +42405,7 @@
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c78); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c77); }
 	      }
 
 	      return s0;
@@ -42623,197 +42416,31 @@
 
 	      peg$silentFails++;
 	      s0 = [];
-	      if (peg$c92.test(input.charAt(peg$currPos))) {
+	      if (peg$c91.test(input.charAt(peg$currPos))) {
 	        s1 = input.charAt(peg$currPos);
 	        peg$currPos++;
 	      } else {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c93); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c92); }
 	      }
 	      while (s1 !== peg$FAILED) {
 	        s0.push(s1);
-	        if (peg$c92.test(input.charAt(peg$currPos))) {
+	        if (peg$c91.test(input.charAt(peg$currPos))) {
 	          s1 = input.charAt(peg$currPos);
 	          peg$currPos++;
 	        } else {
 	          s1 = peg$FAILED;
-	          if (peg$silentFails === 0) { peg$fail(peg$c93); }
+	          if (peg$silentFails === 0) { peg$fail(peg$c92); }
 	        }
 	      }
 	      peg$silentFails--;
 	      if (s0 === peg$FAILED) {
 	        s1 = peg$FAILED;
-	        if (peg$silentFails === 0) { peg$fail(peg$c91); }
+	        if (peg$silentFails === 0) { peg$fail(peg$c90); }
 	      }
 
 	      return s0;
 	    }
-
-
-	        const half = (note, isTriple) => {
-	            note.duration = isTriple ? 3 : 2
-	            return note
-	        }
-
-	        const Flatten = (scoreObject, durFactor, conn) =>{
-	            return scoreObject.reduce((list, elem) => {
-
-	                let dur = elem.duration/durFactor;
-
-	                return list.concat( elem.notes ?
-	                Flatten(elem.notes, elem.factor * durFactor, elem.conn.concat(conn)) :
-	                (elem.conn ?
-	                    Object.assign(elem, {duration:dur, "conn" : elem.conn.concat(conn)}) :
-	                    Object.assign(elem, {duration:dur, "conn" : conn}))
-	                )}, [])
-	        }
-
-	        const GroupBeat = function(notes) {
-	            let duration = 0;
-
-	            let beats = [{notes:[]}];
-	            notes.forEach(note =>{
-	                duration += note.duration;
-	                (duration <= 1) && beats[beats.length - 1].notes.push(note);
-
-	                if(duration == 1){
-	                    duration = 0;
-	                    beats.push({notes : []});
-	                }
-	            })
-
-	            beats.forEach(beat =>{
-	                beat.underbar = GetDurations(beat.notes);
-	            })
-	            return beats;
-	        }
-
-	        let GetDurations = function(notes){
-
-	            let curr =[];
-	            let res  =[];
-
-	            notes.forEach(function(note, noteIndex){
-
-	                for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
-
-	                    // current underbar exists, and have same type with underbar of current note
-	                    // then enlong the current underbar
-	                    if(curr[i] && curr[i].type == note.conn[i]){
-	                        curr[i].end = noteIndex;
-
-	                    } else {
-
-	                        // if current underbar exists, but underbar of current note doesn't exist,
-	                        // or has different type to current underbar, the current bar is done.
-	                        curr[i] && res.push(curr[i]);
-
-	                        // if the ith underbar of current note exists, but the ith current underbar
-	                        // could be either not created or finished, assign it with a new object.
-	                        // if not, then rewrite as undefined.
-	                        curr[i] = note.conn[i] ? {start:noteIndex, end:noteIndex, level:i, type:note.conn[i]} : undefined;
-	                    }
-	                }
-
-	                delete note.conn
-	            })
-
-	            for (var i = 0; i < curr.length; i++) {
-	                curr[i] && res.push(curr[i]);
-	            }
-
-	            return res;
-	        }
-
-
-	        let GetConnectionRanges = function(measures){
-	            let res = [];
-
-	            let slot = 0;
-	            let isConnecting = false;
-	            let slots = [];
-
-	            measures.forEach(function(measure, index){
-	                measure.beats.forEach(function(beat, beatIndex){
-	                    beat.notes.forEach(function(note, noteIndex){
-
-	                        if(note.pitch != "–" && !isConnecting){
-	                            slots.push({measure:index, beat:beatIndex, note:noteIndex})
-	                        }
-
-	                        if((res.length==0 || (res.length>0 && res[res.length - 1].end)) && note.upperConn == "open") {
-	                            res.push({start:{measure:index, beat:beatIndex, note:noteIndex}});
-	                            isConnecting = true;
-	                        }
-
-	                        if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
-	                            res[res.length-1].end = {measure:index, beat:beatIndex, note:noteIndex}
-	                            isConnecting = false;
-	                        }
-
-	                        delete note.upperConn
-	                    })
-	                })
-	            })
-	            return {ranges:res, slots:slots};
-	        }
-
-	        let zipMeasure = (chorus, parts) => {
-
-	            chorus.measures = chorus[parts[0]]["measures"].map((_) => ({}))
-	            chorus.connections = {}
-
-
-	            chorus[parts[0]].measures.forEach( (_, index) => {
-	                parts.forEach(part => {
-	                    chorus.measures[index][part] = chorus[part].measures[index];
-	                    chorus.measures[index].measureType = chorus[part].measures[index].measureType.measureType;
-	                })
-
-	                chorus.measures[index] = zipBeat(chorus.measures[index], parts)
-	            })
-
-	            parts.forEach(part => {
-	                chorus.connections[part] = chorus[part].connections
-	            })
-
-	            for (var part of parts) {
-	                delete chorus[part];
-	            }
-
-	            return chorus;
-	        }
-
-	        let zipBeat = (measure, parts) => {
-	            measure.beats = measure[parts[0]]["beats"].map((_) => ({}))
-
-	            measure[parts[0]].beats.forEach( (_, index) => {
-	                parts.forEach(part => {
-
-	                    measure[part].beats[index].notes.forEach(note =>{
-	                        delete note.conn
-	                    })
-
-	                    measure.beats[index][part] = measure[part].beats[index]
-	                })
-	            })
-
-	            for (var part of parts) {
-	                delete measure[part];
-	            }
-
-	            return measure;
-	        }
-
-	        let zipLyric = (lyrics) => lyrics[0].map((verse,i) => lyrics.map(verse => verse[i]))
-
-	        let groupBy = function(xs, key) {
-	            return xs.reduce(function(rv, x) {
-	                (rv[x[key]] = rv[x[key]] || []).push(x);
-	            return rv;
-	          }, {});
-	        };
-
 
 	    peg$result = peg$startRuleFunction();
 
@@ -42844,7 +42471,7 @@
 /* 431 */
 /***/ function(module, exports) {
 
-	module.exports = "title {\r\n自 耶 稣 住 在 我 心\r\n}\r\n\r\nsubtitle {\r\nSince Jesus Came Into My Heart\r\n}\r\n\r\nlyrics {\r\nRufus H. McDaniel\r\n}\r\n\r\ncomposer {\r\nCharles H. Gabriel\r\n}\r\n\r\nbeats {\r\n1=A   4/4\r\n}\r\n\r\nparts {\r\n    soprano bass\r\n}\r\n\r\nverse 1 {\r\n\t\r\n}\r\n\r\nchorus soprano {\r\n0 0 0 (3 4) | 5 (6 7) 1 (1 2) | 3 (3 4) .3 2  | (1 /1) (1\\ 6) (1 /1) (1\\ 1) |\r\n5 - - (3 4) | 5 (6 7) 1 (1 2) | 3 (3 4) .3 3  | (3 /2) (2\\ 2) (#4 /#4) (#4\\ 2) |\r\n5 - -  5    | (3 /3) (3\\ 1) (3 /3) (3\\ 1)     |\r\n3 - -  2    | (1 /1) (1\\ 6,1) (1 /1) (1\\ 1)   |\r\n5 - - (3 4) | 5 (6 7) 1 (1 2) | 3 (3 4)  5 4  | (3 /3) (3\\ 1) (3 /3) (3\\ 2)     |  \r\n1 - - -     ||\r\n}\r\n\r\nchorus bass {\r\n0 0 0 (3 4) | 5 (6 7) 1 (1 2) | 3 (3 4) .3 2  | (1 /1) (1\\ 6) (1 /1) (1\\ 1) |\r\n5 - - (3 4) | 5 (6 7) 1 (1 2) | 3 (3 4) .3 3  | (3 /2) (2\\ 2) (#4 /#4) (#4\\ 2) |\r\n5 - -  5    | (3 /3) (3\\ 1) (3 /3) (3\\ 1)     |\r\n3 - -  2    | (1 /1) (1\\ 6,1) (1 /1) (1\\ 1)   |\r\n5 - - (3 4) | 5 (6 7) 1 (1 2) | 3 (3 4)  5 4  | (3 /3) (3\\ 1) (3 /3) (3\\ 2)     |  \r\n1 - - -     ||\r\n}"
+	module.exports = "title {\r\n主 祷 文\r\n}\r\n\r\nsubtitle {\r\nLord's Prayer\r\n}\r\n\r\nlyrics {\r\n\r\n}\r\n\r\ncomposer {\r\n杨 劼\r\n邵家菁\r\n}\r\n\r\nbeats {\r\n1=C   4/4\r\n}\r\n\r\nparts {\r\n    soprano alto\r\n}\r\n\r\nverse 1 {\r\n我 们 在 天 上 的 父，\r\n愿 人 都 尊 祢 名 为 圣。\r\n愿 祢 国 度 降 临，\r\n愿 祢 国 度 降 临，\r\n\r\n愿 祢 旨 意 行 在 地 上，\r\n如 同 行 在 天 上。\r\n我 们 日 用 的 饮 食 今 日 赐 给 我 们。\r\n免 了 我 们 的 债， 如 同 我 们 免 了 人 的 债。\r\n不 叫 我 们 遇 见 试 探； 救 我 们 脱 离 凶 恶。\r\n因 为 国 度， 权 柄， 荣 耀， 全 是 祢 的，\r\n直 到 永 远， 直 到 永 远， 直 到 永 远， 阿 们， 阿 们\r\n}\r\n\r\n\r\nchorus soprano {\r\n0 0 0 (3 4)   | 5 5 5 6 | /5 4\\ - (2 3) | 4 4 4 5    | (/4 3\\) 3 - \r\n(1 2)   | 3 3 - 6 | /5 4\\ - (2 1) | /7,1 4\\ 3 #2 | 3 - -       \r\n(3 4)   | 5 5 5 6 | (/5 4\\) 4 - (2 3) | 4 - - 5    | 4 3 - \r\n(1 2)   | 3 3 - 6 | 5 4 - (2 1) | /7,1 4\\ 3 2 | 1 - -       \r\n(6 7)   | 1'1  1'1 - (/1'1 7\\) | /7 6\\ - (6 1'1) | 7 7 (7 6) (5 2) | /4 3\\ - \r\n(6 7)   | 1'1  1'1 - (1'1 7) | (./7 6\\) .6 6 (6 7) | 1'1 6 /7 1'1\\ | /2'1 - -  2'1 | 2'1\\ - 0 \r\n(/3 4\\)   | /5 5\\ 5 6 | 5 4 - (/2 3\\) | 4 - 4   5  |(/4 3\\) 3 - \r\n(1 2)   | 3 3 - (6 7) | 1'1 1'1 - (6 7) | 1'1 1'1 /6 7\\ | 1'1 - 1'1 -| 1'1 - - ||\r\n}\r\n\r\nchorus alto {\r\n0 0 0 (1 2)       | 3 3 3 4 | /3 2\\ - (7,1 1) | 2 2 2 3    | (/2 1\\) 1 - \r\n(6,1 7,1)   | 1 1 - 3 | /3 2\\ - (7 6) | /5,1 2\\ 1 7,1 | 1 - -       \r\n(1 2)       | 3 3 3 4 | /3 2\\ - (7,1 1) | 2 - - 3    | 2 1 - \r\n(6,1 7,1)   | 1 1 - 3 | 3 2 - (7 6) | /5,1 2\\ 1 7,1 | 1 - -       \r\n(4 5)       | 6  6 - (/6 5\\) | /5 4\\ - (4 6) | 5 5 (5 4) (3 2) | /4 3\\ - \r\n(4 5)       | 6  6 - (6 5) | (./5 4\\) .4 4 (4 5) | 6 4 /5 6\\ | /5 - -  5 | 5\\ - 0 \r\n(/1 2\\)       | /3 3\\ 3 4 | 3 2 - (/7,1 1\\) | 2 - 2   3    | (/2 1\\) 1 - \r\n(6,1 7,1)   | 1 1 - (3 3) | 6 6 - (6 7) | 1'1 1'1 /6 7\\ | 1'1 - 4 -| 3 - - ||\r\n}\r\n"
 
 /***/ },
 /* 432 */
@@ -43330,8 +42957,7 @@
 	exports.default = Sidebar;
 
 /***/ },
-/* 434 */,
-/* 435 */
+/* 434 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43373,6 +42999,183 @@
 	exports.Draw = Draw;
 
 /***/ },
+/* 435 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Chorus = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(434);
+
+	var _Bars = __webpack_require__(436);
+
+	var _Connect = __webpack_require__(438);
+
+	var _Measure = __webpack_require__(439);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Bracket = function (_React$Component) {
+	    _inherits(Bracket, _React$Component);
+
+	    function Bracket(props) {
+	        _classCallCheck(this, Bracket);
+
+	        return _possibleConstructorReturn(this, (Bracket.__proto__ || Object.getPrototypeOf(Bracket)).call(this, props));
+	    }
+
+	    _createClass(Bracket, [{
+	        key: 'render',
+	        value: function render() {
+	            var x = this.props.pos.bottom - this.props.pos.top,
+	                y = Math.ceil(57983 + (x - 168) * 1.95);
+	            return (0, _General.Elem)('span', { style: this.props.pos, className: "bracket" }, String.fromCharCode(y));
+	        }
+	    }]);
+
+	    return Bracket;
+	}(_react2.default.Component);
+
+	var Chorus = function (_React$Component2) {
+	    _inherits(Chorus, _React$Component2);
+
+	    function Chorus(props) {
+	        _classCallCheck(this, Chorus);
+
+	        var _this2 = _possibleConstructorReturn(this, (Chorus.__proto__ || Object.getPrototypeOf(Chorus)).call(this, props));
+
+	        _this2.notePoses = {}, _this2.state = {
+	            brackets: [],
+	            connects: []
+	        };
+	        return _this2;
+	    }
+
+	    _createClass(Chorus, [{
+	        key: 'GetConnectPoses',
+	        value: function GetConnectPoses(scoreBox, startBox, endBox) {
+
+	            return {
+	                startLeft: startBox.left - scoreBox.left,
+	                startTop: startBox.top - scoreBox.top,
+	                startCLeft: startBox.left - scoreBox.left + 2,
+	                startCTop: startBox.top - scoreBox.top - 10,
+	                endCLeft: endBox.left - scoreBox.left - 2,
+	                endCTop: endBox.top - scoreBox.top - 10,
+	                endLeft: endBox.left - scoreBox.left,
+	                endTop: endBox.top - scoreBox.top
+	            };
+	        }
+	    }, {
+	        key: 'ConnectElems',
+	        value: function ConnectElems() {
+	            return this.state.connects.map(function (elem, index) {
+	                return (0, _General.Elem)(_Connect.Connect, Object.assign(elem, { key: 206 + index }));
+	            });
+	        }
+	    }, {
+	        key: 'BracketElems',
+	        value: function BracketElems() {
+	            return this.state.brackets.map(function (bracket, index) {
+	                return (0, _General.Elem)(Bracket, { pos: { top: bracket.top, left: bracket.left, bottom: bracket.bottom }, key: 502 + index });
+	            });
+	        }
+	    }, {
+	        key: 'MeasureElems',
+	        value: function MeasureElems() {
+	            var _this3 = this;
+
+	            var lyricLines = this.props.lyricLines;
+
+	            return [].concat(this.props.measures.map(function (measure, index) {
+	                var elem = [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measure, parts: _this3.props.parts, key: index, lyricLines: lyricLines })];
+
+	                if (measure.measureType == "normal") {
+	                    elem.push((0, _General.Elem)(_Bars.Vertbar, { key: 5300 + index - 1, parts: _this3.props.parts, lyricLines: lyricLines }));
+	                } else if (measure.measureType == "rep_start") {
+	                    elem.push((0, _General.Elem)(_Bars.Repeatbar, { key: 5300 + index - 1, direction: "open", parts: _this3.props.parts, lyricLines: lyricLines }));
+	                } else if (measure.measureType == "rep_fin") {
+	                    elem.push((0, _General.Elem)(_Bars.Repeatbar, { key: 5300 + index - 1, direction: "close", parts: _this3.props.parts, lyricLines: lyricLines }));
+	                } else if (measure.measureType == "fin") {
+	                    elem.push((0, _General.Elem)(_Bars.Vertbar, { key: 5300 + index - 1, parts: _this3.props.parts, lyricLines: lyricLines }));
+	                    elem.push((0, _General.Elem)(_Bars.Finalbar, { key: 6300, parts: _this3.props.parts, lyricLines: lyricLines }));
+	                }
+
+	                return elem;
+	            })).concat(this.BracketElems()).concat(this.ConnectElems());
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return (0, _General.Elem)('div', { ref: "score", className: "score" }, this.MeasureElems());
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            var _this4 = this;
+
+	            var scoreBox = this.refs.score.getBoundingClientRect();
+
+	            var conns = this.props.connections,
+	                connPoses = [];
+	            Object.keys(conns).forEach(function (part) {
+	                conns[part].ranges.forEach(function (range) {
+
+	                    var start = range.start,
+	                        end = range.end,
+	                        startBox = _this4.refs["measure-" + start.measure].refs["slot-" + start.beat].refs[part].refs[start.note].box,
+	                        endBox = _this4.refs["measure-" + end.measure].refs["slot-" + end.beat].refs[part].refs[end.note].box;
+
+	                    console.log(startBox);
+
+	                    connPoses.push(_this4.GetConnectPoses(scoreBox, startBox, endBox));
+	                });
+	            });
+
+	            var bracketsBoxes = this.props.measures.map(function (_, i) {
+
+	                var offset = (Math.floor(_this4.refs["measure-" + i].box.bottom) - Math.floor(_this4.refs["measure-" + i].box.top)) / 2 - 40;
+	                return {
+	                    left: Math.floor(_this4.refs["measure-" + i].box.left - scoreBox.left),
+	                    top: Math.floor(_this4.refs["measure-" + i].box.top + offset),
+	                    bottom: Math.floor(_this4.refs["measure-" + i].box.bottom)
+	                };
+	            }).groupBy("left"),
+	                bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
+
+	            this.setState({
+	                brackets: bracketsBoxesLeftmost,
+	                connects: connPoses
+	            });
+	        }
+	    }]);
+
+	    return Chorus;
+	}(_react2.default.Component);
+
+	exports.Chorus = Chorus;
+
+/***/ },
 /* 436 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -43393,7 +43196,7 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _General = __webpack_require__(435);
+	var _General = __webpack_require__(434);
 
 	var _Lyric = __webpack_require__(437);
 
@@ -43411,7 +43214,10 @@
 	    function Vertbar(props) {
 	        _classCallCheck(this, Vertbar);
 
-	        return _possibleConstructorReturn(this, (Vertbar.__proto__ || Object.getPrototypeOf(Vertbar)).call(this, props));
+	        var _this = _possibleConstructorReturn(this, (Vertbar.__proto__ || Object.getPrototypeOf(Vertbar)).call(this, props));
+
+	        console.log(_this.props.lyricLines);
+	        return _this;
 	    }
 
 	    _createClass(Vertbar, [{
@@ -43420,9 +43226,12 @@
 	            var _this2 = this;
 
 	            var bars = [];
+
+	            var center = this.props.parts.length / 2 - 1;
+
 	            Object.keys(this.props.parts).forEach(function (_, index) {
-	                bars.push((0, _General.Elem)('span', { key: index > 1 ? index + 500 : index, className: "vertbar" }, " "));
-	                if (index == 1) {
+	                bars.push((0, _General.Elem)('span', { key: index > center ? index + 500 : index, className: "vertbar" }, " "));
+	                if (index == center) {
 	                    if (_this2.props.lyric) {
 	                        bars.push((0, _General.Elem)(_Lyric.Lyric, Object.assign(_this2.props.lyric, { key: index + 250 })));
 	                    } else bars.push((0, _General.Elem)(_Lyric.Lyric, Object.assign([Array(_this2.props.lyricLines).fill(" ")], { key: index + 250 })));
@@ -43451,9 +43260,12 @@
 	            var _this4 = this;
 
 	            var bars = [];
+
+	            var center = this.props.parts.length / 2 - 1;
+
 	            Object.keys(this.props.parts).forEach(function (_, index) {
-	                bars.push((0, _General.Elem)('span', { key: index > 1 ? index + 500 : index, className: "finalbar" }, " "));
-	                if (index == 1) {
+	                bars.push((0, _General.Elem)('span', { key: index > center ? index + 500 : index, className: "finalbar" }, " "));
+	                if (index == center) {
 	                    if (_this4.props.lyric) {
 	                        bars.push((0, _General.Elem)(_Lyric.Lyric, Object.assign(_this4.props.lyric, { key: index + 250 })));
 	                    } else bars.push((0, _General.Elem)(_Lyric.Lyric, Object.assign([Array(_this4.props.lyricLines).fill(" ")], { key: index + 250 })));
@@ -43511,7 +43323,7 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _General = __webpack_require__(435);
+	var _General = __webpack_require__(434);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -43571,6 +43383,188 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.Connect = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(434);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Connect = function (_React$Component) {
+	    _inherits(Connect, _React$Component);
+
+	    function Connect(props) {
+	        _classCallCheck(this, Connect);
+
+	        return _possibleConstructorReturn(this, (Connect.__proto__ || Object.getPrototypeOf(Connect)).call(this, props));
+	    }
+
+	    _createClass(Connect, [{
+	        key: 'GetSVGCurveText',
+	        value: function GetSVGCurveText(AX, AY, CAX, CAY, CBX, CBY, BX, BY, thickness) {
+	            return "M" + AX + " " + AY + "C" + CAX + " " + CAY + "," + CBX + " " + CBY + "," + BX + " " + BY + "C" + CBX + " " + (CBY + thickness) + "," + CAX + " " + (CAY + thickness) + "," + AX + " " + AY + "Z";
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+
+	            var startX = this.props.startLeft,
+	                startY = this.props.startTop,
+	                startCX = this.props.startCLeft,
+	                startCY = this.props.startCTop,
+	                endX = this.props.endLeft,
+	                endY = this.props.endTop,
+	                endCX = this.props.endCLeft,
+	                endCY = this.props.endCTop,
+	                fakeStartX = endX - 200,
+	                fakeEndX = startX + 200,
+	                fakeStartY = endY,
+	                fakeEndY = startY,
+	                fakeStartCX = endCX - 180,
+	                fakeEndCX = startCX + 180,
+	                fakeStartCY = endCY,
+	                fakeEndCY = startCY;
+
+	            var elem = void 0;
+	            if (startY == endY) {
+	                elem = (0, _General.Elem)('svg', {
+	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
+	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, endCX, endCY, endX, endY, 3),
+	                    fill: "black"
+	                }));
+	            } else {
+	                elem = (0, _General.Elem)('svg', {
+	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
+	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 2) + this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 2),
+	                    fill: "black"
+	                }));
+	            }
+
+	            return elem;
+	        }
+	    }]);
+
+	    return Connect;
+	}(_react2.default.Component);
+
+	exports.Connect = Connect;
+
+/***/ },
+/* 439 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Measure = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(434);
+
+	var _Slot = __webpack_require__(440);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Measure = function (_React$Component) {
+	    _inherits(Measure, _React$Component);
+
+	    function Measure(props) {
+	        _classCallCheck(this, Measure);
+
+	        var _this = _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
+
+	        _this.notePoses = {};
+	        _this.box = {};
+	        return _this;
+	    }
+
+	    _createClass(Measure, [{
+	        key: 'GetNotePoses',
+	        value: function GetNotePoses() {
+	            var notePoses = {};
+
+	            for (var ithBeat in this.refs) {
+	                if (ithBeat != "measure") {
+	                    var elem = this.refs[ithBeat];
+	                    Object.assign(notePoses, elem.notePoses);
+	                }
+	            }
+
+	            return notePoses;
+	        }
+	    }, {
+	        key: 'SlotElems',
+	        value: function SlotElems() {
+	            var _this2 = this;
+
+	            return this.props.measure.beats.map(function (slot, index) {
+	                return (0, _General.Elem)(_Slot.Slot, Object.assign(slot, {
+	                    key: index,
+	                    ref: "slot-" + index,
+	                    parts: _this2.props.parts,
+	                    lyricLines: _this2.props.lyricLines
+	                }));
+	            });
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var slotElems = this.SlotElems();
+	            return (0, _General.Elem)('div', { style: { minWidth: slotElems.length / 4 * 15 + "%" }, ref: "measure", className: "measure" }, slotElems);
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            this.box = this.refs.measure.getBoundingClientRect();
+	        }
+	    }]);
+
+	    return Measure;
+	}(_react2.default.Component);
+
+	exports.Measure = Measure;
+
+/***/ },
+/* 440 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 	exports.Slot = undefined;
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -43583,11 +43577,11 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _General = __webpack_require__(435);
+	var _General = __webpack_require__(434);
 
 	var _Lyric = __webpack_require__(437);
 
-	var _Beat = __webpack_require__(439);
+	var _Beat = __webpack_require__(441);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -43616,9 +43610,9 @@
 
 	            this.props.parts.forEach(function (partName, index) {
 
-	                elems.push((0, _General.Elem)(_Beat.Beat, Object.assign(_this2.props[partName], { key: index > 1 ? index + 500 : index, ref: partName })));
+	                elems.push((0, _General.Elem)(_Beat.Beat, Object.assign(_this2.props[partName], { key: index > Math.ceil(_this2.props.parts.length / 2 - 1) ? index + 500 : index, ref: partName })));
 
-	                if (index == 1) {
+	                if (index == Math.ceil(_this2.props.parts.length / 2 - 1)) {
 	                    if (_this2.props.lyric) {
 	                        elems.push((0, _General.Elem)(_Lyric.Lyric, Object.assign(_this2.props.lyric, { key: index + 250 })));
 	                    } else elems.push((0, _General.Elem)(_Lyric.Lyric, Object.assign([Array(_this2.props.lyricLines).fill(" ")], { key: index + 250 })));
@@ -43640,7 +43634,7 @@
 	exports.Slot = Slot;
 
 /***/ },
-/* 439 */
+/* 441 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43660,9 +43654,9 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _General = __webpack_require__(435);
+	var _General = __webpack_require__(434);
 
-	var _Note = __webpack_require__(440);
+	var _Note = __webpack_require__(442);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -43784,7 +43778,7 @@
 	exports.Beat = Beat;
 
 /***/ },
-/* 440 */
+/* 442 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43804,9 +43798,9 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _General = __webpack_require__(435);
+	var _General = __webpack_require__(434);
 
-	var _Signs = __webpack_require__(441);
+	var _Signs = __webpack_require__(443);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -43892,7 +43886,7 @@
 	exports.Note = Note;
 
 /***/ },
-/* 441 */
+/* 443 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43912,7 +43906,7 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _General = __webpack_require__(435);
+	var _General = __webpack_require__(434);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -44007,187 +44001,354 @@
 	exports.Pitch = Pitch;
 
 /***/ },
-/* 442 */
-/***/ function(module, exports, __webpack_require__) {
+/* 444 */
+/***/ function(module, exports) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.Measure = undefined;
+	Array.prototype.riffle = function (func) {
+	    var res = [];
 
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _reactDom = __webpack_require__(32);
-
-	var _reactDom2 = _interopRequireDefault(_reactDom);
-
-	var _General = __webpack_require__(435);
-
-	var _Slot = __webpack_require__(438);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var Measure = function (_React$Component) {
-	    _inherits(Measure, _React$Component);
-
-	    function Measure(props) {
-	        _classCallCheck(this, Measure);
-
-	        var _this = _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
-
-	        _this.notePoses = {};
-	        _this.box = {};
-	        return _this;
+	    for (var i = 0; i < this.length; i++) {
+	        res.push(this[i]);res.push(func(this[i], i, this.length));
 	    }
 
-	    _createClass(Measure, [{
-	        key: 'GetNotePoses',
-	        value: function GetNotePoses() {
-	            var notePoses = {};
+	    return res;
+	};
 
-	            for (var ithBeat in this.refs) {
-	                if (ithBeat != "measure") {
-	                    var elem = this.refs[ithBeat];
-	                    Object.assign(notePoses, elem.notePoses);
-	                }
-	            }
+	Array.prototype.last = function () {
+	    return this[this.length - 1];
+	};
 
-	            return notePoses;
+	Array.prototype.groupBy = function (key) {
+	    return this.reduce(function (rv, x) {
+	        (rv[x[key]] = rv[x[key]] || []).push(x);
+	        return rv;
+	    }, {});
+	};
+
+	function Flatten(scoreObject, durFactor, conn) {
+	    return scoreObject.reduce(function (list, elem) {
+
+	        var dur = elem.duration / durFactor;
+
+	        return list.concat(elem.notes ? Flatten(elem.notes, elem.factor * durFactor, elem.conn.concat(conn)) : elem.conn ? Object.assign(elem, { duration: dur, "conn": elem.conn.concat(conn) }) : Object.assign(elem, { duration: dur, "conn": conn }));
+	    }, []);
+	}
+
+	function GroupBeat(notes) {
+	    var duration = 0;
+
+	    var beats = [{ notes: [] }];
+	    notes.forEach(function (note) {
+	        duration += note.duration;
+	        duration <= 1 && beats[beats.length - 1].notes.push(note);
+
+	        if (duration == 1) {
+	            duration = 0;
+	            beats.push({ notes: [] });
 	        }
-	    }, {
-	        key: 'SlotElems',
-	        value: function SlotElems() {
-	            var _this2 = this;
+	    });
 
-	            var lyricLines = this.props.measure.beats[0].lyric[0] ? this.props.measure.beats[0].lyric[0].length : 0;
+	    beats.forEach(function (beat) {
+	        beat.underbar = GetDurations(beat.notes);
+	    });
+	    return beats;
+	}
 
-	            return this.props.measure.beats.map(function (slot, index) {
-	                return (0, _General.Elem)(_Slot.Slot, Object.assign(slot, {
-	                    key: index,
-	                    ref: "slot-" + index,
-	                    parts: _this2.props.parts,
-	                    lyricLines: lyricLines
-	                }));
+	function GetDurations(notes) {
+
+	    var curr = [];
+	    var res = [];
+
+	    notes.forEach(function (note, noteIndex) {
+
+	        for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
+
+	            // current underbar exists, and have same type with underbar of current note
+	            // then enlong the current underbar
+	            if (curr[i] && curr[i].type == note.conn[i]) {
+	                curr[i].end = noteIndex;
+	            } else {
+
+	                // if current underbar exists, but underbar of current note doesn't exist,
+	                // or has different type to current underbar, the current bar is done.
+	                curr[i] && res.push(curr[i]);
+
+	                // if the ith underbar of current note exists, but the ith current underbar
+	                // could be either not created or finished, assign it with a new object.
+	                // if not, then rewrite as undefined.
+	                curr[i] = note.conn[i] ? { start: noteIndex, end: noteIndex, level: i, type: note.conn[i] } : undefined;
+	            }
+	        }
+
+	        delete note.conn;
+	    });
+
+	    for (var i = 0; i < curr.length; i++) {
+	        curr[i] && res.push(curr[i]);
+	    }
+
+	    return res;
+	}
+
+	function GetConnectionRanges(measures) {
+	    var res = [];
+
+	    var slot = 0;
+	    var isConnecting = false;
+	    var slots = [];
+
+	    measures.forEach(function (measure, index) {
+	        measure.beats.forEach(function (beat, beatIndex) {
+	            beat.notes.forEach(function (note, noteIndex) {
+
+	                if (note.pitch != "–" && note.pitch != "0" && !isConnecting) {
+	                    slots.push({ measure: index, beat: beatIndex, note: noteIndex });
+	                }
+
+	                if ((res.length == 0 || res.length > 0 && res[res.length - 1].end) && note.upperConn == "open") {
+	                    res.push({ start: { measure: index, beat: beatIndex, note: noteIndex } });
+	                    isConnecting = true;
+	                }
+
+	                if (res.length > 0 && !res[res.length - 1].end && note.upperConn == "close") {
+	                    res[res.length - 1].end = { measure: index, beat: beatIndex, note: noteIndex };
+
+	                    isConnecting = false;
+	                }
+
+	                delete note.upperConn;
+	            });
+	        });
+	    });
+	    return { ranges: res, slots: slots };
+	}
+
+	function zipMeasure(chorus, parts) {
+
+	    chorus.measures = chorus[parts[0]]["measures"].map(function (_) {
+	        return {};
+	    });
+	    chorus.connections = {};
+
+	    chorus[parts[0]].measures.forEach(function (_, index) {
+	        parts.forEach(function (part) {
+	            chorus.measures[index][part] = chorus[part].measures[index];
+	            chorus.measures[index].measureType = chorus[part].measures[index].measureType.measureType;
+	        });
+
+	        chorus.measures[index] = zipBeat(chorus.measures[index], parts);
+	    });
+
+	    parts.forEach(function (part) {
+	        chorus.connections[part] = chorus[part].connections;
+	    });
+
+	    var _iteratorNormalCompletion = true;
+	    var _didIteratorError = false;
+	    var _iteratorError = undefined;
+
+	    try {
+	        for (var _iterator = parts[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	            var part = _step.value;
+
+	            delete chorus[part];
+	        }
+	    } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion && _iterator.return) {
+	                _iterator.return();
+	            }
+	        } finally {
+	            if (_didIteratorError) {
+	                throw _iteratorError;
+	            }
+	        }
+	    }
+
+	    return chorus;
+	}
+
+	function zipBeat(measure, parts) {
+	    measure.beats = measure[parts[0]]["beats"].map(function (_) {
+	        return {};
+	    });
+
+	    measure[parts[0]].beats.forEach(function (_, index) {
+	        parts.forEach(function (part) {
+
+	            measure[part].beats[index].notes.forEach(function (note) {
+	                delete note.conn;
+	            });
+
+	            measure.beats[index][part] = measure[part].beats[index];
+	        });
+	    });
+
+	    var _iteratorNormalCompletion2 = true;
+	    var _didIteratorError2 = false;
+	    var _iteratorError2 = undefined;
+
+	    try {
+	        for (var _iterator2 = parts[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	            var part = _step2.value;
+
+	            delete measure[part];
+	        }
+	    } catch (err) {
+	        _didIteratorError2 = true;
+	        _iteratorError2 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                _iterator2.return();
+	            }
+	        } finally {
+	            if (_didIteratorError2) {
+	                throw _iteratorError2;
+	            }
+	        }
+	    }
+
+	    return measure;
+	}
+
+	function zipLyric(lyrics) {
+	    return lyrics[0].map(function (verse, i) {
+	        return lyrics.map(function (verse) {
+	            return verse[i];
+	        });
+	    });
+	}
+
+	function groupBy(xs, key) {
+	    return xs.reduce(function (rv, x) {
+	        (rv[x[key]] = rv[x[key]] || []).push(x);
+	        return rv;
+	    }, {});
+	};
+
+	function processMeasure(measure) {
+	    var flattenedNotes = Flatten(notes, 1, []).map(function (note, index) {
+	        return Object.assign(note, {
+	            octave: note.octave ? { start: note.octave > 0 ? 0 : note.conn.length, nums: note.octave } : undefined
+	        });
+	    });
+	    var durationExtendedBeats = [];
+
+	    flattenedNotes.forEach(function (note) {
+	        durationExtendedBeats.push(note);
+	        for (var i = 0; i < note.duration - 1; i++) {
+	            durationExtendedBeats.push({
+	                pitch: "-",
+	                duration: 1
 	            });
 	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-	            return (0, _General.Elem)('div', { style: {}, ref: "measure", className: "measure" }, this.SlotElems());
+
+	        if (note.duration > 1) {
+	            note.duration = 1;
 	        }
-	    }, {
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-	            this.box = this.refs.measure.getBoundingClientRect();
+	    });
+
+	    var beats = GroupBeat(durationExtendedBeats);
+	}
+
+	function organizeLyricAndMusic(sections) {
+
+	    var score = {},
+	        chorus = {},
+	        parts = [],
+	        verses = {};
+
+	    var isPolyphony = null;
+
+	    sections.forEach(function (elem) {
+	        if (elem.name == "parts") {
+
+	            parts = elem.parts;
+	        } else if (elem.name == "phony") {
+
+	            isPolyphony = elem.content;
+	        } else if (elem.name == "verse") {
+
+	            if (isPolyphony == "homophony") {
+	                verse[elem.part] = elem.content;
+	            } else if (isPolyphony == "isPolyphony") {
+	                verse.homophony = elem.content;
+	            } else {
+	                verse = { errorMsg: "不好意思……你需要在verse section之前就说清楚主调／复调类型" };
+	            }
+	        } else if (elem.name == "chorus") {
+
+	            // if(elem.part)
+
+	            chorus[elem.part] = elem.content;
+	        } else {
+
+	            score[elem.name] = elem.content;
 	        }
-	    }]);
+	    });
+	}
 
-	    return Measure;
-	}(_react2.default.Component);
+	function processSections(sections) {
 
-	exports.Measure = Measure;
-
-/***/ },
-/* 443 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.Connect = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _reactDom = __webpack_require__(32);
-
-	var _reactDom2 = _interopRequireDefault(_reactDom);
-
-	var _General = __webpack_require__(435);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var Connect = function (_React$Component) {
-	    _inherits(Connect, _React$Component);
-
-	    function Connect(props) {
-	        _classCallCheck(this, Connect);
-
-	        return _possibleConstructorReturn(this, (Connect.__proto__ || Object.getPrototypeOf(Connect)).call(this, props));
+	    var groupedLyric = groupBy(verses, 'part');
+	    for (var part in groupedLyric) {
+	        groupedLyric[part] = zipLyric(groupedLyric[part].map(function (lyric) {
+	            return lyric.verse;
+	        }));
 	    }
 
-	    _createClass(Connect, [{
-	        key: 'GetSVGCurveText',
-	        value: function GetSVGCurveText(AX, AY, CAX, CAY, CBX, CBY, BX, BY, thickness) {
-	            return "M" + AX + " " + AY + "C" + CAX + " " + CAY + "," + CBX + " " + CBY + "," + BX + " " + BY + "C" + CBX + " " + (CBY + thickness) + "," + CAX + " " + (CAY + thickness) + "," + AX + " " + AY + "Z";
+	    var zippedChorus = zipMeasure(chorus, parts);
+
+	    chorus.connections[parts[0]].slots.forEach(function (slot, index) {
+	        if (!zippedChorus.measures[slot.measure].beats[slot.beat].lyric) {
+	            zippedChorus.measures[slot.measure].beats[slot.beat].lyric = {};
 	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
+	        if (groupedLyric.unison) {
+	            zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric.unison[index];
+	        } else {
+	            var _iteratorNormalCompletion3 = true;
+	            var _didIteratorError3 = false;
+	            var _iteratorError3 = undefined;
 
-	            var startX = this.props.startLeft,
-	                startY = this.props.startTop,
-	                startCX = this.props.startCLeft,
-	                startCY = this.props.startCTop,
-	                endX = this.props.endLeft,
-	                endY = this.props.endTop,
-	                endCX = this.props.endCLeft,
-	                endCY = this.props.endCTop,
-	                fakeStartX = endX - 200,
-	                fakeEndX = startX + 200,
-	                fakeStartY = endY,
-	                fakeEndY = startY,
-	                fakeStartCX = endCX - 180,
-	                fakeEndCX = startCX + 180,
-	                fakeStartCY = endCY,
-	                fakeEndCY = startCY;
+	            try {
+	                for (var _iterator3 = parts[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	                    part = _step3.value;
 
-	            var elem = void 0;
-	            if (startY == endY) {
-	                elem = (0, _General.Elem)('svg', {
-	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
-	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, endCX, endCY, endX, endY, 3),
-	                    fill: "black"
-	                }));
-	            } else {
-	                elem = (0, _General.Elem)('svg', {
-	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
-	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 2) + this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 2),
-	                    fill: "black"
-	                }));
+	                    zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric[part] ? groupedLyric[part][index] : {};
+	                }
+	            } catch (err) {
+	                _didIteratorError3 = true;
+	                _iteratorError3 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	                        _iterator3.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError3) {
+	                        throw _iteratorError3;
+	                    }
+	                }
 	            }
-
-	            return elem;
 	        }
-	    }]);
+	    });
 
-	    return Connect;
-	}(_react2.default.Component);
+	    zippedChorus.parts = parts;
+	    score.chorus = zippedChorus;
+	    score.lyricLines = verses.length;
+	    return score;
+	}
 
-	exports.Connect = Connect;
+	exports.processSections = processSections;
 
 /***/ }
 /******/ ]);

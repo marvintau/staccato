@@ -16,9 +16,9 @@ class Slot extends React.Component{
 
         this.props.parts.forEach((partName, index) => {
 
-            elems.push(Elem(Beat, Object.assign(this.props[partName], {key:index > 1 ? index + 500 : index, ref:partName})));
+            elems.push(Elem(Beat, Object.assign(this.props[partName], {key:index > Math.ceil(this.props.parts.length/2-1) ? index + 500 : index, ref:partName})));
             
-            if(index == 1){
+            if(index == Math.ceil((this.props.parts.length)/2 - 1)){
                 if(this.props.lyric){
                     elems.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
                 }

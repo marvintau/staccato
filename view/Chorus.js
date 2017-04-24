@@ -2,6 +2,24 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Elem, SectionElem, Draw} from "./General.js";
 
+import {Vertbar, Finalbar, Repeatbar} from "./Bars.js";
+
+import {Connect} from "./Connect.js";
+
+import {Measure} from "./Measure.js";
+
+class Bracket extends React.Component{
+    constructor(props){
+        super(props);
+    }
+    render(){
+        let x = this.props.pos.bottom - this.props.pos.top,
+            y = Math.ceil(57983 + (x - 168) * 1.95);
+        return Elem('span', {style:this.props.pos, className:"bracket"}, String.fromCharCode(y));
+    }
+}
+
+
 class Chorus extends React.Component{
     constructor(props){
         super(props);
@@ -12,19 +30,6 @@ class Chorus extends React.Component{
             brackets : [],
             connects : []
         }
-    }
-
-    GetNotePoses(){
-        let notePoses = {}
-
-        for(let ithMeasure in this.refs){
-            if(ithMeasure != "score"){
-                let elem = this.refs[ithMeasure]
-                Object.assign(notePoses, elem.notePoses)
-            }
-        }
-
-        return notePoses;
     }
 
     GetConnectPoses(scoreBox, startBox, endBox){
@@ -53,11 +58,11 @@ class Chorus extends React.Component{
 
     MeasureElems(){
 
-        let lyricLines = this.props.measures[0].beats[0].lyric[0] ? this.props.measures[0].beats[0].lyric[0].length : 0;
+        let lyricLines = this.props.lyricLines;
 
         return []
             .concat(this.props.measures.map((measure,index) =>{
-                let elem = [Elem(Measure, {ref:"measure-"+index, measure: measure, parts:this.props.parts, key:index})];
+                let elem = [Elem(Measure, {ref:"measure-"+index, measure: measure, parts:this.props.parts, key:index, lyricLines:lyricLines})];
 
                 if(measure.measureType == "normal"){
                     elem.push(Elem(Vertbar, {key:5300+index-1, parts:this.props.parts, lyricLines : lyricLines}))
@@ -99,11 +104,15 @@ class Chorus extends React.Component{
             });
         });
 
-        let bracketsBoxes = this.props.measures.map((_, i) => ({
+        let bracketsBoxes = this.props.measures.map((_, i) => {
+
+            let offset = (Math.floor(this.refs["measure-"+i].box.bottom) - Math.floor(this.refs["measure-"+i].box.top))/2 - 40;
+            return {
                 left:Math.floor(this.refs["measure-"+i].box.left - scoreBox.left),
-                top:Math.floor(this.refs["measure-"+i].box.top + 43),
+                top:Math.floor(this.refs["measure-"+i].box.top + offset),
                 bottom:Math.floor(this.refs["measure-"+i].box.bottom)
-            })).groupBy("left"),
+            }
+        }).groupBy("left"),
             bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
 
         this.setState({
