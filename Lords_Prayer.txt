@@ -23,6 +23,10 @@ parts {
     soprano alto
 }
 
+phony {
+	homophony
+}
+
 verse 1 {
 我 们 在 天 上 的 父，
 愿 人 都 尊 祢 名 为 圣。

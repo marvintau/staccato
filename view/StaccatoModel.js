@@ -1,94 +1,3 @@
-Array.prototype.riffle = function(func){
-    let res = [];
-
-    for(let i=0; i < this.length; i++){
-        res.push(this[i]); res.push(func(this[i], i, this.length))
-    }
-
-    return res
-}
-
-Array.prototype.last = function(){
-    return this[this.length - 1]
-}
-
-Array.prototype.groupBy = function(key) {
-    return this.reduce(function(rv, x) {
-        (rv[x[key]] = rv[x[key]] || []).push(x);
-    return rv;
-  }, {});
-};
-
-function Flatten(scoreObject, durFactor, conn){
-    return scoreObject.reduce((list, elem) => {
-
-        let dur = elem.duration/durFactor;
-
-        return list.concat( elem.notes ?
-        Flatten(elem.notes, elem.factor * durFactor, elem.conn.concat(conn)) :
-        (elem.conn ?
-            Object.assign(elem, {duration:dur, "conn" : elem.conn.concat(conn)}) :
-            Object.assign(elem, {duration:dur, "conn" : conn}))
-        )}, [])
-}
-
-function GroupBeat(notes) {
-    let duration = 0;
-
-    let beats = [{notes:[]}];
-    notes.forEach(note =>{
-        duration += note.duration;
-        (duration <= 1) && beats[beats.length - 1].notes.push(note);
-
-        if(duration == 1){
-            duration = 0;
-            beats.push({notes : []});
-        }
-    })
-
-    beats.forEach(beat =>{
-        beat.underbar = GetDurations(beat.notes);
-    })
-    return beats;
-}
-
-function GetDurations(notes){
-
-    let curr =[];
-    let res  =[];
-
-    notes.forEach(function(note, noteIndex){
-
-        for (var i = 0; i < Math.max(note.conn.length, curr.length); i++) {
-
-            // current underbar exists, and have same type with underbar of current note
-            // then enlong the current underbar
-            if(curr[i] && curr[i].type == note.conn[i]){
-                curr[i].end = noteIndex;
-
-            } else {
-
-                // if current underbar exists, but underbar of current note doesn't exist,
-                // or has different type to current underbar, the current bar is done.
-                curr[i] && res.push(curr[i]);
-
-                // if the ith underbar of current note exists, but the ith current underbar
-                // could be either not created or finished, assign it with a new object.
-                // if not, then rewrite as undefined.
-                curr[i] = note.conn[i] ? {start:noteIndex, end:noteIndex, level:i, type:note.conn[i]} : undefined;
-            }
-        }
-
-        delete note.conn
-    })
-
-    for (var i = 0; i < curr.length; i++) {
-        curr[i] && res.push(curr[i]);
-    }
-
-    return res;
-}
-
 
 function GetConnectionRanges(measures){
     let res = [];
@@ -100,7 +9,6 @@ function GetConnectionRanges(measures){
     measures.forEach(function(measure, index){
         measure.beats.forEach(function(beat, beatIndex){
             beat.notes.forEach(function(note, noteIndex){
-
 
                 if((note.pitch != "–") && (note.pitch != "0") && !isConnecting){                        
                     slots.push({measure:index, beat:beatIndex, note:noteIndex})
@@ -125,120 +33,36 @@ function GetConnectionRanges(measures){
     return {ranges:res, slots:slots};
 }
 
-function zipMeasure(chorus, parts) {
+function OrganizeParts(sections){
 
-    chorus.measures = chorus[parts[0]]["measures"].map((_) => ({}))
-    chorus.connections = {}
+    let score = {chorus:{}, verses:{}, parts:[]};
 
-
-    chorus[parts[0]].measures.forEach( (_, index) => {
-        parts.forEach(part => {
-            chorus.measures[index][part] = chorus[part].measures[index];
-            chorus.measures[index].measureType = chorus[part].measures[index].measureType.measureType;
-        })
-
-        chorus.measures[index] = zipBeat(chorus.measures[index], parts)
-    })
-
-    parts.forEach(part => {
-        chorus.connections[part] = chorus[part].connections
-    })
-
-    for (var part of parts) {
-        delete chorus[part];
-    }
-
-    return chorus;
-}
-
-function zipBeat(measure, parts) {
-    measure.beats = measure[parts[0]]["beats"].map((_) => ({}))
-
-    measure[parts[0]].beats.forEach( (_, index) => {
-        parts.forEach(part => {
-
-            measure[part].beats[index].notes.forEach(note =>{
-                delete note.conn
-            })
-
-            measure.beats[index][part] = measure[part].beats[index]
-        })
-    })
-
-    for (var part of parts) {
-        delete measure[part];
-    }
-
-    return measure;
-}
-
-function zipLyric(lyrics) {
-    return lyrics[0].map((verse,i) => lyrics.map(verse => verse[i]))
-}
-
-function groupBy(xs, key) {
-    return xs.reduce(function(rv, x) {
-        (rv[x[key]] = rv[x[key]] || []).push(x);
-    return rv;
-  }, {});
-};
-
-function processMeasure(measure){
-    let flattenedNotes = Flatten(notes, 1, []).map((note, index) =>
-        Object.assign(note, {
-            octave: note.octave ? {start:(note.octave>0 ? 0 : note.conn.length), nums:note.octave} : undefined
-        })
-    );
-    let durationExtendedBeats = [];
-
-    flattenedNotes.forEach(note => {
-        durationExtendedBeats.push(note);
-        for (let i = 0; i < note.duration - 1; i++) {
-            durationExtendedBeats.push({
-                pitch : "-",
-                duration : 1
-            })
-        }
-
-        if(note.duration > 1){
-            note.duration = 1
-        }
-    })
-
-    let beats = GroupBeat(durationExtendedBeats);
-
-}
-
-function organizeLyricAndMusic(sections){
-
-    let score = {}, chorus={}, parts = [], verses= {};
-
-    let isPolyphony = null;
+    score.isPolyphony = null;
 
     sections.forEach(elem => {
         if(elem.name == "parts"){
 
-            parts = elem.parts;
+            score.parts = elem.parts;
         
         } else if(elem.name == "phony"){
-        
-            isPolyphony = elem.content;
+            console.log(elem.phony)
+            score.isPolyphony = elem.phony == "polyphony";
         
         } else if(elem.name == "verse"){
         
-            if(isPolyphony == "homophony"){
-                verse[elem.part] = elem.content;
-            } else if(isPolyphony == "isPolyphony") {
-                verse.homophony = elem.content;
+            if(!score.isPolyphony){
+                score.verses.homophony = elem.verses;
+            } else if(score.isPolyphony) {
+                score.verses[elem.part] = elem.content;
             } else {
-                verse = {errorMsg : "不好意思……你需要在verse section之前就说清楚主调／复调类型"}
+                score.verses = {errorMsg : "不好意思……你需要在verse section之前就说清楚主调／复调类型"}
             }
         
         } else if(elem.name == "chorus"){
         
             // if(elem.part)
 
-            chorus[elem.part] = elem.content;
+            score.chorus[elem.part] = elem.content;
         
         } else {
         
@@ -247,36 +71,151 @@ function organizeLyricAndMusic(sections){
         }
     })
 
+    return score;
+}
+
+function TransposeMeasure(measure, parts) {
+
+    let longestBeats = 0;
+    for(let part of parts) {
+        (longestBeats < measure.chorus[part].beats.length) && (longestBeats = measure.chorus[part].beats.length);
+    }
+
+    console.log(longestBeats);
+
+    measure.beats = [];
+    for (var i = 0; i < longestBeats; i++) {
+
+        measure.beats[i] = {};
+
+        for(let part of parts) {
+            measure.beats[i][part] = measure.chorus[part].beats[i] ? measure.chorus[part].beats[i] : {}
+        }
+    }
+
+    measure.underbars = [];
+    for (var part of parts) {
+        measure.type = measure.chorus[part].type;
+        measure.underbars = measure.underbars.concat(measure.chorus[part].underbars);
+    }
+
+    delete measure.chorus;
+    return measure;
+}
+
+function arrangePolyphonyMeasures(score){
+    score.parts.forEach(part => {
+        // score.chorus[part]
+    })
+}
+
+function Flatten(measure){
+    return measure.reduce((notes, note) => {
+
+        return notes.concat( note.notes ? Flatten(note.notes) : note)}, [])
+}
+
+function GetUnderbars(measure){
+    return measure.reduce((underbars, note) => {
+
+        let currentUnderbar = note.underbar ? [note.underbar] : [];
+        let nestedUnderbars = note.notes ? GetUnderbars(note.notes) : [];
+
+        delete note.underbar;
+
+        return underbars.concat(currentUnderbar).concat(nestedUnderbars);
+    }, [])
 }
 
 
-function processSections(sections){
+function AppendOctave(measure){
+
+    measure.beats = measure.beats.map((note) =>{
+   
+        let underbarLevels;
+        for (let bar of measure.underbars){
+            if(note.index <= bar.end && note.index >= bar.start){
+                underbarLevels++;
+            }            
+        }
+
+        let position = (note.octave && note.octave>0)? 0 : underbarLevels;
+        let octave = note.octave ? {start:position, nums:note.octave} : undefined 
+        return Object.assign(note, { octave: octave });
+    });
+
+    return measure;
+}
+
+function ExtendBeats(measure){
+
+    return measure.forEach(note => {
+
+        durationExtendedBeats.push(note);
+        durationExtendedBeats.push(Array(note.duration).fill({pitch:"-", duration:1}));
+        (note.duration > 1) && (note.duration = 1)
+    })
+}
+
+function Process(measure){
+    if(measure){
+        measure.underbars = GetUnderbars(measure.beats);
+        measure.beats = Flatten(measure.beats);
+        measure = AppendOctave(measure);
+        return measure;
+    } else {
+        return {}
+    }
+}
 
 
-    let groupedLyric = groupBy(verses, 'part')
-    for(var part in groupedLyric){
-        groupedLyric[part] = zipLyric(groupedLyric[part].map(lyric => lyric.verse))
+function arrangeHomophonyMeasures(score){
+
+    // 找到拥有measure最多的那个声部
+    let longestMeasures = 0;
+    score.measures = [];
+    for(var part of score.parts){
+        if(score.chorus[part].length > longestMeasures){
+            longestMeasures = score.chorus[part].length;
+        }
     }
 
-    let zippedChorus = zipMeasure(chorus, parts)
+    // 将每个声部放进同一个measure里面去
+    for (var i = 0; i < longestMeasures; i++) {
+    
+        score.measures[i] = {chorus:{}, lyric:null};
 
-    chorus.connections[parts[0]].slots.forEach((slot, index) =>{
-        if(!zippedChorus.measures[slot.measure].beats[slot.beat].lyric){
-                zippedChorus.measures[slot.measure].beats[slot.beat].lyric = {};
-        }
-        if(groupedLyric.unison){
-            zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric.unison[index]
-        } else {
-            for(part of parts){
-                zippedChorus.measures[slot.measure].beats[slot.beat].lyric[slot.note] = groupedLyric[part] ? groupedLyric[part][index] : {}
-            }
-        }
-    })
+        for(var part of score.parts){   
+            score.measures[i].chorus[part] = Process(score.chorus[part][i]);
+        };
+        score.measures[i] = TransposeMeasure(score.measures[i], score.parts);
+    }
+    // 删掉原先曲谱的chorus部分，它现在已经没用了
+    for(var part of score.parts){
+        delete score.chorus[part];
+    }
+    delete score.chorus
+    console.log(JSON.stringify(score.measures, null, 2));
+}
 
-    zippedChorus.parts = parts;
-    score.chorus = zippedChorus;
-    score.lyricLines = verses.length;
-    return score;
+function arrangeMeasures(score){
+    if(score.isPolyphony){
+        arrangePolyphonyMeasures(score);
+    } else {
+        arrangeHomophonyMeasures(score);
+    }
+}
+
+function processSections(sections){
+
+    // 在这一步做的主要工作是验证歌谱的类型，是单调还是复调，有没有缺少的部分，之后
+    // 再处理每一小节的内容
+
+    let score = OrganizeParts(sections);
+
+    // console.log(JSON.stringify(score, null, 2));
+
+    let arrangedMeasures = arrangeMeasures(score);
 }
 
 export {processSections};

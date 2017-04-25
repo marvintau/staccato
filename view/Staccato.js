@@ -5,8 +5,6 @@ import { Row, Col, Button } from 'react-bootstrap';
 
 import {parse} from './StaccatoParser.pegjs';
 
-import scoreText from '../Lords_Prayer.txt';
-
 import {default as Sidebar} from 'react-sidebar';
 
 import {Elem, SectionElem, Draw} from "./General.js";
@@ -14,6 +12,8 @@ import {Elem, SectionElem, Draw} from "./General.js";
 import {Chorus} from "./Chorus.js";
 
 import {processSections} from "./StaccatoModel.js";
+
+import scoreText from '../Lords_Prayer.txt';
 
 class Container extends React.Component {
 
@@ -24,7 +24,7 @@ class Container extends React.Component {
 
         try {
             scoreParsed = parse(scoreText);
-            console.log(scoreParsed);
+            console.log(processSections(scoreParsed));
         } catch(err){
             scoreParsed = "err";
             console.log(err);

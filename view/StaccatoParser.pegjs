@@ -1,4 +1,8 @@
 
+{
+    let noteCounter = 0;
+}
+
 Sections "all sections"
 = _ sections:Section* {
     return sections
@@ -16,14 +20,14 @@ Section "section that contains different info"
     return {
         name : "verse",
         part : "unison",
-        verse : lyric.map(l => l[0].join(""))
+        verses : lyric.map(l => l[0].join(""))
     };
 }
 / "verse" _ verseNumber:[0-9]+ _ part:[a-zA-Z]+ _ '{' _ lyric:([^ \t\n\r\}]+ _)* '}' _ {
     return {
         name : "verse",
         part : part.join(""),
-        verse : lyric.map(l => l[0].join(""))
+        verses : lyric.map(l => l[0].join(""))
     };
 }
 / "parts" _ '{' _ parts:([a-zA-Z]+ _)* '}' _ {
@@ -32,7 +36,14 @@ Section "section that contains different info"
         parts : parts.map(elem => elem[0].join(""))
     };
 }
-/ section:[a-zA-Z]+ _ '{' content:[^\}]* '}' _ {
+/ "phony" _ '{' _ content:[a-zA-Z]+ _ '}' _ {
+    console.log(content);
+    return {
+        name : "phony",
+        phony : content.join("")
+    };
+}
+/ section:[a-zA-Z]+ _ '{' _ content:[^\}]* '}' _ {
     return {
         name : section.join(""),
         content : content.join("")
@@ -44,7 +55,7 @@ Measure "measure"
 
     return {
         beats : notes,
-        measureType : bar
+        type : bar.type
     }
 }
 
@@ -75,19 +86,20 @@ HalfedNote "duration"
 ="(" _ notes:(Note _)+ ")" {
 
     // 去掉空格，并确保不超过三个
-    let processed = notes.map(note => note[0]).slice(0, 4);
-    processed.forEach(note => note.duration = 1/notes.length);
+    let p = notes.map(note => note[0]).slice(0, 4);
+    p.forEach(note => note.duration = 1/notes.length);
 
-    if(processed.length == 3) {
-        processed[0].tripledConn = "open";
-        processed[2].tripledConn = "closed";
+    if(p.length == 3) {
+        p[0].tripledConn = "open";
+        p[2].tripledConn = "closed";
     }
 
-    console.log(processed);
+    let startIndex = p[0].underbar ? p[0].underbar.start : p[0].index;
+    let endIndex = p[p.length - 1].underbar ? p[p.length - 1].underbar.end : p[p.length-1].index;
 
     return {
-        notes:processed,
-        underbar : 1
+        notes: p,
+        underbar : {start:startIndex, end:endIndex}
     }
 }
 
@@ -96,12 +108,11 @@ DottedNote "dotted"
 
     first.dotted = true;
 
-    next.underbar = 1;
+    next.underbar = {start:next.index, end:next.index};
 
     return {
         notes : [first, next],
         factor : 1,
-        underbar : 0
     }
 }
 
@@ -109,19 +120,19 @@ FixedNote "fixed"
 = "/" note:ModifiedPitch _ {
     note.duration = 1;
     note.upperConn = "open";
-    note.underbar = 0;
+    note.index = noteCounter++;
     return note;
 }
 
 / note:ModifiedPitch "\\" _ {
     note.duration = 1;
     note.upperConn = "close";
-    note.underbar = 0
+    note.index = noteCounter++;
     return note;
 }
 / note:ModifiedPitch _ {
     note.duration = 1;
-    note.underbar = 0
+    note.index = noteCounter++;
     return note
 }
 
@@ -171,16 +182,16 @@ Pitch "pitch"
 
 MeasureBar "measure bar"
 = "||" _ {
-    return {measureType : "fin"}
+    return {type : "fin"}
 }
 / "\:|" _ {
-    return {measureType : "rep_fin"}
+    return {type : "rep_fin"}
 }
 / "|\:" _ {
-    return {measureType : "rep_start"}
+    return {type : "rep_start"}
 }
 / "|" _ {
-    return {measureType : "normal"}
+    return {type : "normal"}
 }
 
 
