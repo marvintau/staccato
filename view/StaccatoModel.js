@@ -1,33 +1,30 @@
 
-function GetConnectionRanges(measures){
-    let res = [];
+function InsertLyric(measures, lyrics){
 
-    let slot = 0;
+    let lyricIndex = 0;
     let isConnecting = false;
-    let slots = [];
 
     measures.forEach(function(measure, index){
         measure.beats.forEach(function(beat, beatIndex){
-            beat.notes.forEach(function(note, noteIndex){
+            
+            if((beat[0].pitch != "–") && (beat[0].pitch != "0") && !isConnecting){                        
+                note.splice(Math.floor(beat.length /2), 0, {lyric: score.verses[ithWord]});
+            }
 
-                if((note.pitch != "–") && (note.pitch != "0") && !isConnecting){                        
-                    slots.push({measure:index, beat:beatIndex, note:noteIndex})
-                }
 
+            if((res.length==0 || (res.length>0 && res[res.length - 1].end)) && note.upperConn == "open") {
+                res.push({start:{measure:index, beat:beatIndex, note:noteIndex}});
+                isConnecting = true;
+            }
 
-                if((res.length==0 || (res.length>0 && res[res.length - 1].end)) && note.upperConn == "open") {
-                    res.push({start:{measure:index, beat:beatIndex, note:noteIndex}});
-                    isConnecting = true;
-                }
+            if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
+                res[res.length-1].end = {measure:index, beat:beatIndex, note:noteIndex}
 
-                if(res.length>0 && !res[res.length-1].end && note.upperConn == "close"){
-                    res[res.length-1].end = {measure:index, beat:beatIndex, note:noteIndex}
+                isConnecting = false;
+            }
 
-                    isConnecting = false;
-                }
+            delete note.upperConn
 
-                delete note.upperConn
-            })
         })
     })
     return {ranges:res, slots:slots};
@@ -51,7 +48,7 @@ function OrganizeParts(sections){
         } else if(elem.name == "verse"){
         
             if(!score.isPolyphony){
-                score.verses.homophony = elem.verses;
+                score.verses = elem.verses;
             } else if(score.isPolyphony) {
                 score.verses[elem.part] = elem.content;
             } else {
@@ -81,22 +78,22 @@ function TransposeMeasure(measure, parts) {
         (longestBeats < measure.chorus[part].beats.length) && (longestBeats = measure.chorus[part].beats.length);
     }
 
-    console.log(longestBeats);
-
     measure.beats = [];
     for (var i = 0; i < longestBeats; i++) {
 
-        measure.beats[i] = {};
+        measure.beats[i] = [];
 
-        for(let part of parts) {
-            measure.beats[i][part] = measure.chorus[part].beats[i] ? measure.chorus[part].beats[i] : {}
-        }
+        parts.forEach((part, partIndex) => {
+            measure.beats[i][partIndex] = measure.chorus[part].beats[i] ? measure.chorus[part].beats[i] : {}
+        })
     }
 
+    measure.ties = [];
     measure.underbars = [];
     for (var part of parts) {
         measure.type = measure.chorus[part].type;
         measure.underbars = measure.underbars.concat(measure.chorus[part].underbars);
+        measure.ties = measure.ties.concat(measure.chorus[part].ties);
     }
 
     delete measure.chorus;
@@ -113,6 +110,15 @@ function Flatten(measure){
     return measure.reduce((notes, note) => {
 
         return notes.concat( note.notes ? Flatten(note.notes) : note)}, [])
+}
+
+function GetTies(measure){
+    return measure.reduce((ties, note) => {
+        if(note.tie) ties = ties.concat([note.tie]);
+        
+        delete note.tie;
+        return ties;
+    }, [])
 }
 
 function GetUnderbars(measure){
@@ -147,20 +153,11 @@ function AppendOctave(measure){
     return measure;
 }
 
-function ExtendBeats(measure){
-
-    return measure.forEach(note => {
-
-        durationExtendedBeats.push(note);
-        durationExtendedBeats.push(Array(note.duration).fill({pitch:"-", duration:1}));
-        (note.duration > 1) && (note.duration = 1)
-    })
-}
-
 function Process(measure){
     if(measure){
         measure.underbars = GetUnderbars(measure.beats);
         measure.beats = Flatten(measure.beats);
+        measure.ties = GetTies(measure.beats);
         measure = AppendOctave(measure);
         return measure;
     } else {
@@ -183,7 +180,7 @@ function arrangeHomophonyMeasures(score){
     // 将每个声部放进同一个measure里面去
     for (var i = 0; i < longestMeasures; i++) {
     
-        score.measures[i] = {chorus:{}, lyric:null};
+        score.measures[i] = {chorus:{}};
 
         for(var part of score.parts){   
             score.measures[i].chorus[part] = Process(score.chorus[part][i]);
@@ -194,6 +191,19 @@ function arrangeHomophonyMeasures(score){
     for(var part of score.parts){
         delete score.chorus[part];
     }
+
+    let ithWord = 0;
+
+    console.log(score.verses);
+    // for(var measure of score.measures){
+    //     for (var beat of measure.beats){
+    //         if(beat[0].pitch != "–" && beat[0].pitch != 0){
+    //             beat.splice(Math.floor(beat.length /2), 0, {lyric: score.verses[ithWord]});
+    //             ithWord ++;    
+    //         }
+    //     }
+    // }
+
     delete score.chorus
     console.log(JSON.stringify(score.measures, null, 2));
 }

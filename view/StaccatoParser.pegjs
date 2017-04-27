@@ -1,6 +1,7 @@
 
 {
     let noteCounter = 0;
+    let tieOpen = null;
 }
 
 Sections "all sections"
@@ -86,16 +87,16 @@ HalfedNote "duration"
 ="(" _ notes:(Note _)+ ")" {
 
     // 去掉空格，并确保不超过三个
-    let p = notes.map(note => note[0]).slice(0, 4);
+    let p = notes.map(note => note[0]);
     p.forEach(note => note.duration = 1/notes.length);
-
-    if(p.length == 3) {
-        p[0].tripledConn = "open";
-        p[2].tripledConn = "closed";
-    }
 
     let startIndex = p[0].underbar ? p[0].underbar.start : p[0].index;
     let endIndex = p[p.length - 1].underbar ? p[p.length - 1].underbar.end : p[p.length-1].index;
+
+    let upperTuplet;
+    if(p.length > 2){
+        upperTuplet = {start:startIndex, end:endIndex};
+    }
 
     return {
         notes: p,
@@ -118,16 +119,23 @@ DottedNote "dotted"
 
 FixedNote "fixed"
 = "/" note:ModifiedPitch _ {
+
     note.duration = 1;
-    note.upperConn = "open";
     note.index = noteCounter++;
+    
+    tieOpen = note.index;
+
     return note;
 }
 
 / note:ModifiedPitch "\\" _ {
     note.duration = 1;
-    note.upperConn = "close";
     note.index = noteCounter++;
+
+    if(tieOpen){
+        note.tie = {start: tieOpen, end:note.index}
+    }
+
     return note;
 }
 / note:ModifiedPitch _ {
