@@ -93,8 +93,7 @@
 	        var scoreParsed = void 0;
 
 	        try {
-	            scoreParsed = (0, _StaccatoParser.parse)(_Lords_Prayer2.default);
-	            console.log((0, _StaccatoModel.processSections)(scoreParsed));
+	            scoreParsed = (0, _StaccatoModel.processSections)((0, _StaccatoParser.parse)(_Lords_Prayer2.default));
 	        } catch (err) {
 	            scoreParsed = "err";
 	            console.log(err);
@@ -117,7 +116,7 @@
 	            var scoreParsed = void 0;
 
 	            try {
-	                scoreParsed = (0, _StaccatoParser.parse)(newText);
+	                scoreParsed = (0, _StaccatoModel.processSections)((0, _StaccatoParser.parse)(newText));
 	            } catch (err) {
 	                console.log(scoreParsed);
 	            }
@@ -136,12 +135,15 @@
 
 	            var sectionElems = [],
 	                index = 0;
+
 	            for (var section in this.state.score) {
 	                if (this.state.score.hasOwnProperty(section)) {
-	                    if (section != "chorus") {
+	                    if (section != "measures") {
+	                        // console.log(this.state.score);
 	                        sectionElems.push((0, _General.SectionElem)(section, index, this.state.score[section]));
 	                    } else {
-	                        sectionElems.push((0, _General.Elem)(_Chorus.Chorus, Object.assign(this.state.score.chorus, { key: index, lyricLines: this.state.score.lyricLines })));
+	                        // console.log(this.state.score);
+	                        sectionElems.push((0, _General.Elem)(_Chorus.Chorus, { measures: this.state.score.measures, key: index }));
 	                    }
 	                    index++;
 	                }
@@ -42625,6 +42627,10 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -42672,7 +42678,7 @@
 	    bottom: 0,
 	    opacity: 0,
 	    visibility: 'hidden',
-	    transition: 'opacity .3s ease-out, visibility .3s ease-out',
+	    transition: 'opacity .3s ease-out',
 	    backgroundColor: 'rgba(0,0,0,.3)'
 	  },
 	  dragHandle: {
@@ -42693,7 +42699,7 @@
 
 	    _this.state = {
 	      // the detected width of the sidebar in pixels
-	      sidebarWidth: props.defaultSidebarWidth,
+	      sidebarWidth: 0,
 
 	      // keep track of touching params
 	      touchIdentifier: null,
@@ -42711,7 +42717,6 @@
 	    _this.onTouchMove = _this.onTouchMove.bind(_this);
 	    _this.onTouchEnd = _this.onTouchEnd.bind(_this);
 	    _this.onScroll = _this.onScroll.bind(_this);
-	    _this.saveSidebarRef = _this.saveSidebarRef.bind(_this);
 	    return _this;
 	  }
 
@@ -42830,16 +42835,11 @@
 	  }, {
 	    key: 'saveSidebarWidth',
 	    value: function saveSidebarWidth() {
-	      var width = this.sidebar.offsetWidth;
+	      var width = _reactDom2.default.findDOMNode(this.refs.sidebar).offsetWidth;
 
 	      if (width !== this.state.sidebarWidth) {
 	        this.setState({ sidebarWidth: width });
 	      }
-	    }
-	  }, {
-	    key: 'saveSidebarRef',
-	    value: function saveSidebarRef(node) {
-	      this.sidebar = node;
 	    }
 
 	    // calculate the sidebarWidth based on current touch info
@@ -42973,7 +42973,7 @@
 	        rootProps,
 	        _react2.default.createElement(
 	          'div',
-	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: this.saveSidebarRef },
+	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: 'sidebar' },
 	          this.props.sidebar
 	        ),
 	        _react2.default.createElement('div', { className: this.props.overlayClassName,
@@ -43048,10 +43048,7 @@
 	  dragToggleDistance: _react2.default.PropTypes.number,
 
 	  // callback called when the overlay is clicked
-	  onSetOpen: _react2.default.PropTypes.func,
-
-	  // Intial sidebar width when page loads
-	  defaultSidebarWidth: _react2.default.PropTypes.number
+	  onSetOpen: _react2.default.PropTypes.func
 	};
 
 	Sidebar.defaultProps = {
@@ -43064,8 +43061,7 @@
 	  shadow: true,
 	  dragToggleDistance: 30,
 	  onSetOpen: function onSetOpen() {},
-	  styles: {},
-	  defaultSidebarWidth: 0
+	  styles: {}
 	};
 
 	exports.default = Sidebar;
@@ -43219,10 +43215,8 @@
 	        value: function MeasureElems() {
 	            var _this3 = this;
 
-	            var lyricLines = this.props.lyricLines;
-
 	            return [].concat(this.props.measures.map(function (measure, index) {
-	                var elem = [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measure, parts: _this3.props.parts, key: index, lyricLines: lyricLines })];
+	                var elem = [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measure, key: index })];
 
 	                if (measure.measureType == "normal") {
 	                    elem.push((0, _General.Elem)(_Bars.Vertbar, { key: 5300 + index - 1, parts: _this3.props.parts, lyricLines: lyricLines }));
@@ -43236,7 +43230,9 @@
 	                }
 
 	                return elem;
-	            })).concat(this.BracketElems()).concat(this.ConnectElems());
+	            }));
+	            // .concat(this.BracketElems())
+	            // .concat(this.ConnectElems())
 	        }
 	    }, {
 	        key: 'render',
@@ -43246,41 +43242,39 @@
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            var _this4 = this;
 
 	            var scoreBox = this.refs.score.getBoundingClientRect();
 
-	            var conns = this.props.connections,
-	                connPoses = [];
-	            Object.keys(conns).forEach(function (part) {
-	                conns[part].ranges.forEach(function (range) {
-
-	                    var start = range.start,
-	                        end = range.end,
-	                        startBox = _this4.refs["measure-" + start.measure].refs["slot-" + start.beat].refs[part].refs[start.note].box,
-	                        endBox = _this4.refs["measure-" + end.measure].refs["slot-" + end.beat].refs[part].refs[end.note].box;
-
-	                    console.log(startBox);
-
-	                    connPoses.push(_this4.GetConnectPoses(scoreBox, startBox, endBox));
-	                });
-	            });
-
-	            var bracketsBoxes = this.props.measures.map(function (_, i) {
-
-	                var offset = (Math.floor(_this4.refs["measure-" + i].box.bottom) - Math.floor(_this4.refs["measure-" + i].box.top)) / 2 - 40;
-	                return {
-	                    left: Math.floor(_this4.refs["measure-" + i].box.left - scoreBox.left),
-	                    top: Math.floor(_this4.refs["measure-" + i].box.top + offset),
-	                    bottom: Math.floor(_this4.refs["measure-" + i].box.bottom)
-	                };
-	            }).groupBy("left"),
-	                bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
-
-	            this.setState({
-	                brackets: bracketsBoxesLeftmost,
-	                connects: connPoses
-	            });
+	            // let conns = this.props.connections, connPoses = [];
+	            // Object.keys(conns).forEach(part =>{
+	            //     conns[part].ranges.forEach(range => {
+	            //
+	            //         let start    = range.start,
+	            //             end      = range.end,
+	            //             startBox = this.refs["measure-"+start.measure].refs["slot-"+start.beat].refs[part].refs[start.note].box,
+	            //             endBox   = this.refs["measure-"+end.measure].refs["slot-"+end.beat].refs[part].refs[end.note].box;
+	            //
+	            //             console.log(startBox);
+	            //
+	            //         connPoses.push(this.GetConnectPoses(scoreBox, startBox, endBox));
+	            //     });
+	            // });
+	            //
+	            // let bracketsBoxes = this.props.measures.map((_, i) => {
+	            //
+	            //     let offset = (Math.floor(this.refs["measure-"+i].box.bottom) - Math.floor(this.refs["measure-"+i].box.top))/2 - 40;
+	            //     return {
+	            //         left:Math.floor(this.refs["measure-"+i].box.left - scoreBox.left),
+	            //         top:Math.floor(this.refs["measure-"+i].box.top + offset),
+	            //         bottom:Math.floor(this.refs["measure-"+i].box.bottom)
+	            //     }
+	            // }).groupBy("left"),
+	            //     bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
+	            //
+	            // this.setState({
+	            //     brackets : bracketsBoxesLeftmost,
+	            //     connects : connPoses
+	            // })
 	        }
 	    }]);
 
@@ -43641,14 +43635,13 @@
 	    }, {
 	        key: 'SlotElems',
 	        value: function SlotElems() {
-	            var _this2 = this;
+
+	            console.log(this.props.measure.beats);
 
 	            return this.props.measure.beats.map(function (slot, index) {
 	                return (0, _General.Elem)(_Slot.Slot, Object.assign(slot, {
 	                    key: index,
-	                    ref: "slot-" + index,
-	                    parts: _this2.props.parts,
-	                    lyricLines: _this2.props.lyricLines
+	                    ref: "slot-" + index
 	                }));
 	            });
 	        }
@@ -44441,24 +44434,19 @@
 	    var ithWord = 0;
 
 	    console.log(score.verses);
-	    // for(var measure of score.measures){
-	    //     for (var beat of measure.beats){
-	    //         if(beat[0].pitch != "–" && beat[0].pitch != 0){
-	    //             beat.splice(Math.floor(beat.length /2), 0, {lyric: score.verses[ithWord]});
-	    //             ithWord ++;    
-	    //         }
-	    //     }
-	    // }
 
 	    delete score.chorus;
-	    console.log(JSON.stringify(score.measures, null, 2));
+	    // console.log(JSON.stringify(score.measures, null, 2));
+	    return score;
 	}
 
 	function arrangeMeasures(score) {
 	    if (score.isPolyphony) {
-	        arrangePolyphonyMeasures(score);
+	        delete score.isPolyphony;
+	        return arrangePolyphonyMeasures(score);
 	    } else {
-	        arrangeHomophonyMeasures(score);
+	        delete score.isPolyphony;
+	        return arrangeHomophonyMeasures(score);
 	    }
 	}
 
@@ -44471,7 +44459,11 @@
 
 	    // console.log(JSON.stringify(score, null, 2));
 
-	    var arrangedMeasures = arrangeMeasures(score);
+	    var arrangedScore = arrangeMeasures(score);
+	    delete arrangedScore.parts;
+	    delete arrangedScore.verses;
+	    console.log(arrangedScore);
+	    return arrangedScore;
 	}
 
 	exports.processSections = processSections;

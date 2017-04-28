@@ -23,8 +23,7 @@ class Container extends React.Component {
         let scoreParsed;
 
         try {
-            scoreParsed = parse(scoreText);
-            console.log(processSections(scoreParsed));
+            scoreParsed = processSections(parse(scoreText));
         } catch(err){
             scoreParsed = "err";
             console.log(err);
@@ -44,7 +43,7 @@ class Container extends React.Component {
         let scoreParsed;
 
         try{
-            scoreParsed = parse(newText);
+            scoreParsed = processSections(parse(newText));
         } catch(err){
             console.log(scoreParsed);
         }
@@ -59,12 +58,15 @@ class Container extends React.Component {
     render() {
 
         let sectionElems = [], index = 0;
+
         for (let section in this.state.score) {
             if (this.state.score.hasOwnProperty(section)) {
-                if(section != "chorus"){
+                if(section != "measures"){
+                    // console.log(this.state.score);
                     sectionElems.push(SectionElem(section, index, this.state.score[section]));
                 } else {
-                    sectionElems.push(Elem(Chorus, Object.assign(this.state.score.chorus, {key:index, lyricLines : this.state.score.lyricLines})));
+                    // console.log(this.state.score);
+                    sectionElems.push(Elem(Chorus, {measures : this.state.score.measures, key:index}));
                 }
                 index++;
             }

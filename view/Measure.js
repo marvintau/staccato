@@ -26,11 +26,11 @@ class Measure extends React.Component{
 
     SlotElems(){
 
+        console.log(this.props.measure.beats);
+
         return this.props.measure.beats.map((slot, index)=>Elem(Slot, Object.assign(slot, {
             key : index,
-            ref : "slot-" + index,
-            parts : this.props.parts,
-            lyricLines : this.props.lyricLines
+            ref : "slot-" + index
         })));
     }
 

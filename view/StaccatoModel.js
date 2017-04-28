@@ -6,8 +6,8 @@ function InsertLyric(measures, lyrics){
 
     measures.forEach(function(measure, index){
         measure.beats.forEach(function(beat, beatIndex){
-            
-            if((beat[0].pitch != "–") && (beat[0].pitch != "0") && !isConnecting){                        
+
+            if((beat[0].pitch != "–") && (beat[0].pitch != "0") && !isConnecting){
                 note.splice(Math.floor(beat.length /2), 0, {lyric: score.verses[ithWord]});
             }
 
@@ -40,13 +40,13 @@ function OrganizeParts(sections){
         if(elem.name == "parts"){
 
             score.parts = elem.parts;
-        
+
         } else if(elem.name == "phony"){
             console.log(elem.phony)
             score.isPolyphony = elem.phony == "polyphony";
-        
+
         } else if(elem.name == "verse"){
-        
+
             if(!score.isPolyphony){
                 score.verses = elem.verses;
             } else if(score.isPolyphony) {
@@ -54,17 +54,17 @@ function OrganizeParts(sections){
             } else {
                 score.verses = {errorMsg : "不好意思……你需要在verse section之前就说清楚主调／复调类型"}
             }
-        
+
         } else if(elem.name == "chorus"){
-        
+
             // if(elem.part)
 
             score.chorus[elem.part] = elem.content;
-        
+
         } else {
-        
+
             score[elem.name] = elem.content
-        
+
         }
     })
 
@@ -115,7 +115,7 @@ function Flatten(measure){
 function GetTies(measure){
     return measure.reduce((ties, note) => {
         if(note.tie) ties = ties.concat([note.tie]);
-        
+
         delete note.tie;
         return ties;
     }, [])
@@ -137,16 +137,16 @@ function GetUnderbars(measure){
 function AppendOctave(measure){
 
     measure.beats = measure.beats.map((note) =>{
-   
+
         let underbarLevels;
         for (let bar of measure.underbars){
             if(note.index <= bar.end && note.index >= bar.start){
                 underbarLevels++;
-            }            
+            }
         }
 
         let position = (note.octave && note.octave>0)? 0 : underbarLevels;
-        let octave = note.octave ? {start:position, nums:note.octave} : undefined 
+        let octave = note.octave ? {start:position, nums:note.octave} : undefined
         return Object.assign(note, { octave: octave });
     });
 
@@ -179,10 +179,10 @@ function arrangeHomophonyMeasures(score){
 
     // 将每个声部放进同一个measure里面去
     for (var i = 0; i < longestMeasures; i++) {
-    
+
         score.measures[i] = {chorus:{}};
 
-        for(var part of score.parts){   
+        for(var part of score.parts){
             score.measures[i].chorus[part] = Process(score.chorus[part][i]);
         };
         score.measures[i] = TransposeMeasure(score.measures[i], score.parts);
@@ -195,24 +195,19 @@ function arrangeHomophonyMeasures(score){
     let ithWord = 0;
 
     console.log(score.verses);
-    // for(var measure of score.measures){
-    //     for (var beat of measure.beats){
-    //         if(beat[0].pitch != "–" && beat[0].pitch != 0){
-    //             beat.splice(Math.floor(beat.length /2), 0, {lyric: score.verses[ithWord]});
-    //             ithWord ++;    
-    //         }
-    //     }
-    // }
 
     delete score.chorus
-    console.log(JSON.stringify(score.measures, null, 2));
+    // console.log(JSON.stringify(score.measures, null, 2));
+    return score;
 }
 
 function arrangeMeasures(score){
     if(score.isPolyphony){
-        arrangePolyphonyMeasures(score);
+        delete score.isPolyphony;
+        return arrangePolyphonyMeasures(score);
     } else {
-        arrangeHomophonyMeasures(score);
+        delete score.isPolyphony;
+        return arrangeHomophonyMeasures(score);
     }
 }
 
@@ -225,7 +220,11 @@ function processSections(sections){
 
     // console.log(JSON.stringify(score, null, 2));
 
-    let arrangedMeasures = arrangeMeasures(score);
+    let arrangedScore = arrangeMeasures(score);
+    delete arrangedScore.parts;
+    delete arrangedScore.verses;
+    console.log(arrangedScore);
+    return arrangedScore;
 }
 
 export {processSections};

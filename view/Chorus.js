@@ -58,11 +58,9 @@ class Chorus extends React.Component{
 
     MeasureElems(){
 
-        let lyricLines = this.props.lyricLines;
-
         return []
             .concat(this.props.measures.map((measure,index) =>{
-                let elem = [Elem(Measure, {ref:"measure-"+index, measure: measure, parts:this.props.parts, key:index, lyricLines:lyricLines})];
+                let elem = [Elem(Measure, {ref:"measure-"+index, measure: measure, key:index})];
 
                 if(measure.measureType == "normal"){
                     elem.push(Elem(Vertbar, {key:5300+index-1, parts:this.props.parts, lyricLines : lyricLines}))
@@ -77,8 +75,8 @@ class Chorus extends React.Component{
 
                 return elem;
             }))
-            .concat(this.BracketElems())
-            .concat(this.ConnectElems())
+            // .concat(this.BracketElems())
+            // .concat(this.ConnectElems())
     }
 
     render() {
@@ -89,36 +87,36 @@ class Chorus extends React.Component{
 
         let scoreBox = this.refs.score.getBoundingClientRect()
 
-        let conns = this.props.connections, connPoses = [];
-        Object.keys(conns).forEach(part =>{
-            conns[part].ranges.forEach(range => {
-                
-                let start    = range.start,
-                    end      = range.end,
-                    startBox = this.refs["measure-"+start.measure].refs["slot-"+start.beat].refs[part].refs[start.note].box,
-                    endBox   = this.refs["measure-"+end.measure].refs["slot-"+end.beat].refs[part].refs[end.note].box;
-
-                    console.log(startBox);
-
-                connPoses.push(this.GetConnectPoses(scoreBox, startBox, endBox));
-            });
-        });
-
-        let bracketsBoxes = this.props.measures.map((_, i) => {
-
-            let offset = (Math.floor(this.refs["measure-"+i].box.bottom) - Math.floor(this.refs["measure-"+i].box.top))/2 - 40;
-            return {
-                left:Math.floor(this.refs["measure-"+i].box.left - scoreBox.left),
-                top:Math.floor(this.refs["measure-"+i].box.top + offset),
-                bottom:Math.floor(this.refs["measure-"+i].box.bottom)
-            }
-        }).groupBy("left"),
-            bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
-
-        this.setState({
-            brackets : bracketsBoxesLeftmost,
-            connects : connPoses
-        })
+        // let conns = this.props.connections, connPoses = [];
+        // Object.keys(conns).forEach(part =>{
+        //     conns[part].ranges.forEach(range => {
+        //
+        //         let start    = range.start,
+        //             end      = range.end,
+        //             startBox = this.refs["measure-"+start.measure].refs["slot-"+start.beat].refs[part].refs[start.note].box,
+        //             endBox   = this.refs["measure-"+end.measure].refs["slot-"+end.beat].refs[part].refs[end.note].box;
+        //
+        //             console.log(startBox);
+        //
+        //         connPoses.push(this.GetConnectPoses(scoreBox, startBox, endBox));
+        //     });
+        // });
+        //
+        // let bracketsBoxes = this.props.measures.map((_, i) => {
+        //
+        //     let offset = (Math.floor(this.refs["measure-"+i].box.bottom) - Math.floor(this.refs["measure-"+i].box.top))/2 - 40;
+        //     return {
+        //         left:Math.floor(this.refs["measure-"+i].box.left - scoreBox.left),
+        //         top:Math.floor(this.refs["measure-"+i].box.top + offset),
+        //         bottom:Math.floor(this.refs["measure-"+i].box.bottom)
+        //     }
+        // }).groupBy("left"),
+        //     bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
+        //
+        // this.setState({
+        //     brackets : bracketsBoxesLeftmost,
+        //     connects : connPoses
+        // })
 
     }
 }
