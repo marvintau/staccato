@@ -64,13 +64,11 @@ class Container extends React.Component {
                 if(section != "chorus"){
                     // console.log(this.state.score);
                     sectionElems.push(SectionElem(section, index, this.state.score[section]));
-                } else{
-                    // console.log(this.state.score);
-                    sectionElems.push(Elem(Chorus, {chorus : this.state.score.chorus, key:index}));
                 }
                 index++;
             }
         }
+        sectionElems.push(Elem(Chorus, {chorus : this.state.score.chorus, key:index+1}));
 
         const editor = Elem('textarea', {
             id        : 'editor',

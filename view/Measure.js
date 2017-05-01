@@ -2,7 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Elem, SectionElem, Draw} from "./General.js";
 
-import {Slot} from "./Slot.js";
+import {Beat} from "./Beat.js";
+
+import {Vertbar, Repeatbar, Finalbar} from "./Bars.js";
 
 class Measure extends React.Component{
     constructor(props){
@@ -24,16 +26,31 @@ class Measure extends React.Component{
         return notePoses;
     }
 
-    SlotElems(){
+    MeasureBarElem(type, index, slot){
+        let elem;
+        if(type == "normal"){
+            elem = [Elem(Vertbar, {key:5300+index-1, slot:slot })]
+        } else if (type == "rep_start"){
+            elem = [Elem(Repeatbar, {key:5300+index-1, direction:"open", slot:slot })]
+        } else if (type == "rep_fin"){
+            elem = [Elem(Repeatbar, {key:5300+index-1, direction:"close", slot:slot })]
+        } else if (type == "fin"){
+            elem = [Elem(Vertbar, {key:5300+index-1, slot:slot }),
+                    Elem(Finalbar, {key:6300, slot:slot })]
+        }
 
-        console.log(this.props.measure.beats);
+        return elem;
+    }
 
-        return this.props.measure.beats.map((slot, index)=>Elem(Slot, {slot:slot, key : index, ref : "slot-" + index}));
+    BeatElems(){
+
+        return this.props.measure.beats
+            .map((slots, index)=>Elem(Beat, {slots:slots, key : index, ref : "beat-" + index}))
+            .concat(this.MeasureBarElem(this.props.measure.type, this.props.index, this.props.measure.beats[0]))
     }
 
     render() {
-        let slotElems = this.SlotElems();
-        return Elem('div', {style:{minWidth:slotElems.length/4*15+"%"}, ref:"measure", className:"measure"}, slotElems);
+        return Elem('div', {style:{}, ref:"measure", className:"measure"}, this.BeatElems());
     }
 
     componentDidMount(){

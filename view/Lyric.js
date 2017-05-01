@@ -11,18 +11,9 @@ class Lyric extends React.Component{
         return chars.map((c, index) => Elem('div', {className:"lyricChar", key:index}, c));
     }
 
-    Lyrics(){
-        let elems = [];
-        Object.keys(this.props).forEach((key, index) =>{
-            if(key != "children" && this.props[key]){
-                elems.push(Elem('span', {className:"lyricSlot", key:index}, this.LyricChars(this.props[key])));
-            }
-        })
-        return elems;
-    }
-
     render() {
-        return Elem('span', {ref:"lyric", className: "lyricBeat"}, this.Lyrics());
+        console.log(this.props.lyric)
+        return Elem('span', {className:"lyricSlot"}, this.LyricChars(this.props.lyric));
     }
 
 }

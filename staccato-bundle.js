@@ -70,7 +70,7 @@
 
 	var _StaccatoModel = __webpack_require__(443);
 
-	var _What_A_Friend = __webpack_require__(444);
+	var _What_A_Friend = __webpack_require__(445);
 
 	var _What_A_Friend2 = _interopRequireDefault(_What_A_Friend);
 
@@ -141,13 +141,11 @@
 	                    if (section != "chorus") {
 	                        // console.log(this.state.score);
 	                        sectionElems.push((0, _General.SectionElem)(section, index, this.state.score[section]));
-	                    } else {
-	                        // console.log(this.state.score);
-	                        sectionElems.push((0, _General.Elem)(_Chorus.Chorus, { chorus: this.state.score.chorus, key: index }));
 	                    }
 	                    index++;
 	                }
 	            }
+	            sectionElems.push((0, _General.Elem)(_Chorus.Chorus, { chorus: this.state.score.chorus, key: index + 1 }));
 
 	            var editor = (0, _General.Elem)('textarea', {
 	                id: 'editor',
@@ -40739,7 +40737,7 @@
 	        peg$c45 = peg$literalExpectation(".", false),
 	        peg$c46 = function(first, next) {
 
-	            next.dotted = true;
+	            first.dotted = true;
 
 	            return {
 	                notes : [first, next],
@@ -43353,10 +43351,7 @@
 	    function Vertbar(props) {
 	        _classCallCheck(this, Vertbar);
 
-	        var _this = _possibleConstructorReturn(this, (Vertbar.__proto__ || Object.getPrototypeOf(Vertbar)).call(this, props));
-
-	        console.log(_this.props.lyricLines);
-	        return _this;
+	        return _possibleConstructorReturn(this, (Vertbar.__proto__ || Object.getPrototypeOf(Vertbar)).call(this, props));
 	    }
 
 	    _createClass(Vertbar, [{
@@ -43366,14 +43361,14 @@
 
 	            var bars = [];
 
-	            var center = this.props.parts.length / 2 - 1;
+	            console.log(this.props.slot);
 
-	            Object.keys(this.props.parts).forEach(function (_, index) {
-	                bars.push((0, _General.Elem)('span', { key: index > center ? index + 500 : index, className: "vertbar" }, " "));
-	                if (index == center) {
-	                    if (_this2.props.lyric) {
-	                        bars.push((0, _General.Elem)(_Lyric.Lyric, Object.assign(_this2.props.lyric, { key: index + 250 })));
-	                    } else bars.push((0, _General.Elem)(_Lyric.Lyric, Object.assign([Array(_this2.props.lyricLines).fill(" ")], { key: index + 250 })));
+	            this.props.slot.forEach(function (cell, index) {
+	                console.log(index);
+	                if (!cell.pitch || !!cell.pitch && cell.pitch != "-" && cell.pitch != "0") {
+	                    bars.push((0, _General.Elem)('span', { key: index > _this2.props.slot.length / 2 ? index + 500 : index, className: "vertbar" }, " "));
+	                } else {
+	                    bars.push((0, _General.Elem)(_Lyric.Lyric, { lyric: Array(cell.verse.length).fill(" "), key: index + 250 }));
 	                }
 	            });
 
@@ -43400,14 +43395,11 @@
 
 	            var bars = [];
 
-	            var center = this.props.parts.length / 2 - 1;
-
-	            Object.keys(this.props.parts).forEach(function (_, index) {
-	                bars.push((0, _General.Elem)('span', { key: index > center ? index + 500 : index, className: "finalbar" }, " "));
-	                if (index == center) {
-	                    if (_this4.props.lyric) {
-	                        bars.push((0, _General.Elem)(_Lyric.Lyric, Object.assign(_this4.props.lyric, { key: index + 250 })));
-	                    } else bars.push((0, _General.Elem)(_Lyric.Lyric, Object.assign([Array(_this4.props.lyricLines).fill(" ")], { key: index + 250 })));
+	            this.props.slot.forEach(function (cell, index) {
+	                if (!cell.pitch || !!cell.pitch && cell.pitch != "-" && cell.pitch != "0") {
+	                    bars.push((0, _General.Elem)('span', { key: index > _this4.props.slot.length / 2 ? index + 500 : index, className: "finalbar" }, " "));
+	                } else {
+	                    bars.push((0, _General.Elem)(_Lyric.Lyric, { lyric: Array(cell.verse.length).fill(" "), key: index + 250 }));
 	                }
 	            });
 
@@ -43489,22 +43481,10 @@
 	            });
 	        }
 	    }, {
-	        key: 'Lyrics',
-	        value: function Lyrics() {
-	            var _this2 = this;
-
-	            var elems = [];
-	            Object.keys(this.props).forEach(function (key, index) {
-	                if (key != "children" && _this2.props[key]) {
-	                    elems.push((0, _General.Elem)('span', { className: "lyricSlot", key: index }, _this2.LyricChars(_this2.props[key])));
-	                }
-	            });
-	            return elems;
-	        }
-	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return (0, _General.Elem)('span', { ref: "lyric", className: "lyricBeat" }, this.Lyrics());
+	            console.log(this.props.lyric);
+	            return (0, _General.Elem)('span', { className: "lyricSlot" }, this.LyricChars(this.props.lyric));
 	        }
 	    }]);
 
@@ -43626,7 +43606,9 @@
 
 	var _General = __webpack_require__(433);
 
-	var _Slot = __webpack_require__(439);
+	var _Beat = __webpack_require__(440);
+
+	var _Bars = __webpack_require__(435);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -43664,20 +43646,33 @@
 	            return notePoses;
 	        }
 	    }, {
-	        key: 'SlotElems',
-	        value: function SlotElems() {
+	        key: 'MeasureBarElem',
+	        value: function MeasureBarElem(type, index, slot) {
+	            var elem = void 0;
+	            if (type == "normal") {
+	                elem = [(0, _General.Elem)(_Bars.Vertbar, { key: 5300 + index - 1, slot: slot })];
+	            } else if (type == "rep_start") {
+	                elem = [(0, _General.Elem)(_Bars.Repeatbar, { key: 5300 + index - 1, direction: "open", slot: slot })];
+	            } else if (type == "rep_fin") {
+	                elem = [(0, _General.Elem)(_Bars.Repeatbar, { key: 5300 + index - 1, direction: "close", slot: slot })];
+	            } else if (type == "fin") {
+	                elem = [(0, _General.Elem)(_Bars.Vertbar, { key: 5300 + index - 1, slot: slot }), (0, _General.Elem)(_Bars.Finalbar, { key: 6300, slot: slot })];
+	            }
 
-	            console.log(this.props.measure.beats);
+	            return elem;
+	        }
+	    }, {
+	        key: 'BeatElems',
+	        value: function BeatElems() {
 
-	            return this.props.measure.beats.map(function (slot, index) {
-	                return (0, _General.Elem)(_Slot.Slot, { slot: slot, key: index, ref: "slot-" + index });
-	            });
+	            return this.props.measure.beats.map(function (slots, index) {
+	                return (0, _General.Elem)(_Beat.Beat, { slots: slots, key: index, ref: "beat-" + index });
+	            }).concat(this.MeasureBarElem(this.props.measure.type, this.props.index, this.props.measure.beats[0]));
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var slotElems = this.SlotElems();
-	            return (0, _General.Elem)('div', { style: { minWidth: slotElems.length / 4 * 15 + "%" }, ref: "measure", className: "measure" }, slotElems);
+	            return (0, _General.Elem)('div', { style: {}, ref: "measure", className: "measure" }, this.BeatElems());
 	        }
 	    }, {
 	        key: 'componentDidMount',
@@ -43716,7 +43711,7 @@
 
 	var _Lyric = __webpack_require__(436);
 
-	var _Beat = __webpack_require__(440);
+	var _Note = __webpack_require__(441);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -43736,25 +43731,28 @@
 	    }
 
 	    _createClass(Slot, [{
+	        key: 'NoteElems',
+	        value: function NoteElems() {
+	            return this.props.notes.map(function (note, index) {
+	                return (0, _General.Elem)(_Note.Note, { ref: index, key: index, note: note });
+	            });
+	        }
+	    }, {
 	        key: 'Elems',
 	        value: function Elems() {
 	            var elems = [],
 	                index = 0;
 
-	            this.props.slot.forEach(function (cell, index) {});
+	            // console.log(this.props.slot);
 
-	            // this.props.parts.forEach((partName, index) => {
-	            //
-	            //     elems.push(Elem(Beat, Object.assign(this.props[partName], {key:index > Math.ceil(this.props.parts.length/2-1) ? index + 500 : index, ref:partName})));
-	            //
-	            //     if(index == Math.ceil((this.props.parts.length)/2 - 1)){
-	            //         if(this.props.lyric){
-	            //             elems.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
-	            //         }
-	            //         else
-	            //             elems.push(Elem(Lyric, Object.assign([Array(this.props.lyricLines).fill(" ")], {key:index+250})));
-	            //     }
+	            // this.props.slots.forEach((slot, index)=> {
+	            //     console.log(slot);
 	            // })
+
+	            this.props.slot.forEach(function (cell, index) {
+
+	                if (!!cell.pitch) elems.push((0, _General.Elem)(_Note.Note, { note: cell, key: index, ref: index }));else elems.push((0, _General.Elem)(_Lyric.Lyric, { lyric: cell.verse, key: index + 250 }));
+	            });
 
 	            return elems;
 	        }
@@ -43793,7 +43791,7 @@
 
 	var _General = __webpack_require__(433);
 
-	var _Note = __webpack_require__(441);
+	var _Slot = __webpack_require__(439);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -43874,38 +43872,33 @@
 	                    top: notePoses[elem.start].bottom + elem.level * 3 - beatBox.top };
 	            });
 	        }
+
+	        // UnderbarElems(offset){
+	        //     return this.state.underbarPoses.map((elem, index) => Elem(Underbar, {key:index+offset, left:elem.left, width:elem.width, top:elem.top}))
+	        // }
+
 	    }, {
-	        key: 'NoteElems',
-	        value: function NoteElems() {
-	            return this.props.notes.map(function (note, index) {
-	                return (0, _General.Elem)(_Note.Note, { ref: index, key: index, note: note });
-	            });
-	        }
-	    }, {
-	        key: 'UnderbarElems',
-	        value: function UnderbarElems(offset) {
-	            return this.state.underbarPoses.map(function (elem, index) {
-	                return (0, _General.Elem)(Underbar, { key: index + offset, left: elem.left, width: elem.width, top: elem.top });
+	        key: 'SlotElems',
+	        value: function SlotElems() {
+	            return this.props.slots.map(function (slot, index) {
+	                return (0, _General.Elem)(_Slot.Slot, { slot: slot, key: index, ref: "slot-" + index });
 	            });
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
 
-	            // console.log(this.props)
+	            // let underbarElems = this.UnderbarElems(this.NoteElems().length);
 
-	            var underbarElems = this.UnderbarElems(this.NoteElems().length);
-	            var noteElems = this.NoteElems().concat(underbarElems);
-
-	            return (0, _General.Elem)('span', { ref: "beat", className: "beat" }, noteElems);
+	            return (0, _General.Elem)('div', { ref: "beat", className: "beat" }, this.SlotElems());
 	        }
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
 
-	            var beatBox = this.refs.beat.getBoundingClientRect();
-
-	            this.setState({ underbarPoses: this.props.underbar ? this.GetUnderbarPoses(this.GetNotePoses(), beatBox) : [] });
+	            // let beatBox = this.refs.beat.getBoundingClientRect();
+	            //
+	            // this.setState({underbarPoses: this.props.underbar ? this.GetUnderbarPoses(this.GetNotePoses(), beatBox) : []})
 	        }
 	    }]);
 
@@ -44310,75 +44303,21 @@
 	    return measure;
 	}
 
-	function GroupBeats(measures) {
+	function GroupRangedBeat(range, beats) {
 
-	    var beats;
+	    var groupedBeat = [];
+
 	    var _iteratorNormalCompletion3 = true;
 	    var _didIteratorError3 = false;
 	    var _iteratorError3 = undefined;
 
 	    try {
-	        for (var _iterator3 = measures[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	            var measure = _step3.value;
+	        for (var _iterator3 = beats[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	            var beat = _step3.value;
 
-	            beats = [];
-	            var _iteratorNormalCompletion4 = true;
-	            var _didIteratorError4 = false;
-	            var _iteratorError4 = undefined;
-
-	            try {
-	                for (var _iterator4 = measure.beatRanges[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-	                    var range = _step4.value;
-
-	                    beats.push([]);
-
-	                    var _iteratorNormalCompletion5 = true;
-	                    var _didIteratorError5 = false;
-	                    var _iteratorError5 = undefined;
-
-	                    try {
-	                        for (var _iterator5 = measure.beats[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-	                            var beat = _step5.value;
-
-
-	                            delete beat.tie;
-
-	                            if (!!range.start && beat[0].index >= range.start && beat[0].index <= range.end || range == beat[0].index) {
-	                                beats[beats.length - 1].push(beat);
-	                            }
-	                        }
-	                    } catch (err) {
-	                        _didIteratorError5 = true;
-	                        _iteratorError5 = err;
-	                    } finally {
-	                        try {
-	                            if (!_iteratorNormalCompletion5 && _iterator5.return) {
-	                                _iterator5.return();
-	                            }
-	                        } finally {
-	                            if (_didIteratorError5) {
-	                                throw _iteratorError5;
-	                            }
-	                        }
-	                    }
-	                }
-	            } catch (err) {
-	                _didIteratorError4 = true;
-	                _iteratorError4 = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
-	                        _iterator4.return();
-	                    }
-	                } finally {
-	                    if (_didIteratorError4) {
-	                        throw _iteratorError4;
-	                    }
-	                }
+	            if (!!range.start && beat[0].index >= range.start && beat[0].index <= range.end || range == beat[0].index) {
+	                groupedBeat.push(beat);
 	            }
-
-	            measure.beats = beats;
-	            delete measure.beatRanges;
 	        }
 	    } catch (err) {
 	        _didIteratorError3 = true;
@@ -44391,6 +44330,64 @@
 	        } finally {
 	            if (_didIteratorError3) {
 	                throw _iteratorError3;
+	            }
+	        }
+	    }
+
+	    return groupedBeat;
+	}
+
+	function GroupBeats(measures) {
+
+	    var beats;
+	    var _iteratorNormalCompletion4 = true;
+	    var _didIteratorError4 = false;
+	    var _iteratorError4 = undefined;
+
+	    try {
+	        for (var _iterator4 = measures[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	            var measure = _step4.value;
+
+	            beats = [];
+	            var _iteratorNormalCompletion5 = true;
+	            var _didIteratorError5 = false;
+	            var _iteratorError5 = undefined;
+
+	            try {
+	                for (var _iterator5 = measure.beatRanges[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	                    var range = _step5.value;
+
+	                    beats.push(GroupRangedBeat(range, measure.beats));
+	                }
+	            } catch (err) {
+	                _didIteratorError5 = true;
+	                _iteratorError5 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
+	                        _iterator5.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError5) {
+	                        throw _iteratorError5;
+	                    }
+	                }
+	            }
+
+	            measure.beats = beats;
+	            delete measure.beatRanges;
+	        }
+	    } catch (err) {
+	        _didIteratorError4 = true;
+	        _iteratorError4 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion4 && _iterator4.return) {
+	                _iterator4.return();
+	            }
+	        } finally {
+	            if (_didIteratorError4) {
+	                throw _iteratorError4;
 	            }
 	        }
 	    }
@@ -44558,7 +44555,8 @@
 	exports.processSections = processSections;
 
 /***/ },
-/* 444 */
+/* 444 */,
+/* 445 */
 /***/ function(module, exports) {
 
 	module.exports = "title {\n恩 友 歌\n}\n\nsubtitle {\nWhat a Friend We Have in Jesus\n}\n\nlyrics {\nJ. Scriven 1855\n}\n\ncomposer {\nA. C. Converse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nphony {\n\thomophony\n}\n\nverse 1 {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 2 {\n有 否 煩 惱 壓 著 心 頭？ 有 否 遇 試 煉 引 誘？\n我 們 切 莫 灰 心 失 望， 仍 到 主 恩 座 前 求！\n何 處 得 此 忠 心 朋 友， 分 擔 一 切 苦 與 憂，\n我 們 弱 點 主 都 知 透， 放 心 到 主 座 前 求。\n}\n\nverse 3 {\n勞 苦 多 愁 軟 弱 不 堪， 掛 慮 重 擔 壓 肩 頭，\n主 是 你 我 避 難 處 所， 快 到 主 恩 座 前 求！\n你 若 遭 遇 友 叛 親 離， 來 到 主 恩 座 前 求，\n在 主 懷 中 必 蒙 護 佑， 與 主 同 在 永 無 憂。\n}\n\nchorus soprano {\n.5 5  (6 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (/1 5,1\\)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (/5 3\\) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (/1 1\\) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"

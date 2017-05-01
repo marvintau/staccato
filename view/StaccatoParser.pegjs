@@ -136,7 +136,7 @@ HalfedNote "duration"
 DottedNote "dotted"
 = "." first:FixedNote _ next:FixedNote {
 
-    next.dotted = true;
+    first.dotted = true;
 
     return {
         notes : [first, next],

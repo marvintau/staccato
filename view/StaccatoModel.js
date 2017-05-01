@@ -119,22 +119,26 @@ function TransposeMeasure(measure, parts) {
     return measure;
 }
 
+function GroupRangedBeat(range, beats){
+
+    let groupedBeat = [];
+
+    for (var beat of beats) {
+        if((!!range.start && beat[0].index >= range.start && beat[0].index <= range.end) || range == beat[0].index){
+            groupedBeat.push(beat);
+        }
+    }
+
+    return groupedBeat;
+}
+
 function GroupBeats(measures){
 
     var beats;
     for (var measure of measures) {
         beats = [];
         for (var range of measure.beatRanges) {
-            beats.push([]);
-
-            for (var beat of measure.beats) {
-
-                delete beat.tie;
-
-                if((!!range.start && beat[0].index >= range.start && beat[0].index <= range.end) || range == beat[0].index){
-                    beats[beats.length-1].push(beat);
-                }
-            }
+            beats.push(GroupRangedBeat(range, measure.beats))
         }
         measure.beats = beats;
         delete measure.beatRanges;
@@ -179,6 +183,7 @@ function arrangeHomophonyMeasures(score){
 
     InsertLyric(score.chorus, score.verses)
     GroupBeats(score.chorus.measures)
+
 
 
     // 删掉原先曲谱的chorus部分，它现在已经没用了

@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Elem, SectionElem, Draw} from "./General.js";
 
-import {Note} from "./Note.js";
+import {Slot} from "./Slot.js";
 
 class Underbar extends React.Component{
     constructor(props){
@@ -56,31 +56,26 @@ class Beat extends React.Component{
         )
     }
 
+    // UnderbarElems(offset){
+    //     return this.state.underbarPoses.map((elem, index) => Elem(Underbar, {key:index+offset, left:elem.left, width:elem.width, top:elem.top}))
+    // }
 
-    NoteElems(){
-        return this.props.notes.map((note, index)=>Elem(Note, {ref:index, key:index, note:note}));
+    SlotElems(){
+        return this.props.slots.map((slot, index)=>Elem(Slot, {slot:slot, key : index, ref : "slot-" + index}));
     }
-
-    UnderbarElems(offset){
-        return this.state.underbarPoses.map((elem, index) => Elem(Underbar, {key:index+offset, left:elem.left, width:elem.width, top:elem.top}))
-    }
-
 
     render() {
 
-        // console.log(this.props)
+        // let underbarElems = this.UnderbarElems(this.NoteElems().length);
 
-        let underbarElems = this.UnderbarElems(this.NoteElems().length);
-        let noteElems = this.NoteElems().concat(underbarElems);
-
-        return Elem('span', {ref:"beat", className: "beat"}, noteElems);
+        return Elem('div', {ref:"beat", className: "beat"}, this.SlotElems());
     }
 
     componentDidMount(){
 
-        let beatBox = this.refs.beat.getBoundingClientRect();
-
-        this.setState({underbarPoses: this.props.underbar ? this.GetUnderbarPoses(this.GetNotePoses(), beatBox) : []})
+        // let beatBox = this.refs.beat.getBoundingClientRect();
+        //
+        // this.setState({underbarPoses: this.props.underbar ? this.GetUnderbarPoses(this.GetNotePoses(), beatBox) : []})
     }
 
 }
