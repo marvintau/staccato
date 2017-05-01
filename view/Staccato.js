@@ -13,7 +13,7 @@ import {Chorus} from "./Chorus.js";
 
 import {processSections} from "./StaccatoModel.js";
 
-import scoreText from '../Lords_Prayer.txt';
+import scoreText from '../What_A_Friend.txt';
 
 class Container extends React.Component {
 
@@ -61,12 +61,12 @@ class Container extends React.Component {
 
         for (let section in this.state.score) {
             if (this.state.score.hasOwnProperty(section)) {
-                if(section != "measures"){
+                if(section != "chorus"){
                     // console.log(this.state.score);
                     sectionElems.push(SectionElem(section, index, this.state.score[section]));
-                } else {
+                } else{
                     // console.log(this.state.score);
-                    sectionElems.push(Elem(Chorus, {measures : this.state.score.measures, key:index}));
+                    sectionElems.push(Elem(Chorus, {chorus : this.state.score.chorus, key:index}));
                 }
                 index++;
             }
@@ -96,7 +96,7 @@ class Container extends React.Component {
         }, Elem('div', {ref:"preview", id:'page', className:'page'}, sectionElems))
 
         const row = Elem(Row, {className:"con container"},
-            [editorWrapper, preview]
+            [preview]
         );
 
         return row

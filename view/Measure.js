@@ -28,10 +28,7 @@ class Measure extends React.Component{
 
         console.log(this.props.measure.beats);
 
-        return this.props.measure.beats.map((slot, index)=>Elem(Slot, Object.assign(slot, {
-            key : index,
-            ref : "slot-" + index
-        })));
+        return this.props.measure.beats.map((slot, index)=>Elem(Slot, {slot:slot, key : index, ref : "slot-" + index}));
     }
 
     render() {

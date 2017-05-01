@@ -70,9 +70,9 @@
 
 	var _StaccatoModel = __webpack_require__(443);
 
-	var _Lords_Prayer = __webpack_require__(444);
+	var _What_A_Friend = __webpack_require__(444);
 
-	var _Lords_Prayer2 = _interopRequireDefault(_Lords_Prayer);
+	var _What_A_Friend2 = _interopRequireDefault(_What_A_Friend);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -93,14 +93,14 @@
 	        var scoreParsed = void 0;
 
 	        try {
-	            scoreParsed = (0, _StaccatoModel.processSections)((0, _StaccatoParser.parse)(_Lords_Prayer2.default));
+	            scoreParsed = (0, _StaccatoModel.processSections)((0, _StaccatoParser.parse)(_What_A_Friend2.default));
 	        } catch (err) {
 	            scoreParsed = "err";
 	            console.log(err);
 	        }
 
 	        _this.state = {
-	            text: _Lords_Prayer2.default,
+	            text: _What_A_Friend2.default,
 	            score: scoreParsed
 	        };
 	        return _this;
@@ -138,12 +138,12 @@
 
 	            for (var section in this.state.score) {
 	                if (this.state.score.hasOwnProperty(section)) {
-	                    if (section != "measures") {
+	                    if (section != "chorus") {
 	                        // console.log(this.state.score);
 	                        sectionElems.push((0, _General.SectionElem)(section, index, this.state.score[section]));
 	                    } else {
 	                        // console.log(this.state.score);
-	                        sectionElems.push((0, _General.Elem)(_Chorus.Chorus, { measures: this.state.score.measures, key: index }));
+	                        sectionElems.push((0, _General.Elem)(_Chorus.Chorus, { chorus: this.state.score.chorus, key: index }));
 	                    }
 	                    index++;
 	                }
@@ -174,7 +174,7 @@
 	                className: 'preview'
 	            }, (0, _General.Elem)('div', { ref: "preview", id: 'page', className: 'page' }, sectionElems));
 
-	            var row = (0, _General.Elem)(_reactBootstrap.Row, { className: "con container" }, [editorWrapper, preview]);
+	            var row = (0, _General.Elem)(_reactBootstrap.Row, { className: "con container" }, [preview]);
 
 	            return row;
 	        }
@@ -40601,10 +40601,22 @@
 	        peg$c9 = "}",
 	        peg$c10 = peg$literalExpectation("}", false),
 	        peg$c11 = function(part, measures) {
+
+	            let ties = ([].concat.apply([], measures.map(measure => measure.ties)))
+	            let underbars = ([].concat.apply([], measures.map(measure => measure.underbars).filter(underbars => underbars.length>0)));
+
+	            measures.forEach(measure =>{
+	                delete measure.ties;
+	                delete measure.underbars;
+	            })
+
 	            return {
 	                name : "chorus",
 	                part : part.join(""),
-	                content : measures
+	                content : { measures: measures,
+	                            ties : ties,
+	                            underbars :underbars
+	                        }
 	            };
 	        },
 	        peg$c12 = "verse",
@@ -40615,14 +40627,14 @@
 	        peg$c17 = peg$classExpectation([" ", "\t", "\n", "\r", "}"], true, false),
 	        peg$c18 = function(verseNumber, lyric) {
 	            return {
-	                name : "verse",
-	                part : "unison",
+	                name : "verses",
+	                number : parseInt(verseNumber),
 	                verses : lyric.map(l => l[0].join(""))
 	            };
 	        },
 	        peg$c19 = function(verseNumber, part, lyric) {
 	            return {
-	                name : "verse",
+	                name : "verses",
 	                part : part.join(""),
 	                verses : lyric.map(l => l[0].join(""))
 	            };
@@ -40638,7 +40650,6 @@
 	        peg$c23 = "phony",
 	        peg$c24 = peg$literalExpectation("phony", false),
 	        peg$c25 = function(content) {
-	            console.log(content);
 	            return {
 	                name : "phony",
 	                phony : content.join("")
@@ -40648,6 +40659,7 @@
 	        peg$c27 = peg$classExpectation(["}"], true, false),
 	        peg$c28 = function(section, content) {
 	            return {
+	                literal : true,
 	                name : section.join(""),
 	                content : content.join("")
 	            }
@@ -40655,8 +40667,25 @@
 	        peg$c29 = peg$otherExpectation("measure"),
 	        peg$c30 = function(notes, bar) {
 
+	            let beatRanges = []
+	            notes.forEach(note => {
+	                if(note.dotted){
+	                    beatRanges.push(note.notes[0].index);
+	                    beatRanges.push(note.notes[1].index);
+	                } else {
+	                    beatRanges.push(note.underbar ? note.underbar : note.index)
+	                }
+	            });
+
+	            let underbars = notes.map(note => note.underbar).filter(underbar => !!underbar);
+
+	            let ties = notes.map(note => note.tie).filter(tie => !!tie)
+
 	            return {
 	                beats : notes,
+	                beatRanges : beatRanges,
+	                underbars : underbars,
+	                ties : ties,
 	                type : bar.type
 	            }
 	        },
@@ -40710,13 +40739,13 @@
 	        peg$c45 = peg$literalExpectation(".", false),
 	        peg$c46 = function(first, next) {
 
-	            first.dotted = true;
-
-	            next.underbar = {start:next.index, end:next.index};
+	            next.dotted = true;
 
 	            return {
 	                notes : [first, next],
-	                factor : 1,
+	                dotted: true,
+	                underbar : {start:next.index, end:next.index},
+	                factor : 1
 	            }
 	        },
 	        peg$c47 = peg$otherExpectation("fixed"),
@@ -40726,7 +40755,7 @@
 
 	            note.duration = 1;
 	            note.index = noteCounter++;
-	            
+
 	            tieOpen = note.index;
 
 	            return note;
@@ -40738,7 +40767,9 @@
 	            note.index = noteCounter++;
 
 	            if(tieOpen){
+	                // console.log({start: tieOpen, end:note.index})
 	                note.tie = {start: tieOpen, end:note.index}
+	                tieOpen = null;
 	            }
 
 	            return note;
@@ -43215,7 +43246,7 @@
 	        value: function MeasureElems() {
 	            var _this3 = this;
 
-	            return [].concat(this.props.measures.map(function (measure, index) {
+	            return [].concat(this.props.chorus.measures.map(function (measure, index) {
 	                var elem = [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measure, key: index })];
 
 	                if (measure.measureType == "normal") {
@@ -43639,10 +43670,7 @@
 	            console.log(this.props.measure.beats);
 
 	            return this.props.measure.beats.map(function (slot, index) {
-	                return (0, _General.Elem)(_Slot.Slot, Object.assign(slot, {
-	                    key: index,
-	                    ref: "slot-" + index
-	                }));
+	                return (0, _General.Elem)(_Slot.Slot, { slot: slot, key: index, ref: "slot-" + index });
 	            });
 	        }
 	    }, {
@@ -43710,21 +43738,23 @@
 	    _createClass(Slot, [{
 	        key: 'Elems',
 	        value: function Elems() {
-	            var _this2 = this;
-
 	            var elems = [],
 	                index = 0;
 
-	            this.props.parts.forEach(function (partName, index) {
+	            this.props.slot.forEach(function (cell, index) {});
 
-	                elems.push((0, _General.Elem)(_Beat.Beat, Object.assign(_this2.props[partName], { key: index > Math.ceil(_this2.props.parts.length / 2 - 1) ? index + 500 : index, ref: partName })));
-
-	                if (index == Math.ceil(_this2.props.parts.length / 2 - 1)) {
-	                    if (_this2.props.lyric) {
-	                        elems.push((0, _General.Elem)(_Lyric.Lyric, Object.assign(_this2.props.lyric, { key: index + 250 })));
-	                    } else elems.push((0, _General.Elem)(_Lyric.Lyric, Object.assign([Array(_this2.props.lyricLines).fill(" ")], { key: index + 250 })));
-	                }
-	            });
+	            // this.props.parts.forEach((partName, index) => {
+	            //
+	            //     elems.push(Elem(Beat, Object.assign(this.props[partName], {key:index > Math.ceil(this.props.parts.length/2-1) ? index + 500 : index, ref:partName})));
+	            //
+	            //     if(index == Math.ceil((this.props.parts.length)/2 - 1)){
+	            //         if(this.props.lyric){
+	            //             elems.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
+	            //         }
+	            //         else
+	            //             elems.push(Elem(Lyric, Object.assign([Array(this.props.lyricLines).fill(" ")], {key:index+250})));
+	            //     }
+	            // })
 
 	            return elems;
 	        }
@@ -44117,38 +44147,48 @@
 	    value: true
 	});
 
-	function InsertLyric(measures, lyrics) {
 
-	    var lyricIndex = 0;
+	function InsertLyric(chorus, verses) {
+
+	    var verseIndex = 0;
 	    var isConnecting = false;
 
-	    measures.forEach(function (measure, index) {
-	        measure.beats.forEach(function (beat, beatIndex) {
+	    if (!!verses.length) {
+	        verses = verses[0].map(function (x, i) {
+	            return verses.map(function (x) {
+	                return !!x[i] ? x[i] : " ";
+	            });
+	        });
+	        console.log(verses);
+	    }
 
-	            if (beat[0].pitch != "–" && beat[0].pitch != "0" && !isConnecting) {
-	                note.splice(Math.floor(beat.length / 2), 0, { lyric: score.verses[ithWord] });
+	    console.log(chorus.ties);
+
+	    chorus.measures.forEach(function (measure) {
+	        measure.beats.forEach(function (beat) {
+
+	            var validSlot = beat[0].pitch != "–" && beat[0].pitch != "0";
+	            var withinTie = chorus.ties.some(function (tie) {
+	                return beat[0].index > tie.start && beat[0].index <= tie.end;
+	            });
+
+	            if (validSlot && !withinTie) {
+	                beat = beat.splice(Math.floor(beat.length / 2), 0, { verse: verses[verseIndex] });
+	                verseIndex++;
+	            } else {
+	                beat = beat.splice(Math.floor(beat.length / 2), 0, { verse: verses[0].map(function () {
+	                        return " ";
+	                    }) });
 	            }
-
-	            if ((res.length == 0 || res.length > 0 && res[res.length - 1].end) && note.upperConn == "open") {
-	                res.push({ start: { measure: index, beat: beatIndex, note: noteIndex } });
-	                isConnecting = true;
-	            }
-
-	            if (res.length > 0 && !res[res.length - 1].end && note.upperConn == "close") {
-	                res[res.length - 1].end = { measure: index, beat: beatIndex, note: noteIndex };
-
-	                isConnecting = false;
-	            }
-
-	            delete note.upperConn;
 	        });
 	    });
-	    return { ranges: res, slots: slots };
+
+	    console.log(chorus.measures);
 	}
 
 	function OrganizeParts(sections) {
 
-	    var score = { chorus: {}, verses: {}, parts: [] };
+	    var score = { chorus: {}, parts: [] };
 
 	    score.isPolyphony = null;
 
@@ -44157,12 +44197,17 @@
 
 	            score.parts = elem.parts;
 	        } else if (elem.name == "phony") {
-	            console.log(elem.phony);
 	            score.isPolyphony = elem.phony == "polyphony";
-	        } else if (elem.name == "verse") {
 
+	            if (score.isPolyphony) {
+	                score.verses = {};
+	            } else {
+	                score.verses = [];
+	            }
+	        } else if (elem.name == "verses") {
 	            if (!score.isPolyphony) {
-	                score.verses = elem.verses;
+
+	                score.verses.push(elem.verses);
 	            } else if (score.isPolyphony) {
 	                score.verses[elem.part] = elem.content;
 	            } else {
@@ -44171,9 +44216,8 @@
 	        } else if (elem.name == "chorus") {
 
 	            // if(elem.part)
-
 	            score.chorus[elem.part] = elem.content;
-	        } else {
+	        } else if (elem.literal) {
 
 	            score[elem.name] = elem.content;
 	        }
@@ -44182,9 +44226,26 @@
 	    return score;
 	}
 
+	function arrangePolyphonyMeasures(score) {
+	    score.parts.forEach(function (part) {
+	        // score.chorus[part]
+	    });
+	}
+
+	function Flatten(notes) {
+	    return notes.reduce(function (notes, note) {
+	        return notes.concat(note.notes ? Flatten(note.notes) : note);
+	    }, []);
+	}
+
+	function FlattenMeasure(measure) {
+	    return !!measure ? Object.assign(measure, { beats: Flatten(measure.beats) }) : {};
+	}
+
 	function TransposeMeasure(measure, parts) {
 
 	    var longestBeats = 0;
+	    console.log(measure);
 	    var _iteratorNormalCompletion = true;
 	    var _didIteratorError = false;
 	    var _iteratorError = undefined;
@@ -44193,7 +44254,7 @@
 	        for (var _iterator = parts[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	            var _part = _step.value;
 
-	            longestBeats < measure.chorus[_part].beats.length && (longestBeats = measure.chorus[_part].beats.length);
+	            longestBeats < measure[_part].beats.length && (longestBeats = measure[_part].beats.length);
 	        }
 	    } catch (err) {
 	        _didIteratorError = true;
@@ -44216,12 +44277,10 @@
 	        measure.beats[i] = [];
 
 	        parts.forEach(function (part, partIndex) {
-	            measure.beats[i][partIndex] = measure.chorus[part].beats[i] ? measure.chorus[part].beats[i] : {};
+	            measure.beats[i][partIndex] = measure[part].beats[i] ? measure[part].beats[i] : {};
 	        });
 	    }
 
-	    measure.ties = [];
-	    measure.underbars = [];
 	    var _iteratorNormalCompletion2 = true;
 	    var _didIteratorError2 = false;
 	    var _iteratorError2 = undefined;
@@ -44230,9 +44289,8 @@
 	        for (var _iterator2 = parts[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
 	            var part = _step2.value;
 
-	            measure.type = measure.chorus[part].type;
-	            measure.underbars = measure.underbars.concat(measure.chorus[part].underbars);
-	            measure.ties = measure.ties.concat(measure.chorus[part].ties);
+	            measure.type = measure[part].type;
+	            delete measure[part];
 	        }
 	    } catch (err) {
 	        _didIteratorError2 = true;
@@ -44249,93 +44307,92 @@
 	        }
 	    }
 
-	    delete measure.chorus;
 	    return measure;
 	}
 
-	function arrangePolyphonyMeasures(score) {
-	    score.parts.forEach(function (part) {
-	        // score.chorus[part]
-	    });
-	}
+	function GroupBeats(measures) {
 
-	function Flatten(measure) {
-	    return measure.reduce(function (notes, note) {
+	    var beats;
+	    var _iteratorNormalCompletion3 = true;
+	    var _didIteratorError3 = false;
+	    var _iteratorError3 = undefined;
 
-	        return notes.concat(note.notes ? Flatten(note.notes) : note);
-	    }, []);
-	}
+	    try {
+	        for (var _iterator3 = measures[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	            var measure = _step3.value;
 
-	function GetTies(measure) {
-	    return measure.reduce(function (ties, note) {
-	        if (note.tie) ties = ties.concat([note.tie]);
+	            beats = [];
+	            var _iteratorNormalCompletion4 = true;
+	            var _didIteratorError4 = false;
+	            var _iteratorError4 = undefined;
 
-	        delete note.tie;
-	        return ties;
-	    }, []);
-	}
+	            try {
+	                for (var _iterator4 = measure.beatRanges[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	                    var range = _step4.value;
 
-	function GetUnderbars(measure) {
-	    return measure.reduce(function (underbars, note) {
+	                    beats.push([]);
 
-	        var currentUnderbar = note.underbar ? [note.underbar] : [];
-	        var nestedUnderbars = note.notes ? GetUnderbars(note.notes) : [];
+	                    var _iteratorNormalCompletion5 = true;
+	                    var _didIteratorError5 = false;
+	                    var _iteratorError5 = undefined;
 
-	        delete note.underbar;
+	                    try {
+	                        for (var _iterator5 = measure.beats[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	                            var beat = _step5.value;
 
-	        return underbars.concat(currentUnderbar).concat(nestedUnderbars);
-	    }, []);
-	}
 
-	function AppendOctave(measure) {
+	                            delete beat.tie;
 
-	    measure.beats = measure.beats.map(function (note) {
-
-	        var underbarLevels = void 0;
-	        var _iteratorNormalCompletion3 = true;
-	        var _didIteratorError3 = false;
-	        var _iteratorError3 = undefined;
-
-	        try {
-	            for (var _iterator3 = measure.underbars[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	                var bar = _step3.value;
-
-	                if (note.index <= bar.end && note.index >= bar.start) {
-	                    underbarLevels++;
+	                            if (!!range.start && beat[0].index >= range.start && beat[0].index <= range.end || range == beat[0].index) {
+	                                beats[beats.length - 1].push(beat);
+	                            }
+	                        }
+	                    } catch (err) {
+	                        _didIteratorError5 = true;
+	                        _iteratorError5 = err;
+	                    } finally {
+	                        try {
+	                            if (!_iteratorNormalCompletion5 && _iterator5.return) {
+	                                _iterator5.return();
+	                            }
+	                        } finally {
+	                            if (_didIteratorError5) {
+	                                throw _iteratorError5;
+	                            }
+	                        }
+	                    }
+	                }
+	            } catch (err) {
+	                _didIteratorError4 = true;
+	                _iteratorError4 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
+	                        _iterator4.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError4) {
+	                        throw _iteratorError4;
+	                    }
 	                }
 	            }
-	        } catch (err) {
-	            _didIteratorError3 = true;
-	            _iteratorError3 = err;
+
+	            measure.beats = beats;
+	            delete measure.beatRanges;
+	        }
+	    } catch (err) {
+	        _didIteratorError3 = true;
+	        _iteratorError3 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	                _iterator3.return();
+	            }
 	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion3 && _iterator3.return) {
-	                    _iterator3.return();
-	                }
-	            } finally {
-	                if (_didIteratorError3) {
-	                    throw _iteratorError3;
-	                }
+	            if (_didIteratorError3) {
+	                throw _iteratorError3;
 	            }
 	        }
-
-	        var position = note.octave && note.octave > 0 ? 0 : underbarLevels;
-	        var octave = note.octave ? { start: position, nums: note.octave } : undefined;
-	        return Object.assign(note, { octave: octave });
-	    });
-
-	    return measure;
-	}
-
-	function Process(measure) {
-	    if (measure) {
-	        measure.underbars = GetUnderbars(measure.beats);
-	        measure.beats = Flatten(measure.beats);
-	        measure.ties = GetTies(measure.beats);
-	        measure = AppendOctave(measure);
-	        return measure;
-	    } else {
-	        return {};
 	    }
 	}
 
@@ -44343,69 +44400,6 @@
 
 	    // 找到拥有measure最多的那个声部
 	    var longestMeasures = 0;
-	    score.measures = [];
-	    var _iteratorNormalCompletion4 = true;
-	    var _didIteratorError4 = false;
-	    var _iteratorError4 = undefined;
-
-	    try {
-	        for (var _iterator4 = score.parts[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-	            var part = _step4.value;
-
-	            if (score.chorus[part].length > longestMeasures) {
-	                longestMeasures = score.chorus[part].length;
-	            }
-	        }
-
-	        // 将每个声部放进同一个measure里面去
-	    } catch (err) {
-	        _didIteratorError4 = true;
-	        _iteratorError4 = err;
-	    } finally {
-	        try {
-	            if (!_iteratorNormalCompletion4 && _iterator4.return) {
-	                _iterator4.return();
-	            }
-	        } finally {
-	            if (_didIteratorError4) {
-	                throw _iteratorError4;
-	            }
-	        }
-	    }
-
-	    for (var i = 0; i < longestMeasures; i++) {
-
-	        score.measures[i] = { chorus: {} };
-
-	        var _iteratorNormalCompletion5 = true;
-	        var _didIteratorError5 = false;
-	        var _iteratorError5 = undefined;
-
-	        try {
-	            for (var _iterator5 = score.parts[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-	                var part = _step5.value;
-
-	                score.measures[i].chorus[part] = Process(score.chorus[part][i]);
-	            }
-	        } catch (err) {
-	            _didIteratorError5 = true;
-	            _iteratorError5 = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion5 && _iterator5.return) {
-	                    _iterator5.return();
-	                }
-	            } finally {
-	                if (_didIteratorError5) {
-	                    throw _iteratorError5;
-	                }
-	            }
-	        }
-
-	        ;
-	        score.measures[i] = TransposeMeasure(score.measures[i], score.parts);
-	    }
-	    // 删掉原先曲谱的chorus部分，它现在已经没用了
 	    var _iteratorNormalCompletion6 = true;
 	    var _didIteratorError6 = false;
 	    var _iteratorError6 = undefined;
@@ -44414,7 +44408,9 @@
 	        for (var _iterator6 = score.parts[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
 	            var part = _step6.value;
 
-	            delete score.chorus[part];
+	            if (score.chorus[part].measures.length > longestMeasures) {
+	                longestMeasures = score.chorus[part].measures.length;
+	            }
 	        }
 	    } catch (err) {
 	        _didIteratorError6 = true;
@@ -44431,12 +44427,106 @@
 	        }
 	    }
 
-	    var ithWord = 0;
+	    score.chorus.underbars = [];
+	    score.chorus.ties = [];
+	    var _iteratorNormalCompletion7 = true;
+	    var _didIteratorError7 = false;
+	    var _iteratorError7 = undefined;
 
-	    console.log(score.verses);
+	    try {
+	        for (var _iterator7 = score.parts[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+	            var part = _step7.value;
 
-	    delete score.chorus;
-	    // console.log(JSON.stringify(score.measures, null, 2));
+	            score.chorus.underbars = score.chorus.underbars.concat(score.chorus[part].underbars);
+	            score.chorus.ties = score.chorus.ties.concat(score.chorus[part].ties);
+	            delete score.chorus[part].underbars;
+	            delete score.chorus[part].ties;
+	        }
+
+	        // // 将每个声部放进同一个measure里面去
+	    } catch (err) {
+	        _didIteratorError7 = true;
+	        _iteratorError7 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion7 && _iterator7.return) {
+	                _iterator7.return();
+	            }
+	        } finally {
+	            if (_didIteratorError7) {
+	                throw _iteratorError7;
+	            }
+	        }
+	    }
+
+	    score.chorus.measures = [];
+	    for (var i = 0; i < longestMeasures; i++) {
+
+	        score.chorus.measures.push({});
+
+	        var _iteratorNormalCompletion8 = true;
+	        var _didIteratorError8 = false;
+	        var _iteratorError8 = undefined;
+
+	        try {
+	            for (var _iterator8 = score.parts[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+	                var part = _step8.value;
+
+	                if (!!score.chorus[part].measures[i]) {
+	                    score.chorus.measures[i][part] = FlattenMeasure(score.chorus[part].measures[i]);
+	                }
+	            }
+	        } catch (err) {
+	            _didIteratorError8 = true;
+	            _iteratorError8 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion8 && _iterator8.return) {
+	                    _iterator8.return();
+	                }
+	            } finally {
+	                if (_didIteratorError8) {
+	                    throw _iteratorError8;
+	                }
+	            }
+	        }
+
+	        ;
+
+	        score.chorus.measures[i].beatRanges = score.chorus[score.parts[0]].measures[i].beatRanges;
+	        console.log(score.chorus.measures[i].beatRanges);
+	        score.chorus.measures[i] = TransposeMeasure(score.chorus.measures[i], score.parts);
+	    }
+
+	    InsertLyric(score.chorus, score.verses);
+	    GroupBeats(score.chorus.measures);
+
+	    // 删掉原先曲谱的chorus部分，它现在已经没用了
+	    var _iteratorNormalCompletion9 = true;
+	    var _didIteratorError9 = false;
+	    var _iteratorError9 = undefined;
+
+	    try {
+	        for (var _iterator9 = score.parts[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+	            var part = _step9.value;
+
+	            delete score.chorus[part];
+	        }
+	    } catch (err) {
+	        _didIteratorError9 = true;
+	        _iteratorError9 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion9 && _iterator9.return) {
+	                _iterator9.return();
+	            }
+	        } finally {
+	            if (_didIteratorError9) {
+	                throw _iteratorError9;
+	            }
+	        }
+	    }
+
 	    return score;
 	}
 
@@ -44456,7 +44546,6 @@
 	    // 再处理每一小节的内容
 
 	    var score = OrganizeParts(sections);
-
 	    // console.log(JSON.stringify(score, null, 2));
 
 	    var arrangedScore = arrangeMeasures(score);
@@ -44472,7 +44561,7 @@
 /* 444 */
 /***/ function(module, exports) {
 
-	module.exports = "title {\r\n主 祷 文\r\n}\r\n\r\nsubtitle {\r\nLord's Prayer\r\n}\r\n\r\nlyrics {\r\n\r\n}\r\n\r\ncomposer {\r\n杨 劼\r\n邵家菁\r\n}\r\n\r\nbeats {\r\n1=C   4/4\r\n}\r\n\r\nparts {\r\n    soprano alto\r\n}\r\n\r\nphony {\r\n\thomophony\r\n}\r\n\r\nverse 1 {\r\n我 们 在 天 上 的 父，\r\n愿 人 都 尊 祢 名 为 圣。\r\n愿 祢 国 度 降 临，\r\n愿 祢 国 度 降 临，\r\n\r\n愿 祢 旨 意 行 在 地 上，\r\n如 同 行 在 天 上。\r\n我 们 日 用 的 饮 食 今 日 赐 给 我 们。\r\n免 了 我 们 的 债， 如 同 我 们 免 了 人 的 债。\r\n不 叫 我 们 遇 见 试 探； 救 我 们 脱 离 凶 恶。\r\n因 为 国 度， 权 柄， 荣 耀， 全 是 祢 的，\r\n直 到 永 远， 直 到 永 远， 直 到 永 远， 阿 们， 阿 们\r\n}\r\n\r\n\r\nchorus soprano {\r\n0 0 0 (3 4)   | 5 5 5 6 | /5 4\\ - (2 3) | 4 4 4 5    | (/4 3\\) 3 - \r\n(1 2)   | 3 3 - 6 | /5 4\\ - (2 1) | /7,1 4\\ 3 #2 | 3 - -       \r\n(3 4)   | 5 5 5 6 | (/5 4\\) 4 - (2 3) | 4 - - 5    | 4 3 - \r\n(1 2)   | 3 3 - 6 | 5 4 - (2 1) | /7,1 4\\ 3 2 | 1 - -       \r\n(6 7)   | 1'1  1'1 - (/1'1 7\\) | /7 6\\ - (6 1'1) | 7 7 (7 6) (5 2) | /4 3\\ - \r\n(6 7)   | 1'1  1'1 - (1'1 7) | (./7 6\\) .6 6 (6 7) | 1'1 6 /7 1'1\\ | /2'1 - -  2'1 | 2'1\\ - 0 \r\n(/3 4\\)   | /5 5\\ 5 6 | 5 4 - (/2 3\\) | 4 - 4   5  |(/4 3\\) 3 - \r\n(1 2)   | 3 3 - (6 7) | 1'1 1'1 - (6 7) | 1'1 1'1 /6 7\\ | 1'1 - 1'1 -| 1'1 - - ||\r\n}\r\n\r\nchorus alto {\r\n0 0 0 (1 2)       | 3 3 3 4 | /3 2\\ - (7,1 1) | 2 2 2 3    | (/2 1\\) 1 - \r\n(6,1 7,1)   | 1 1 - 3 | /3 2\\ - (7 6) | /5,1 2\\ 1 7,1 | 1 - -       \r\n(1 2)       | 3 3 3 4 | /3 2\\ - (7,1 1) | 2 - - 3    | 2 1 - \r\n(6,1 7,1)   | 1 1 - 3 | 3 2 - (7 6) | /5,1 2\\ 1 7,1 | 1 - -       \r\n(4 5)       | 6  6 - (/6 5\\) | /5 4\\ - (4 6) | 5 5 (5 4) (3 2) | /4 3\\ - \r\n(4 5)       | 6  6 - (6 5) | (./5 4\\) .4 4 (4 5) | 6 4 /5 6\\ | /5 - -  5 | 5\\ - 0 \r\n(/1 2\\)       | /3 3\\ 3 4 | 3 2 - (/7,1 1\\) | 2 - 2   3    | (/2 1\\) 1 - \r\n(6,1 7,1)   | 1 1 - (3 3) | 6 6 - (6 7) | 1'1 1'1 /6 7\\ | 1'1 - 4 -| 3 - - ||\r\n}\r\n"
+	module.exports = "title {\n恩 友 歌\n}\n\nsubtitle {\nWhat a Friend We Have in Jesus\n}\n\nlyrics {\nJ. Scriven 1855\n}\n\ncomposer {\nA. C. Converse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nphony {\n\thomophony\n}\n\nverse 1 {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 2 {\n有 否 煩 惱 壓 著 心 頭？ 有 否 遇 試 煉 引 誘？\n我 們 切 莫 灰 心 失 望， 仍 到 主 恩 座 前 求！\n何 處 得 此 忠 心 朋 友， 分 擔 一 切 苦 與 憂，\n我 們 弱 點 主 都 知 透， 放 心 到 主 座 前 求。\n}\n\nverse 3 {\n勞 苦 多 愁 軟 弱 不 堪， 掛 慮 重 擔 壓 肩 頭，\n主 是 你 我 避 難 處 所， 快 到 主 恩 座 前 求！\n你 若 遭 遇 友 叛 親 離， 來 到 主 恩 座 前 求，\n在 主 懷 中 必 蒙 護 佑， 與 主 同 在 永 無 憂。\n}\n\nchorus soprano {\n.5 5  (6 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (/1 5,1\\)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (/5 3\\) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (/1 1\\) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"
 
 /***/ }
 /******/ ]);

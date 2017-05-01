@@ -11,22 +11,34 @@ Sections "all sections"
 
 Section "section that contains different info"
 =  "chorus" _ part:[a-zA-Z]+ _ "{" measures:Measure* "}" _ {
+
+    let ties = ([].concat.apply([], measures.map(measure => measure.ties)))
+    let underbars = ([].concat.apply([], measures.map(measure => measure.underbars).filter(underbars => underbars.length>0)));
+
+    measures.forEach(measure =>{
+        delete measure.ties;
+        delete measure.underbars;
+    })
+
     return {
         name : "chorus",
         part : part.join(""),
-        content : measures
+        content : { measures: measures,
+                    ties : ties,
+                    underbars :underbars
+                }
     };
 }
 / "verse" _ verseNumber:[0-9]+ _ '{' _ lyric:([^ \t\n\r\}]+ _)* '}' _ {
     return {
-        name : "verse",
-        part : "unison",
+        name : "verses",
+        number : parseInt(verseNumber),
         verses : lyric.map(l => l[0].join(""))
     };
 }
 / "verse" _ verseNumber:[0-9]+ _ part:[a-zA-Z]+ _ '{' _ lyric:([^ \t\n\r\}]+ _)* '}' _ {
     return {
-        name : "verse",
+        name : "verses",
         part : part.join(""),
         verses : lyric.map(l => l[0].join(""))
     };
@@ -38,7 +50,6 @@ Section "section that contains different info"
     };
 }
 / "phony" _ '{' _ content:[a-zA-Z]+ _ '}' _ {
-    console.log(content);
     return {
         name : "phony",
         phony : content.join("")
@@ -46,6 +57,7 @@ Section "section that contains different info"
 }
 / section:[a-zA-Z]+ _ '{' _ content:[^\}]* '}' _ {
     return {
+        literal : true,
         name : section.join(""),
         content : content.join("")
     }
@@ -54,8 +66,25 @@ Section "section that contains different info"
 Measure "measure"
 = notes:Notes _ bar:MeasureBar _ {
 
+    let beatRanges = []
+    notes.forEach(note => {
+        if(note.dotted){
+            beatRanges.push(note.notes[0].index);
+            beatRanges.push(note.notes[1].index);
+        } else {
+            beatRanges.push(note.underbar ? note.underbar : note.index)
+        }
+    });
+
+    let underbars = notes.map(note => note.underbar).filter(underbar => !!underbar);
+
+    let ties = notes.map(note => note.tie).filter(tie => !!tie)
+
     return {
         beats : notes,
+        beatRanges : beatRanges,
+        underbars : underbars,
+        ties : ties,
         type : bar.type
     }
 }
@@ -107,13 +136,13 @@ HalfedNote "duration"
 DottedNote "dotted"
 = "." first:FixedNote _ next:FixedNote {
 
-    first.dotted = true;
-
-    next.underbar = {start:next.index, end:next.index};
+    next.dotted = true;
 
     return {
         notes : [first, next],
-        factor : 1,
+        dotted: true,
+        underbar : {start:next.index, end:next.index},
+        factor : 1
     }
 }
 
@@ -122,7 +151,7 @@ FixedNote "fixed"
 
     note.duration = 1;
     note.index = noteCounter++;
-    
+
     tieOpen = note.index;
 
     return note;
@@ -133,7 +162,9 @@ FixedNote "fixed"
     note.index = noteCounter++;
 
     if(tieOpen){
+        // console.log({start: tieOpen, end:note.index})
         note.tie = {start: tieOpen, end:note.index}
+        tieOpen = null;
     }
 
     return note;

@@ -14,18 +14,22 @@ class Slot extends React.Component{
     Elems(){
         let elems = [], index = 0;
 
-        this.props.parts.forEach((partName, index) => {
+        this.props.slot.forEach((cell, index)=> {
 
-            elems.push(Elem(Beat, Object.assign(this.props[partName], {key:index > Math.ceil(this.props.parts.length/2-1) ? index + 500 : index, ref:partName})));
-            
-            if(index == Math.ceil((this.props.parts.length)/2 - 1)){
-                if(this.props.lyric){
-                    elems.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
-                }
-                else
-                    elems.push(Elem(Lyric, Object.assign([Array(this.props.lyricLines).fill(" ")], {key:index+250})));
-            }
         })
+
+        // this.props.parts.forEach((partName, index) => {
+        //
+        //     elems.push(Elem(Beat, Object.assign(this.props[partName], {key:index > Math.ceil(this.props.parts.length/2-1) ? index + 500 : index, ref:partName})));
+        //
+        //     if(index == Math.ceil((this.props.parts.length)/2 - 1)){
+        //         if(this.props.lyric){
+        //             elems.push(Elem(Lyric, Object.assign(this.props.lyric, {key:index+250})));
+        //         }
+        //         else
+        //             elems.push(Elem(Lyric, Object.assign([Array(this.props.lyricLines).fill(" ")], {key:index+250})));
+        //     }
+        // })
 
         return elems;
     }

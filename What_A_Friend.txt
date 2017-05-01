@@ -22,6 +22,10 @@ parts {
     soprano alto tenor bass
 }
 
+phony {
+	homophony
+}
+
 verse 1 {
 何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？
 何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！

@@ -59,7 +59,7 @@ class Chorus extends React.Component{
     MeasureElems(){
 
         return []
-            .concat(this.props.measures.map((measure,index) =>{
+            .concat(this.props.chorus.measures.map((measure,index) =>{
                 let elem = [Elem(Measure, {ref:"measure-"+index, measure: measure, key:index})];
 
                 if(measure.measureType == "normal"){
