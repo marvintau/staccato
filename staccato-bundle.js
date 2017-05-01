@@ -70,7 +70,7 @@
 
 	var _StaccatoModel = __webpack_require__(443);
 
-	var _What_A_Friend = __webpack_require__(445);
+	var _What_A_Friend = __webpack_require__(444);
 
 	var _What_A_Friend2 = _interopRequireDefault(_What_A_Friend);
 
@@ -43361,11 +43361,8 @@
 
 	            var bars = [];
 
-	            console.log(this.props.slot);
-
-	            this.props.slot.forEach(function (cell, index) {
-	                console.log(index);
-	                if (!cell.pitch || !!cell.pitch && cell.pitch != "-" && cell.pitch != "0") {
+	            this.props.slot[0].forEach(function (cell, index) {
+	                if (!!cell.pitch) {
 	                    bars.push((0, _General.Elem)('span', { key: index > _this2.props.slot.length / 2 ? index + 500 : index, className: "vertbar" }, " "));
 	                } else {
 	                    bars.push((0, _General.Elem)(_Lyric.Lyric, { lyric: Array(cell.verse.length).fill(" "), key: index + 250 }));
@@ -43395,8 +43392,8 @@
 
 	            var bars = [];
 
-	            this.props.slot.forEach(function (cell, index) {
-	                if (!cell.pitch || !!cell.pitch && cell.pitch != "-" && cell.pitch != "0") {
+	            this.props.slot[0].forEach(function (cell, index) {
+	                if (!!cell.pitch) {
 	                    bars.push((0, _General.Elem)('span', { key: index > _this4.props.slot.length / 2 ? index + 500 : index, className: "finalbar" }, " "));
 	                } else {
 	                    bars.push((0, _General.Elem)(_Lyric.Lyric, { lyric: Array(cell.verse.length).fill(" "), key: index + 250 }));
@@ -43483,7 +43480,6 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            console.log(this.props.lyric);
 	            return (0, _General.Elem)('span', { className: "lyricSlot" }, this.LyricChars(this.props.lyric));
 	        }
 	    }]);
@@ -43606,7 +43602,7 @@
 
 	var _General = __webpack_require__(433);
 
-	var _Beat = __webpack_require__(440);
+	var _Beat = __webpack_require__(439);
 
 	var _Bars = __webpack_require__(435);
 
@@ -43695,88 +43691,6 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.Slot = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _reactDom = __webpack_require__(32);
-
-	var _reactDom2 = _interopRequireDefault(_reactDom);
-
-	var _General = __webpack_require__(433);
-
-	var _Lyric = __webpack_require__(436);
-
-	var _Note = __webpack_require__(441);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var Slot = function (_React$Component) {
-	    _inherits(Slot, _React$Component);
-
-	    function Slot(props) {
-	        _classCallCheck(this, Slot);
-
-	        return _possibleConstructorReturn(this, (Slot.__proto__ || Object.getPrototypeOf(Slot)).call(this, props));
-	    }
-
-	    _createClass(Slot, [{
-	        key: 'NoteElems',
-	        value: function NoteElems() {
-	            return this.props.notes.map(function (note, index) {
-	                return (0, _General.Elem)(_Note.Note, { ref: index, key: index, note: note });
-	            });
-	        }
-	    }, {
-	        key: 'Elems',
-	        value: function Elems() {
-	            var elems = [],
-	                index = 0;
-
-	            // console.log(this.props.slot);
-
-	            // this.props.slots.forEach((slot, index)=> {
-	            //     console.log(slot);
-	            // })
-
-	            this.props.slot.forEach(function (cell, index) {
-
-	                if (!!cell.pitch) elems.push((0, _General.Elem)(_Note.Note, { note: cell, key: index, ref: index }));else elems.push((0, _General.Elem)(_Lyric.Lyric, { lyric: cell.verse, key: index + 250 }));
-	            });
-
-	            return elems;
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-	            return (0, _General.Elem)('div', { style: {}, ref: "slot", className: "slot" }, this.Elems());
-	        }
-	    }]);
-
-	    return Slot;
-	}(_react2.default.Component);
-
-	exports.Slot = Slot;
-
-/***/ },
-/* 440 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
 	exports.Beat = undefined;
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -43791,7 +43705,7 @@
 
 	var _General = __webpack_require__(433);
 
-	var _Slot = __webpack_require__(439);
+	var _Slot = __webpack_require__(440);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -43906,6 +43820,88 @@
 	}(_react2.default.Component);
 
 	exports.Beat = Beat;
+
+/***/ },
+/* 440 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Slot = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(433);
+
+	var _Lyric = __webpack_require__(436);
+
+	var _Note = __webpack_require__(441);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Slot = function (_React$Component) {
+	    _inherits(Slot, _React$Component);
+
+	    function Slot(props) {
+	        _classCallCheck(this, Slot);
+
+	        return _possibleConstructorReturn(this, (Slot.__proto__ || Object.getPrototypeOf(Slot)).call(this, props));
+	    }
+
+	    _createClass(Slot, [{
+	        key: 'NoteElems',
+	        value: function NoteElems() {
+	            return this.props.notes.map(function (note, index) {
+	                return (0, _General.Elem)(_Note.Note, { ref: index, key: index, note: note });
+	            });
+	        }
+	    }, {
+	        key: 'Elems',
+	        value: function Elems() {
+	            var elems = [],
+	                index = 0;
+
+	            // console.log(this.props.slot);
+
+	            // this.props.slots.forEach((slot, index)=> {
+	            //     console.log(slot);
+	            // })
+
+	            this.props.slot.forEach(function (cell, index) {
+
+	                if (!!cell.pitch) elems.push((0, _General.Elem)(_Note.Note, { note: cell, key: index, ref: index }));else elems.push((0, _General.Elem)(_Lyric.Lyric, { lyric: cell.verse, key: index + 250 }));
+	            });
+
+	            return elems;
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return (0, _General.Elem)('div', { style: {}, ref: "slot", className: "slot" }, this.Elems());
+	        }
+	    }]);
+
+	    return Slot;
+	}(_react2.default.Component);
+
+	exports.Slot = Slot;
 
 /***/ },
 /* 441 */
@@ -44555,8 +44551,7 @@
 	exports.processSections = processSections;
 
 /***/ },
-/* 444 */,
-/* 445 */
+/* 444 */
 /***/ function(module, exports) {
 
 	module.exports = "title {\n恩 友 歌\n}\n\nsubtitle {\nWhat a Friend We Have in Jesus\n}\n\nlyrics {\nJ. Scriven 1855\n}\n\ncomposer {\nA. C. Converse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nphony {\n\thomophony\n}\n\nverse 1 {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 2 {\n有 否 煩 惱 壓 著 心 頭？ 有 否 遇 試 煉 引 誘？\n我 們 切 莫 灰 心 失 望， 仍 到 主 恩 座 前 求！\n何 處 得 此 忠 心 朋 友， 分 擔 一 切 苦 與 憂，\n我 們 弱 點 主 都 知 透， 放 心 到 主 座 前 求。\n}\n\nverse 3 {\n勞 苦 多 愁 軟 弱 不 堪， 掛 慮 重 擔 壓 肩 頭，\n主 是 你 我 避 難 處 所， 快 到 主 恩 座 前 求！\n你 若 遭 遇 友 叛 親 離， 來 到 主 恩 座 前 求，\n在 主 懷 中 必 蒙 護 佑， 與 主 同 在 永 無 憂。\n}\n\nchorus soprano {\n.5 5  (6 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (/1 5,1\\)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (/5 3\\) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (/1 1\\) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"

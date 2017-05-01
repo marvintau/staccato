@@ -153,17 +153,18 @@ body {
     flex-wrap: wrap;
     font-weight: bold;
     font-size: 90%;
-    margin-right: -2em;
+
     /*letter-spacing: -0.3em;*/
     /*font-size: 50%;*/
 }
 
 .lyricChar {
+    position:relative;
+    left :0;
     white-space: pre;
 }
 
 .lyricSlot{
-    display:inline-block;
     flex-direction: column;
 }
 
@@ -173,7 +174,7 @@ body {
     display:inline-flex;
     flex-direction: row;
     justify-content: space-between;
-    /*border: 1px solid #888888;*/
+    border: 1px solid #888888;
 }
 
 .pitch {
@@ -189,13 +190,13 @@ body {
 .vertbars{
     display:inline-flex;
     flex-direction: column;
-    margin: 18px 0 10px;
+    /*margin: 1px 0 10px;*/
     width: 1px;
 }
 
 .vertbar{
     width:1px;
-    margin: 7px 0 3px;
+    margin: 3px 0 3px;
     height:1.2em;
     background-color: #222222;
     /*border: 1px solid;*/

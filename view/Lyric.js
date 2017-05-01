@@ -12,7 +12,6 @@ class Lyric extends React.Component{
     }
 
     render() {
-        console.log(this.props.lyric)
         return Elem('span', {className:"lyricSlot"}, this.LyricChars(this.props.lyric));
     }
 
