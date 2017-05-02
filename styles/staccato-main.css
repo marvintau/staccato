@@ -24,36 +24,6 @@ body {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-.editor-wrapper {
-    /*position:absolute;*/
-	background-color : #FFFFFF;
-	border-radius: 5px;
-	height:900px;
-}
-
-.editor{
-	/*top : 50px;*/
-	border : none;
-    /*overflow: auto;*/
-    outline: none;
-    resize: none;
-
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-
-    margin: 10px 0px;
-
-    width: 100%;
-    /*display: block;*/
-    background-color: transparent;
-    padding: 5px;
-    font-size: 12px;
-    font-family:'TheMixMono';
-    letter-spacing: -1px;
-    /*font-size: 30px;*/
-
-}
 
 .preview{
     /*margin-left: 20px;*/
@@ -67,7 +37,7 @@ body {
 }
 
 .page{
-	margin: 10px 10px 50px;
+	margin: 10px 0px 50px;
     position : relative;
     width : 100%;
 	height: 150%;
@@ -125,7 +95,7 @@ body {
     font-weight: bold;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: left;
+    justify-content: space-around;
     /*border: 1px solid #888888;*/
 
 }
@@ -133,9 +103,10 @@ body {
 .measure {
     display:inline-flex;
     flex-direction: row;
+    min-width: 20%;
+    max-width: 25%;
     justify-content: space-around;
     margin-top:10px;
-    padding: 10px 0px 10px;
     text-align: center;
 
     position:relative;
@@ -145,21 +116,19 @@ body {
 .slot {
     display:inline-flex;
     flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
     flex-wrap: wrap;
+    margin: 0 -0px 0;
+    /*border: 1px solid #888888;*/
 }
 
-.lyricBeat {
-    display:inline-flex;
-    flex-wrap: wrap;
-    font-weight: bold;
-    font-size: 90%;
-
-    /*letter-spacing: -0.3em;*/
-    /*font-size: 50%;*/
-}
 
 .lyricChar {
     position:relative;
+    flex-wrap: wrap;
+    font-weight: bold;
+    font-size: 90%;
     left :0;
     white-space: pre;
 }
@@ -173,8 +142,10 @@ body {
     position: relative;
     display:inline-flex;
     flex-direction: row;
-    justify-content: space-between;
-    border: 1px solid #888888;
+    justify-content:space-between;
+    /*border: 1px solid #888888;*/
+    max-width: 25%;
+    min-width: 20%;
 }
 
 .pitch {
@@ -190,8 +161,8 @@ body {
 .vertbars{
     display:inline-flex;
     flex-direction: column;
-    /*margin: 1px 0 10px;*/
-    width: 1px;
+    margin: 10px 2px 10px;
+    width: 6px;
 }
 
 .vertbar{
@@ -200,6 +171,20 @@ body {
     height:1.2em;
     background-color: #222222;
     /*border: 1px solid;*/
+}
+
+.finalbars{
+    display:inline-flex;
+    flex-direction: column;
+    margin: 10px 2px 10px;
+    width: 6px;
+}
+
+.finalbar{
+    width: 2px;
+    margin: 3px 0 3px;
+    height:1.2em;
+    background-color: #222222;
 }
 
 .repeatbar{
@@ -254,19 +239,6 @@ body {
     /*border: 1px solid #888888;*/
 }
 
-.finalbars{
-    display:inline-flex;
-    flex-direction: column;
-    margin: 18px 3px 10px 3px;
-    width: 2px;
-}
-
-.finalbar{
-    width: 2px;
-    margin: 7px 0 3px;
-    height:1.2em;
-    background-color: #222222;
-}
 
 .con{
     /*text-align: center;*/

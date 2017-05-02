@@ -15,8 +15,10 @@ class Note extends React.Component{
 
     GetOctaveDotPoses(){
 
+        console.log(this.props.note.octave)
         let octaveDotPoses = []
-        if(this.props.note.octave && this.props.note.octave.nums){
+        if(this.props.note.octave){
+
             let octave = this.props.note.octave;
             for (var i = 0; i < Math.abs(octave.nums); i++) {
                 octaveDotPoses.push({

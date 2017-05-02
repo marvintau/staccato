@@ -1,17 +1,12 @@
 
 
-function InsertLyric(chorus, verses){
-
-    let verseIndex = 0;
-    let isConnecting = false;
+function InsertHomoLyric(chorus, verses){
 
     if(!!verses.length){
         verses = verses[0].map((x,i) => verses.map(x => !!x[i] ? x[i] : " "))
-        console.log(verses);
     }
 
-    console.log(chorus.ties);
-
+    let verseIndex = 0;
     chorus.measures.forEach(function(measure){
         measure.beats.forEach(function(beat){
 
@@ -29,6 +24,36 @@ function InsertLyric(chorus, verses){
     })
 
     console.log(chorus.measures);
+}
+
+function InsertPolyLyric(chorus, verses, parts){
+    for (var part of parts) {
+        if(!!verses[part].length){
+            verses[part] = verses[part][0].map((x,i) => verses[part].map(x => !!x[i] ? x[i] : " "))
+        }
+    }
+
+    let verseIndex;
+    for(var part of parts){
+        verseIndex = 0;
+
+        chorus.measures.forEach(function(measure){
+            measure[part].beats.forEach(function(beat, index){
+
+                let validSlot = (beat.pitch != "–") && (beat.pitch != "0");
+                let withinTie = chorus.ties.some(tie => beat.index > tie.start && beat.index <= tie.end);
+
+                if(validSlot && !withinTie){
+                    measure[part].beats[index] = [beat, {verse:verses[part][verseIndex]}];
+                    verseIndex ++;
+                } else {
+                    measure[part].beats[index] = [beat, {verse:verses[part][0].map(() => " ")}];
+                }
+
+            })
+        })
+
+    }
 }
 
 function OrganizeParts(sections){
@@ -57,7 +82,10 @@ function OrganizeParts(sections){
                 score.verses.push(elem.verses);
 
             } else if(score.isPolyphony) {
-                score.verses[elem.part] = elem.content;
+                if(!score.verses[elem.part]){
+                    score.verses[elem.part] = []
+                }
+                score.verses[elem.part].push(elem.verses);
             } else {
                 score.verses = {errorMsg : "不好意思……你需要在verse section之前就说清楚主调／复调类型"}
             }
@@ -75,12 +103,6 @@ function OrganizeParts(sections){
     })
 
     return score;
-}
-
-function arrangePolyphonyMeasures(score){
-    score.parts.forEach(part => {
-        // score.chorus[part]
-    })
 }
 
 function Flatten(notes){
@@ -145,16 +167,17 @@ function GroupBeats(measures){
     }
 }
 
-function arrangeHomophonyMeasures(score){
-
-    // 找到拥有measure最多的那个声部
+function GetLongestMeasure(score){
     let longestMeasures = 0;
     for(var part of score.parts){
         if(score.chorus[part].measures.length > longestMeasures){
             longestMeasures = score.chorus[part].measures.length;
         }
     }
+    return longestMeasures;
+}
 
+function ReformMarks(score){
     score.chorus.underbars = []
     score.chorus.ties = []
     for(var part of score.parts){
@@ -163,8 +186,9 @@ function arrangeHomophonyMeasures(score){
         delete score.chorus[part].underbars;
         delete score.chorus[part].ties;
     }
+}
 
-    // // 将每个声部放进同一个measure里面去
+function TransformMeasure(score, longestMeasures){
     score.chorus.measures = []
     for (var i = 0; i < longestMeasures; i++) {
 
@@ -177,14 +201,22 @@ function arrangeHomophonyMeasures(score){
         };
 
         score.chorus.measures[i].beatRanges = score.chorus[score.parts[0]].measures[i].beatRanges;
-        console.log(score.chorus.measures[i].beatRanges);
+    }
+}
+
+function arrangeHomophonyMeasures(score){
+
+    ReformMarks(score);
+
+    let longestMeasures = GetLongestMeasure(score);
+    TransformMeasure(score, longestMeasures);
+
+    for (var i = 0; i < longestMeasures; i++) {
         score.chorus.measures[i] = TransposeMeasure(score.chorus.measures[i], score.parts)
     }
 
-    InsertLyric(score.chorus, score.verses)
+    InsertHomoLyric(score.chorus, score.verses)
     GroupBeats(score.chorus.measures)
-
-
 
     // 删掉原先曲谱的chorus部分，它现在已经没用了
     for(var part of score.parts){
@@ -193,6 +225,17 @@ function arrangeHomophonyMeasures(score){
 
     return score;
 }
+
+function arrangePolyphonyMeasures(score){
+
+    ReformMarks(score);
+    let longestMeasures = GetLongestMeasure(score);
+    TransformMeasure(score, longestMeasures);
+
+    InsertPolyLyric(score.chorus, score.verses, score.parts);
+    console.log(score.chorus.measures);
+}
+
 
 function arrangeMeasures(score){
     if(score.isPolyphony){

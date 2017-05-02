@@ -40,6 +40,7 @@ Section "section that contains different info"
     return {
         name : "verses",
         part : part.join(""),
+        number : parseInt(verseNumber),
         verses : lyric.map(l => l[0].join(""))
     };
 }

@@ -56,24 +56,28 @@ class Chorus extends React.Component{
         });
     }
 
+
+    MeasureBarElem(type, index, slot){
+        let elem;
+        if(type == "normal"){
+            elem = [Elem(Vertbar, {key:5300+index-1, slot:slot })]
+        } else if (type == "rep_start"){
+            elem = [Elem(Repeatbar, {key:5300+index-1, direction:"open", slot:slot })]
+        } else if (type == "rep_fin"){
+            elem = [Elem(Repeatbar, {key:5300+index-1, direction:"close", slot:slot })]
+        } else if (type == "fin"){
+            elem = [Elem(Vertbar, {key:5300+index-1, slot:slot }),
+                    Elem(Finalbar, {key:6300, slot:slot })]
+        }
+
+        return elem;
+    }
+
     MeasureElems(){
 
         return []
             .concat(this.props.chorus.measures.map((measure,index) =>{
-                let elem = [Elem(Measure, {ref:"measure-"+index, measure: measure, key:index})];
-
-                if(measure.measureType == "normal"){
-                    elem.push(Elem(Vertbar, {key:5300+index-1, parts:this.props.parts, lyricLines : lyricLines}))
-                } else if (measure.measureType == "rep_start"){
-                    elem.push(Elem(Repeatbar, {key:5300+index-1, direction:"open", parts:this.props.parts, lyricLines : lyricLines}))
-                } else if (measure.measureType == "rep_fin"){
-                    elem.push(Elem(Repeatbar, {key:5300+index-1, direction:"close", parts:this.props.parts, lyricLines : lyricLines}))
-                } else if (measure.measureType == "fin"){
-                    elem.push(Elem(Vertbar, {key:5300+index-1, parts:this.props.parts, lyricLines : lyricLines}))
-                    elem.push(Elem(Finalbar, {key:6300, parts:this.props.parts, lyricLines : lyricLines}))
-                }
-
-                return elem;
+                return [Elem(Measure, {ref:"measure-"+index, measure: measure, key:index}), this.MeasureBarElem(measure.type, index, measure.beats[0])];
             }))
             // .concat(this.BracketElems())
             // .concat(this.ConnectElems())
