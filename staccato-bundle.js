@@ -70,7 +70,7 @@
 
 	var _StaccatoModel = __webpack_require__(443);
 
-	var _What_A_Friend_ = __webpack_require__(445);
+	var _What_A_Friend_ = __webpack_require__(444);
 
 	var _What_A_Friend_2 = _interopRequireDefault(_What_A_Friend_);
 
@@ -42657,10 +42657,6 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactDom = __webpack_require__(32);
-
-	var _reactDom2 = _interopRequireDefault(_reactDom);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -42708,7 +42704,7 @@
 	    bottom: 0,
 	    opacity: 0,
 	    visibility: 'hidden',
-	    transition: 'opacity .3s ease-out',
+	    transition: 'opacity .3s ease-out, visibility .3s ease-out',
 	    backgroundColor: 'rgba(0,0,0,.3)'
 	  },
 	  dragHandle: {
@@ -42729,7 +42725,7 @@
 
 	    _this.state = {
 	      // the detected width of the sidebar in pixels
-	      sidebarWidth: 0,
+	      sidebarWidth: props.defaultSidebarWidth,
 
 	      // keep track of touching params
 	      touchIdentifier: null,
@@ -42747,6 +42743,7 @@
 	    _this.onTouchMove = _this.onTouchMove.bind(_this);
 	    _this.onTouchEnd = _this.onTouchEnd.bind(_this);
 	    _this.onScroll = _this.onScroll.bind(_this);
+	    _this.saveSidebarRef = _this.saveSidebarRef.bind(_this);
 	    return _this;
 	  }
 
@@ -42865,11 +42862,16 @@
 	  }, {
 	    key: 'saveSidebarWidth',
 	    value: function saveSidebarWidth() {
-	      var width = _reactDom2.default.findDOMNode(this.refs.sidebar).offsetWidth;
+	      var width = this.sidebar.offsetWidth;
 
 	      if (width !== this.state.sidebarWidth) {
 	        this.setState({ sidebarWidth: width });
 	      }
+	    }
+	  }, {
+	    key: 'saveSidebarRef',
+	    value: function saveSidebarRef(node) {
+	      this.sidebar = node;
 	    }
 
 	    // calculate the sidebarWidth based on current touch info
@@ -43003,7 +43005,7 @@
 	        rootProps,
 	        _react2.default.createElement(
 	          'div',
-	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: 'sidebar' },
+	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: this.saveSidebarRef },
 	          this.props.sidebar
 	        ),
 	        _react2.default.createElement('div', { className: this.props.overlayClassName,
@@ -43078,7 +43080,10 @@
 	  dragToggleDistance: _react2.default.PropTypes.number,
 
 	  // callback called when the overlay is clicked
-	  onSetOpen: _react2.default.PropTypes.func
+	  onSetOpen: _react2.default.PropTypes.func,
+
+	  // Intial sidebar width when page loads
+	  defaultSidebarWidth: _react2.default.PropTypes.number
 	};
 
 	Sidebar.defaultProps = {
@@ -43091,7 +43096,8 @@
 	  shadow: true,
 	  dragToggleDistance: 30,
 	  onSetOpen: function onSetOpen() {},
-	  styles: {}
+	  styles: {},
+	  defaultSidebarWidth: 0
 	};
 
 	exports.default = Sidebar;
@@ -43251,7 +43257,7 @@
 	            } else if (type == "rep_fin") {
 	                elem = [(0, _General.Elem)(_Bars.Repeatbar, { key: 5300 + index - 1, direction: "close", slot: slot })];
 	            } else if (type == "fin") {
-	                elem = [(0, _General.Elem)(_Bars.Vertbar, { key: 5300 + index - 1, slot: slot }), (0, _General.Elem)(_Bars.Finalbar, { key: 6300, slot: slot })];
+	                elem = [(0, _General.Elem)(_Bars.Finalbar, { key: 6300, slot: slot })];
 	            }
 
 	            return elem;
@@ -44633,8 +44639,7 @@
 	exports.processSections = processSections;
 
 /***/ },
-/* 444 */,
-/* 445 */
+/* 444 */
 /***/ function(module, exports) {
 
 	module.exports = "title {\n恩 友 歌\n}\n\nsubtitle {\nWhat a Friend We Have in Jesus\n}\n\nlyrics {\nJ. Scriven 1855\n}\n\ncomposer {\nA. C. Converse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nphony {\n\tpolyphony\n}\n\nverse 1 soprano {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 2 soprano{\n有 否 煩 惱 壓 著 心 頭？ 有 否 遇 試 煉 引 誘？\n我 們 切 莫 灰 心 失 望， 仍 到 主 恩 座 前 求！\n何 處 得 此 忠 心 朋 友， 分 擔 一 切 苦 與 憂，\n我 們 弱 點 主 都 知 透， 放 心 到 主 座 前 求。\n}\n\nverse 1 alto {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 1 tenor {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 1 bass {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nchorus soprano {\n.5 5  (6,1 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (/1 5,1\\)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (/5 3\\) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (/1 1\\) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"

@@ -181,10 +181,11 @@ body {
 }
 
 .finalbar{
-    width: 2px;
+    width: 100%;
     margin: 3px 0 3px;
     height:1.2em;
-    background-color: #222222;
+    background: url(../Resources/Fonts/fin.svg);
+    background-size: 6px, 1.2em;
 }
 
 .repeatbar{

@@ -66,8 +66,7 @@ class Chorus extends React.Component{
         } else if (type == "rep_fin"){
             elem = [Elem(Repeatbar, {key:5300+index-1, direction:"close", slot:slot })]
         } else if (type == "fin"){
-            elem = [Elem(Vertbar, {key:5300+index-1, slot:slot }),
-                    Elem(Finalbar, {key:6300, slot:slot })]
+            elem = [Elem(Finalbar, {key:6300, slot:slot })]
         }
 
         return elem;
