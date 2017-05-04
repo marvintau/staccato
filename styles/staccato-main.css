@@ -172,9 +172,9 @@ body {
     position: relative;
     display:inline-flex;
     flex-direction: row;
-    justify-content:space-between;
+    justify-content:flex-start;
     /*border: 1px solid #888888;*/
-    max-width: 25%;
+    max-width: 20%;
     min-width: 20%;
 }
 
@@ -191,8 +191,12 @@ body {
 .vertbars{
     display:inline-flex;
     flex-direction: column;
+    justify-content: space-around;
+    align-content:space-around;
+    align-items: center;
     margin: 10px 2px 10px;
     width: 6px;
+    /*border: 1px solid;*/
 }
 
 .vertbar{
@@ -202,6 +206,16 @@ body {
     background-color: #222222;
     /*border: 1px solid;*/
 }
+
+.bar-block {
+    display:flex;
+    flex-direction: column;
+    /*justify-content: space-around;*/
+    margin-top:10px;
+    position:relative;
+    /*border: 1px solid #888888;*/
+}
+
 
 .finalbars{
     display:inline-flex;
@@ -220,7 +234,7 @@ body {
 
 .repeatbar{
     display: inline;
-    margin:15px -5px 10px;
+    margin:15px 0px 10px;
     width: 15px;
     background-color: #222222;
     /*box-shadow: 0 0 0 1px red;*/

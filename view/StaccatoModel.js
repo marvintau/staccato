@@ -189,6 +189,7 @@ function ReformMarks(score){
 
 function TransformMeasure(score, longestMeasures){
     score.chorus.measures = []
+
     for (var i = 0; i < longestMeasures; i++) {
 
         score.chorus.measures.push({});
@@ -233,11 +234,22 @@ function arrangePolyphonyMeasures(score){
 
     InsertPolyLyric(score.chorus, score.verses, score.parts);
 
+    score.chorus.octaves = [];
+
     score.chorus.measures = score.chorus.measures.map( measure => {
 
         delete measure.beatRanges
 
         measure = Object.keys(measure).map(key => measure[key])
+
+        for(var part of measure){
+            for(var pitch of part.beats){
+                if (!!pitch.octave){
+                    console.log(pitch);
+                    score.chorus.octaves.push({index:pitch.index, octave:pitch.octave})
+                }
+            }
+        }
 
         measure = measure.map(part => {
 
@@ -250,6 +262,8 @@ function arrangePolyphonyMeasures(score){
 
         return measure;
     })
+
+    console.log(score.chorus.octaves);
 
     for(var part of score.parts){
         delete score.chorus[part];

@@ -42657,10 +42657,6 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactDom = __webpack_require__(32);
-
-	var _reactDom2 = _interopRequireDefault(_reactDom);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -42708,7 +42704,7 @@
 	    bottom: 0,
 	    opacity: 0,
 	    visibility: 'hidden',
-	    transition: 'opacity .3s ease-out',
+	    transition: 'opacity .3s ease-out, visibility .3s ease-out',
 	    backgroundColor: 'rgba(0,0,0,.3)'
 	  },
 	  dragHandle: {
@@ -42729,7 +42725,7 @@
 
 	    _this.state = {
 	      // the detected width of the sidebar in pixels
-	      sidebarWidth: 0,
+	      sidebarWidth: props.defaultSidebarWidth,
 
 	      // keep track of touching params
 	      touchIdentifier: null,
@@ -42747,6 +42743,7 @@
 	    _this.onTouchMove = _this.onTouchMove.bind(_this);
 	    _this.onTouchEnd = _this.onTouchEnd.bind(_this);
 	    _this.onScroll = _this.onScroll.bind(_this);
+	    _this.saveSidebarRef = _this.saveSidebarRef.bind(_this);
 	    return _this;
 	  }
 
@@ -42865,11 +42862,16 @@
 	  }, {
 	    key: 'saveSidebarWidth',
 	    value: function saveSidebarWidth() {
-	      var width = _reactDom2.default.findDOMNode(this.refs.sidebar).offsetWidth;
+	      var width = this.sidebar.offsetWidth;
 
 	      if (width !== this.state.sidebarWidth) {
 	        this.setState({ sidebarWidth: width });
 	      }
+	    }
+	  }, {
+	    key: 'saveSidebarRef',
+	    value: function saveSidebarRef(node) {
+	      this.sidebar = node;
 	    }
 
 	    // calculate the sidebarWidth based on current touch info
@@ -43003,7 +43005,7 @@
 	        rootProps,
 	        _react2.default.createElement(
 	          'div',
-	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: 'sidebar' },
+	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: this.saveSidebarRef },
 	          this.props.sidebar
 	        ),
 	        _react2.default.createElement('div', { className: this.props.overlayClassName,
@@ -43078,7 +43080,10 @@
 	  dragToggleDistance: _react2.default.PropTypes.number,
 
 	  // callback called when the overlay is clicked
-	  onSetOpen: _react2.default.PropTypes.func
+	  onSetOpen: _react2.default.PropTypes.func,
+
+	  // Intial sidebar width when page loads
+	  defaultSidebarWidth: _react2.default.PropTypes.number
 	};
 
 	Sidebar.defaultProps = {
@@ -43091,7 +43096,8 @@
 	  shadow: true,
 	  dragToggleDistance: 30,
 	  onSetOpen: function onSetOpen() {},
-	  styles: {}
+	  styles: {},
+	  defaultSidebarWidth: 0
 	};
 
 	exports.default = Sidebar;
@@ -43266,11 +43272,14 @@
 	                    return [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measure, key: index, style: "measure" }), _this3.MeasureBarElem(measure.type, index, measure.beats[0])];
 	                } else {
 	                    var measureParts = measure.map(function (measurePart, index) {
-	                        var children = [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measurePart, key: index, style: "measure-inner" }), _this3.MeasureBarElem(measurePart.type, index, measurePart.beats[0])];
-	                        return (0, _General.Elem)('div', { ref: "sub-measure-block" + index, key: index, className: "sub-measure-block" }, children);
+	                        return (0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measurePart, key: index, style: "measure-inner" });
 	                    });
 
-	                    return (0, _General.Elem)('div', { ref: "measure-block-" + index, key: index, className: "measure-block" }, measureParts);
+	                    var measureBarParts = measure.map(function (measurePart, index) {
+	                        return _this3.MeasureBarElem(measurePart.type, index, measurePart.beats[0]);
+	                    });
+
+	                    return [(0, _General.Elem)('div', { ref: "measure-block-" + index * 2, key: index * 2, className: "measure-block" }, measureParts), (0, _General.Elem)('div', { ref: "measure-block-" + index * 2 + 1, key: index * 2 + 1, className: "bar-block" }, measureBarParts)];
 	                }
 	            }));
 	            // .concat(this.BracketElems())
@@ -43953,7 +43962,6 @@
 	        key: 'GetOctaveDotPoses',
 	        value: function GetOctaveDotPoses() {
 
-	            console.log(this.props.note.octave);
 	            var octaveDotPoses = [];
 	            if (this.props.note.octave) {
 
@@ -44524,6 +44532,7 @@
 
 	function TransformMeasure(score, longestMeasures) {
 	    score.chorus.measures = [];
+
 	    for (var i = 0; i < longestMeasures; i++) {
 
 	        score.chorus.measures.push({});
@@ -44612,6 +44621,8 @@
 
 	    InsertPolyLyric(score.chorus, score.verses, score.parts);
 
+	    score.chorus.octaves = [];
+
 	    score.chorus.measures = score.chorus.measures.map(function (measure) {
 
 	        delete measure.beatRanges;
@@ -44620,30 +44631,80 @@
 	            return measure[key];
 	        });
 
+	        var _iteratorNormalCompletion12 = true;
+	        var _didIteratorError12 = false;
+	        var _iteratorError12 = undefined;
+
+	        try {
+	            for (var _iterator12 = measure[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+	                var part = _step12.value;
+	                var _iteratorNormalCompletion14 = true;
+	                var _didIteratorError14 = false;
+	                var _iteratorError14 = undefined;
+
+	                try {
+	                    for (var _iterator14 = part.beats[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+	                        var pitch = _step14.value;
+
+	                        if (!!pitch.octave) {
+	                            console.log(pitch);
+	                            score.chorus.octaves.push({ index: pitch.index, octave: pitch.octave });
+	                        }
+	                    }
+	                } catch (err) {
+	                    _didIteratorError14 = true;
+	                    _iteratorError14 = err;
+	                } finally {
+	                    try {
+	                        if (!_iteratorNormalCompletion14 && _iterator14.return) {
+	                            _iterator14.return();
+	                        }
+	                    } finally {
+	                        if (_didIteratorError14) {
+	                            throw _iteratorError14;
+	                        }
+	                    }
+	                }
+	            }
+	        } catch (err) {
+	            _didIteratorError12 = true;
+	            _iteratorError12 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion12 && _iterator12.return) {
+	                    _iterator12.return();
+	                }
+	            } finally {
+	                if (_didIteratorError12) {
+	                    throw _iteratorError12;
+	                }
+	            }
+	        }
+
 	        measure = measure.map(function (part) {
 
 	            var beats = [];
-	            var _iteratorNormalCompletion12 = true;
-	            var _didIteratorError12 = false;
-	            var _iteratorError12 = undefined;
+	            var _iteratorNormalCompletion13 = true;
+	            var _didIteratorError13 = false;
+	            var _iteratorError13 = undefined;
 
 	            try {
-	                for (var _iterator12 = part.beatRanges[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
-	                    var range = _step12.value;
+	                for (var _iterator13 = part.beatRanges[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+	                    var range = _step13.value;
 
 	                    beats.push(GroupRangedBeat(range, part.beats));
 	                }
 	            } catch (err) {
-	                _didIteratorError12 = true;
-	                _iteratorError12 = err;
+	                _didIteratorError13 = true;
+	                _iteratorError13 = err;
 	            } finally {
 	                try {
-	                    if (!_iteratorNormalCompletion12 && _iterator12.return) {
-	                        _iterator12.return();
+	                    if (!_iteratorNormalCompletion13 && _iterator13.return) {
+	                        _iterator13.return();
 	                    }
 	                } finally {
-	                    if (_didIteratorError12) {
-	                        throw _iteratorError12;
+	                    if (_didIteratorError13) {
+	                        throw _iteratorError13;
 	                    }
 	                }
 	            }
@@ -44654,27 +44715,29 @@
 	        return measure;
 	    });
 
-	    var _iteratorNormalCompletion13 = true;
-	    var _didIteratorError13 = false;
-	    var _iteratorError13 = undefined;
+	    console.log(score.chorus.octaves);
+
+	    var _iteratorNormalCompletion15 = true;
+	    var _didIteratorError15 = false;
+	    var _iteratorError15 = undefined;
 
 	    try {
-	        for (var _iterator13 = score.parts[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
-	            var part = _step13.value;
+	        for (var _iterator15 = score.parts[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
+	            var part = _step15.value;
 
 	            delete score.chorus[part];
 	        }
 	    } catch (err) {
-	        _didIteratorError13 = true;
-	        _iteratorError13 = err;
+	        _didIteratorError15 = true;
+	        _iteratorError15 = err;
 	    } finally {
 	        try {
-	            if (!_iteratorNormalCompletion13 && _iterator13.return) {
-	                _iterator13.return();
+	            if (!_iteratorNormalCompletion15 && _iterator15.return) {
+	                _iterator15.return();
 	            }
 	        } finally {
-	            if (_didIteratorError13) {
-	                throw _iteratorError13;
+	            if (_didIteratorError15) {
+	                throw _iteratorError15;
 	            }
 	        }
 	    }
