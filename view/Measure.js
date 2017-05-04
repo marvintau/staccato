@@ -33,7 +33,7 @@ class Measure extends React.Component{
     }
 
     render() {
-        return Elem('div', {style:{}, ref:"measure", className:"measure"}, this.BeatElems());
+        return Elem('div', {style:{}, ref:"measure", className:this.props.style}, this.BeatElems());
     }
 
     componentDidMount(){

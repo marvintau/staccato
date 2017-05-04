@@ -150,7 +150,6 @@ function GroupRangedBeat(range, beats){
             groupedBeat.push(beat);
         }
     }
-
     return groupedBeat;
 }
 
@@ -233,7 +232,30 @@ function arrangePolyphonyMeasures(score){
     TransformMeasure(score, longestMeasures);
 
     InsertPolyLyric(score.chorus, score.verses, score.parts);
-    console.log(score.chorus.measures);
+
+    score.chorus.measures = score.chorus.measures.map( measure => {
+
+        delete measure.beatRanges
+
+        measure = Object.keys(measure).map(key => measure[key])
+
+        measure = measure.map(part => {
+
+            var beats = [];
+            for (var range of part.beatRanges) {
+                beats.push(GroupRangedBeat(range, part.beats))
+            }
+            return {beats : beats, type: part.type}
+        })
+
+        return measure;
+    })
+
+    for(var part of score.parts){
+        delete score.chorus[part];
+    }
+
+    return score;
 }
 
 

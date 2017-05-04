@@ -95,9 +95,28 @@ body {
     font-weight: bold;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: space-around;
+    justify-content: flex-start;
     /*border: 1px solid #888888;*/
 
+}
+
+.measure-block {
+    display:flex;
+    flex-direction: column;
+    justify-content: space-around;
+    margin-top:10px;
+    min-width: 20%;
+    max-width: 25%;
+    position:relative;
+    /*border: 1px solid #888888;*/
+}
+
+.sub-measure-block {
+    display:flex;
+    flex-direction: row;
+    justify-content:space-between;
+    position:relative;
+    /*border: 1px solid #888888;*/
 }
 
 .measure {
@@ -109,6 +128,17 @@ body {
     margin-top:10px;
     text-align: center;
 
+    position:relative;
+    /*border: 1px solid #888888;*/
+}
+
+.measure-inner {
+    display:inline-flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin-top:10px;
+    text-align: center;
+    width : 100%;
     position:relative;
     /*border: 1px solid #888888;*/
 }

@@ -76,7 +76,16 @@ class Chorus extends React.Component{
 
         return []
             .concat(this.props.chorus.measures.map((measure,index) =>{
-                return [Elem(Measure, {ref:"measure-"+index, measure: measure, key:index}), this.MeasureBarElem(measure.type, index, measure.beats[0])];
+                if(!!measure.beats){
+                    return [Elem(Measure, {ref:"measure-"+index, measure: measure, key:index, style:"measure"}), this.MeasureBarElem(measure.type, index, measure.beats[0])];
+                } else {
+                    let measureParts = measure.map((measurePart, index) => {
+                        let children = [Elem(Measure, {ref:"measure-"+index, measure: measurePart, key:index, style:"measure-inner"}), this.MeasureBarElem(measurePart.type, index, measurePart.beats[0])];
+                        return Elem('div', {ref: "sub-measure-block"+index, key:index, className: "sub-measure-block"}, children);
+                    })
+
+                    return Elem('div', {ref: "measure-block-"+index, key:index, className:"measure-block"}, measureParts);
+                }
             }))
             // .concat(this.BracketElems())
             // .concat(this.ConnectElems())
