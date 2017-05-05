@@ -13,7 +13,7 @@ import {Chorus} from "./Chorus.js";
 
 import {processSections} from "./StaccatoModel.js";
 
-import scoreText from '../What_A_Friend_2.txt';
+import scoreText from '../What_A_Friend.txt';
 
 class Container extends React.Component {
 

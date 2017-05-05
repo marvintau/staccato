@@ -8,6 +8,24 @@ import {Connect} from "./Connect.js";
 
 import {Measure} from "./Measure.js";
 
+
+class Underbar extends React.Component{
+    constructor(props){
+        super(props);
+    }
+
+    render(){
+
+        let style = {
+            left:this.props.left,
+            width:this.props.width,
+            top :this.props.top
+        }
+
+        return Elem('div', {style:style, className:"underbar"})
+    }
+}
+
 class Bracket extends React.Component{
     constructor(props){
         super(props);
@@ -88,7 +106,7 @@ class Chorus extends React.Component{
                     });
                     
                     return [Elem('div', {ref: "measure-block-"+index*2, key:index*2, className:"measure-block"}, measureParts),
-                            Elem('div', {ref: "measure-block-"+index*2+1, key:index*2+1, className:"bar-block"}, measureBarParts)];
+                            Elem('div', {ref: "measure-block-"+(index*2+1), key:index*2+1, className:"bar-block"}, measureBarParts)];
                 }
             }))
             // .concat(this.BracketElems())
@@ -96,12 +114,25 @@ class Chorus extends React.Component{
     }
 
     render() {
-        return Elem('div', {ref:"score", className:"score"}, this.MeasureElems());
+        return Elem('div', {className:"score"}, this.MeasureElems());
     }
 
     componentDidMount(){
 
-        let scoreBox = this.refs.score.getBoundingClientRect()
+        // let scoreBox = this.refs.score.getBoundingClientRect()
+
+        // this.props.chorus.measures.forEach((measure, measureIndex) => {
+        //     console.log(this.refs["measure-"+measureIndex]);
+        // })
+
+        var refMeasureObject, refBeatObject;
+        for (var refMeasure in this.refs){
+            refMeasureObject = this.refs[refMeasure]
+            for(var refBeat in refMeasureObject.refs){
+                refBeatObject = refMeasureObject.refs[refBeat]
+                    console.log(refBeatObject);
+            }
+        }
 
         // let conns = this.props.connections, connPoses = [];
         // Object.keys(conns).forEach(part =>{

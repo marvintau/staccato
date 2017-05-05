@@ -4,31 +4,9 @@ import {Elem, SectionElem, Draw} from "./General.js";
 
 import {Slot} from "./Slot.js";
 
-class Underbar extends React.Component{
-    constructor(props){
-        super(props);
-    }
-
-    render(){
-
-        let style = {
-            left:this.props.left,
-            width:this.props.width,
-            top :this.props.top
-        }
-
-        return Elem('div', {style:style, className:"underbar"})
-    }
-}
-
 class Beat extends React.Component{
     constructor(props){
         super(props);
-
-        this.state = {
-            underbarPoses : this.props.underbar ? this.props.underbar.map((elem) => ({left:0, width:0, top:0})) : []
-        }
-
     }
 
     GetNotePoses(){

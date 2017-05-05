@@ -7,30 +7,6 @@ class Note extends React.Component{
     constructor(props){
         super(props);
         this.box = { left : 0, right : 0 }
-
-        this.state = {
-            octaveDotPoses : []
-        }
-    }
-
-    GetOctaveDotPoses(){
-
-        let octaveDotPoses = []
-        if(this.props.note.octave){
-
-            let octave = this.props.note.octave;
-            for (var i = 0; i < Math.abs(octave.nums); i++) {
-                octaveDotPoses.push({
-                    index : this.props.note.pitch,
-                    left : (this.box.right - this.box.left) / 2,
-                    top : octave.nums >= 0
-                          ? (-5 * i - this.box.height/2)
-                          : (3 * octave.start + 5 * i + this.box.height/2)
-                })
-            }
-        }
-
-        return octaveDotPoses;
     }
 
     PitchElem(){
@@ -56,13 +32,11 @@ class Note extends React.Component{
     }
 
     render(){
-        return Elem('span', {style:{}, className:"note"}, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()).concat(this.OctaveDotElem()))
+        return Elem('span', {style:{}, className:"note"}, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()))
     }
 
     componentDidMount(){
         this.box = this.refs.note.refs.pitch.getBoundingClientRect();
-
-        this.setState({octaveDotPoses: this.GetOctaveDotPoses()})
     }
 }
 

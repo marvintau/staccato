@@ -33,11 +33,11 @@ class Measure extends React.Component{
     }
 
     render() {
-        return Elem('div', {style:{}, ref:"measure", className:this.props.style}, this.BeatElems());
+        return Elem('div', {style:{}, className:this.props.style}, this.BeatElems());
     }
 
     componentDidMount(){
-        this.box = this.refs.measure.getBoundingClientRect();
+        // this.box = this.refs.measure.getBoundingClientRect();
     }
 }
 

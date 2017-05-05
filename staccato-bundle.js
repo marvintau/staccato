@@ -70,9 +70,9 @@
 
 	var _StaccatoModel = __webpack_require__(443);
 
-	var _What_A_Friend_ = __webpack_require__(444);
+	var _What_A_Friend = __webpack_require__(445);
 
-	var _What_A_Friend_2 = _interopRequireDefault(_What_A_Friend_);
+	var _What_A_Friend2 = _interopRequireDefault(_What_A_Friend);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -93,14 +93,14 @@
 	        var scoreParsed = void 0;
 
 	        try {
-	            scoreParsed = (0, _StaccatoModel.processSections)((0, _StaccatoParser.parse)(_What_A_Friend_2.default));
+	            scoreParsed = (0, _StaccatoModel.processSections)((0, _StaccatoParser.parse)(_What_A_Friend2.default));
 	        } catch (err) {
 	            scoreParsed = "err";
 	            console.log(err);
 	        }
 
 	        _this.state = {
-	            text: _What_A_Friend_2.default,
+	            text: _What_A_Friend2.default,
 	            score: scoreParsed
 	        };
 	        return _this;
@@ -40720,9 +40720,21 @@
 	            let p = notes.map(note => note[0]);
 	            p.forEach(note => note.duration = 1/notes.length);
 
+	            // 获得下划线的起止位置
 	            let startIndex = p[0].underbar ? p[0].underbar.start : p[0].index;
 	            let endIndex = p[p.length - 1].underbar ? p[p.length - 1].underbar.end : p[p.length-1].index;
 
+	            // 获得下划线的位置（第几行），它的高度总应该低于（实际在谱
+	            // 中是高于）高度最低的下划线
+	            let level = 0;
+	            for(var n of p){
+	                if(!!n.underbar && n.underbar.level > level){
+	                    level = n.underbar.level;
+	                }
+	            }
+	            level += 1;
+
+	            // 三连音，但是还没有实现
 	            let upperTuplet;
 	            if(p.length > 2){
 	                upperTuplet = {start:startIndex, end:endIndex};
@@ -40730,7 +40742,7 @@
 
 	            return {
 	                notes: p,
-	                underbar : {start:startIndex, end:endIndex}
+	                underbar : {start:startIndex, end:endIndex, level:level}
 	            }
 	        },
 	        peg$c43 = peg$otherExpectation("dotted"),
@@ -43181,8 +43193,34 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Bracket = function (_React$Component) {
-	    _inherits(Bracket, _React$Component);
+	var Underbar = function (_React$Component) {
+	    _inherits(Underbar, _React$Component);
+
+	    function Underbar(props) {
+	        _classCallCheck(this, Underbar);
+
+	        return _possibleConstructorReturn(this, (Underbar.__proto__ || Object.getPrototypeOf(Underbar)).call(this, props));
+	    }
+
+	    _createClass(Underbar, [{
+	        key: 'render',
+	        value: function render() {
+
+	            var style = {
+	                left: this.props.left,
+	                width: this.props.width,
+	                top: this.props.top
+	            };
+
+	            return (0, _General.Elem)('div', { style: style, className: "underbar" });
+	        }
+	    }]);
+
+	    return Underbar;
+	}(_react2.default.Component);
+
+	var Bracket = function (_React$Component2) {
+	    _inherits(Bracket, _React$Component2);
 
 	    function Bracket(props) {
 	        _classCallCheck(this, Bracket);
@@ -43202,19 +43240,19 @@
 	    return Bracket;
 	}(_react2.default.Component);
 
-	var Chorus = function (_React$Component2) {
-	    _inherits(Chorus, _React$Component2);
+	var Chorus = function (_React$Component3) {
+	    _inherits(Chorus, _React$Component3);
 
 	    function Chorus(props) {
 	        _classCallCheck(this, Chorus);
 
-	        var _this2 = _possibleConstructorReturn(this, (Chorus.__proto__ || Object.getPrototypeOf(Chorus)).call(this, props));
+	        var _this3 = _possibleConstructorReturn(this, (Chorus.__proto__ || Object.getPrototypeOf(Chorus)).call(this, props));
 
-	        _this2.notePoses = {}, _this2.state = {
+	        _this3.notePoses = {}, _this3.state = {
 	            brackets: [],
 	            connects: []
 	        };
-	        return _this2;
+	        return _this3;
 	    }
 
 	    _createClass(Chorus, [{
@@ -43265,21 +43303,21 @@
 	    }, {
 	        key: 'MeasureElems',
 	        value: function MeasureElems() {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            return [].concat(this.props.chorus.measures.map(function (measure, index) {
 	                if (!!measure.beats) {
-	                    return [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measure, key: index, style: "measure" }), _this3.MeasureBarElem(measure.type, index, measure.beats[0])];
+	                    return [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measure, key: index, style: "measure" }), _this4.MeasureBarElem(measure.type, index, measure.beats[0])];
 	                } else {
 	                    var measureParts = measure.map(function (measurePart, index) {
 	                        return (0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measurePart, key: index, style: "measure-inner" });
 	                    });
 
 	                    var measureBarParts = measure.map(function (measurePart, index) {
-	                        return _this3.MeasureBarElem(measurePart.type, index, measurePart.beats[0]);
+	                        return _this4.MeasureBarElem(measurePart.type, index, measurePart.beats[0]);
 	                    });
 
-	                    return [(0, _General.Elem)('div', { ref: "measure-block-" + index * 2, key: index * 2, className: "measure-block" }, measureParts), (0, _General.Elem)('div', { ref: "measure-block-" + index * 2 + 1, key: index * 2 + 1, className: "bar-block" }, measureBarParts)];
+	                    return [(0, _General.Elem)('div', { ref: "measure-block-" + index * 2, key: index * 2, className: "measure-block" }, measureParts), (0, _General.Elem)('div', { ref: "measure-block-" + (index * 2 + 1), key: index * 2 + 1, className: "bar-block" }, measureBarParts)];
 	                }
 	            }));
 	            // .concat(this.BracketElems())
@@ -43288,13 +43326,26 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return (0, _General.Elem)('div', { ref: "score", className: "score" }, this.MeasureElems());
+	            return (0, _General.Elem)('div', { className: "score" }, this.MeasureElems());
 	        }
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
 
-	            var scoreBox = this.refs.score.getBoundingClientRect();
+	            // let scoreBox = this.refs.score.getBoundingClientRect()
+
+	            // this.props.chorus.measures.forEach((measure, measureIndex) => {
+	            //     console.log(this.refs["measure-"+measureIndex]);
+	            // })
+
+	            var refMeasureObject, refBeatObject;
+	            for (var refMeasure in this.refs) {
+	                refMeasureObject = this.refs[refMeasure];
+	                for (var refBeat in refMeasureObject.refs) {
+	                    refBeatObject = refMeasureObject.refs[refBeat];
+	                    console.log(refBeatObject);
+	                }
+	            }
 
 	            // let conns = this.props.connections, connPoses = [];
 	            // Object.keys(conns).forEach(part =>{
@@ -43674,12 +43725,12 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return (0, _General.Elem)('div', { style: {}, ref: "measure", className: this.props.style }, this.BeatElems());
+	            return (0, _General.Elem)('div', { style: {}, className: this.props.style }, this.BeatElems());
 	        }
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            this.box = this.refs.measure.getBoundingClientRect();
+	            // this.box = this.refs.measure.getBoundingClientRect();
 	        }
 	    }]);
 
@@ -43721,47 +43772,13 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Underbar = function (_React$Component) {
-	    _inherits(Underbar, _React$Component);
-
-	    function Underbar(props) {
-	        _classCallCheck(this, Underbar);
-
-	        return _possibleConstructorReturn(this, (Underbar.__proto__ || Object.getPrototypeOf(Underbar)).call(this, props));
-	    }
-
-	    _createClass(Underbar, [{
-	        key: 'render',
-	        value: function render() {
-
-	            var style = {
-	                left: this.props.left,
-	                width: this.props.width,
-	                top: this.props.top
-	            };
-
-	            return (0, _General.Elem)('div', { style: style, className: "underbar" });
-	        }
-	    }]);
-
-	    return Underbar;
-	}(_react2.default.Component);
-
-	var Beat = function (_React$Component2) {
-	    _inherits(Beat, _React$Component2);
+	var Beat = function (_React$Component) {
+	    _inherits(Beat, _React$Component);
 
 	    function Beat(props) {
 	        _classCallCheck(this, Beat);
 
-	        var _this2 = _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
-
-	        _this2.state = {
-	            underbarPoses: _this2.props.underbar ? _this2.props.underbar.map(function (elem) {
-	                return { left: 0, width: 0, top: 0 };
-	            }) : []
-	        };
-
-	        return _this2;
+	        return _possibleConstructorReturn(this, (Beat.__proto__ || Object.getPrototypeOf(Beat)).call(this, props));
 	    }
 
 	    _createClass(Beat, [{
@@ -43884,15 +43901,9 @@
 	            var elems = [],
 	                index = 0;
 
-	            // console.log(this.props.slot);
-
-	            // this.props.slots.forEach((slot, index)=> {
-	            //     console.log(slot);
-	            // })
-
 	            this.props.slot.forEach(function (cell, index) {
 
-	                if (!!cell.pitch) elems.push((0, _General.Elem)(_Note.Note, { note: cell, key: index, ref: index }));else elems.push((0, _General.Elem)(_Lyric.Lyric, { lyric: cell.verse, key: index + 250 }));
+	                if (!!cell.pitch) elems.push((0, _General.Elem)(_Note.Note, { note: cell, key: index, ref: "note-" + index }));else elems.push((0, _General.Elem)(_Lyric.Lyric, { lyric: cell.verse, key: index + 250 }));
 	            });
 
 	            return elems;
@@ -43951,33 +43962,10 @@
 	        var _this = _possibleConstructorReturn(this, (Note.__proto__ || Object.getPrototypeOf(Note)).call(this, props));
 
 	        _this.box = { left: 0, right: 0 };
-
-	        _this.state = {
-	            octaveDotPoses: []
-	        };
 	        return _this;
 	    }
 
 	    _createClass(Note, [{
-	        key: 'GetOctaveDotPoses',
-	        value: function GetOctaveDotPoses() {
-
-	            var octaveDotPoses = [];
-	            if (this.props.note.octave) {
-
-	                var octave = this.props.note.octave;
-	                for (var i = 0; i < Math.abs(octave.nums); i++) {
-	                    octaveDotPoses.push({
-	                        index: this.props.note.pitch,
-	                        left: (this.box.right - this.box.left) / 2,
-	                        top: octave.nums >= 0 ? -5 * i - this.box.height / 2 : 3 * octave.start + 5 * i + this.box.height / 2
-	                    });
-	                }
-	            }
-
-	            return octaveDotPoses;
-	        }
-	    }, {
 	        key: 'PitchElem',
 	        value: function PitchElem() {
 	            return (0, _General.Elem)(_Signs.Pitch, { key: 0, ref: "note", className: "note", pitch: this.props.note.pitch });
@@ -44002,14 +43990,12 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return (0, _General.Elem)('span', { style: {}, className: "note" }, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()).concat(this.OctaveDotElem()));
+	            return (0, _General.Elem)('span', { style: {}, className: "note" }, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()));
 	        }
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
 	            this.box = this.refs.note.refs.pitch.getBoundingClientRect();
-
-	            this.setState({ octaveDotPoses: this.GetOctaveDotPoses() });
 	        }
 	    }]);
 
@@ -44173,8 +44159,6 @@
 	            }
 	        });
 	    });
-
-	    console.log(chorus.measures);
 	}
 
 	function InsertPolyLyric(chorus, verses, parts) {
@@ -44298,9 +44282,10 @@
 	    return score;
 	}
 
-	function Flatten(notes) {
+	function Flatten(notes, depth) {
 	    return notes.reduce(function (notes, note) {
-	        return notes.concat(note.notes ? Flatten(note.notes) : note);
+	        note.depth = depth;
+	        return notes.concat(note.notes ? Flatten(note.notes, depth + 1) : note);
 	    }, []);
 	}
 
@@ -44311,7 +44296,6 @@
 	function TransposeMeasure(measure, parts) {
 
 	    var longestBeats = 0;
-	    console.log(measure);
 	    var _iteratorNormalCompletion3 = true;
 	    var _didIteratorError3 = false;
 	    var _iteratorError3 = undefined;
@@ -44619,92 +44603,124 @@
 	    var longestMeasures = GetLongestMeasure(score);
 	    TransformMeasure(score, longestMeasures);
 
+	    score.chorus.octaves = [];
+	    var _iteratorNormalCompletion12 = true;
+	    var _didIteratorError12 = false;
+	    var _iteratorError12 = undefined;
+
+	    try {
+	        for (var _iterator12 = score.chorus.measures[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+	            var measure = _step12.value;
+
+
+	            delete measure.beatRanges;
+
+	            for (var part in measure) {
+	                var _iteratorNormalCompletion16 = true;
+	                var _didIteratorError16 = false;
+	                var _iteratorError16 = undefined;
+
+	                try {
+	                    for (var _iterator16 = measure[part].beats[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
+	                        var pitch = _step16.value;
+
+	                        if (pitch.octave) {
+	                            score.chorus.octaves.push({ index: pitch.index, octave: pitch.octave });
+	                        }
+	                    }
+	                } catch (err) {
+	                    _didIteratorError16 = true;
+	                    _iteratorError16 = err;
+	                } finally {
+	                    try {
+	                        if (!_iteratorNormalCompletion16 && _iterator16.return) {
+	                            _iterator16.return();
+	                        }
+	                    } finally {
+	                        if (_didIteratorError16) {
+	                            throw _iteratorError16;
+	                        }
+	                    }
+	                }
+	            }
+	        }
+	    } catch (err) {
+	        _didIteratorError12 = true;
+	        _iteratorError12 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion12 && _iterator12.return) {
+	                _iterator12.return();
+	            }
+	        } finally {
+	            if (_didIteratorError12) {
+	                throw _iteratorError12;
+	            }
+	        }
+	    }
+
+	    score.chorus.octaves.forEach(function (octave) {
+	        octave.offset = 0;
+	        var _iteratorNormalCompletion13 = true;
+	        var _didIteratorError13 = false;
+	        var _iteratorError13 = undefined;
+
+	        try {
+	            for (var _iterator13 = score.chorus.underbars[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+	                var underbar = _step13.value;
+
+	                // console.log(octave.index + " " + underbar);
+	                if (octave.num < 0 && octave.index <= underbar.end && octave.index >= underbar.start) {
+	                    octave.offset++;
+	                }
+	            }
+	        } catch (err) {
+	            _didIteratorError13 = true;
+	            _iteratorError13 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion13 && _iterator13.return) {
+	                    _iterator13.return();
+	                }
+	            } finally {
+	                if (_didIteratorError13) {
+	                    throw _iteratorError13;
+	                }
+	            }
+	        }
+	    });
+
 	    InsertPolyLyric(score.chorus, score.verses, score.parts);
 
-	    score.chorus.octaves = [];
-
 	    score.chorus.measures = score.chorus.measures.map(function (measure) {
-
-	        delete measure.beatRanges;
 
 	        measure = Object.keys(measure).map(function (key) {
 	            return measure[key];
 	        });
 
-	        var _iteratorNormalCompletion12 = true;
-	        var _didIteratorError12 = false;
-	        var _iteratorError12 = undefined;
-
-	        try {
-	            for (var _iterator12 = measure[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
-	                var part = _step12.value;
-	                var _iteratorNormalCompletion14 = true;
-	                var _didIteratorError14 = false;
-	                var _iteratorError14 = undefined;
-
-	                try {
-	                    for (var _iterator14 = part.beats[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
-	                        var pitch = _step14.value;
-
-	                        if (!!pitch.octave) {
-	                            console.log(pitch);
-	                            score.chorus.octaves.push({ index: pitch.index, octave: pitch.octave });
-	                        }
-	                    }
-	                } catch (err) {
-	                    _didIteratorError14 = true;
-	                    _iteratorError14 = err;
-	                } finally {
-	                    try {
-	                        if (!_iteratorNormalCompletion14 && _iterator14.return) {
-	                            _iterator14.return();
-	                        }
-	                    } finally {
-	                        if (_didIteratorError14) {
-	                            throw _iteratorError14;
-	                        }
-	                    }
-	                }
-	            }
-	        } catch (err) {
-	            _didIteratorError12 = true;
-	            _iteratorError12 = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion12 && _iterator12.return) {
-	                    _iterator12.return();
-	                }
-	            } finally {
-	                if (_didIteratorError12) {
-	                    throw _iteratorError12;
-	                }
-	            }
-	        }
-
 	        measure = measure.map(function (part) {
-
 	            var beats = [];
-	            var _iteratorNormalCompletion13 = true;
-	            var _didIteratorError13 = false;
-	            var _iteratorError13 = undefined;
+	            var _iteratorNormalCompletion14 = true;
+	            var _didIteratorError14 = false;
+	            var _iteratorError14 = undefined;
 
 	            try {
-	                for (var _iterator13 = part.beatRanges[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
-	                    var range = _step13.value;
+	                for (var _iterator14 = part.beatRanges[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+	                    var range = _step14.value;
 
 	                    beats.push(GroupRangedBeat(range, part.beats));
 	                }
 	            } catch (err) {
-	                _didIteratorError13 = true;
-	                _iteratorError13 = err;
+	                _didIteratorError14 = true;
+	                _iteratorError14 = err;
 	            } finally {
 	                try {
-	                    if (!_iteratorNormalCompletion13 && _iterator13.return) {
-	                        _iterator13.return();
+	                    if (!_iteratorNormalCompletion14 && _iterator14.return) {
+	                        _iterator14.return();
 	                    }
 	                } finally {
-	                    if (_didIteratorError13) {
-	                        throw _iteratorError13;
+	                    if (_didIteratorError14) {
+	                        throw _iteratorError14;
 	                    }
 	                }
 	            }
@@ -44773,10 +44789,11 @@
 	exports.processSections = processSections;
 
 /***/ },
-/* 444 */
+/* 444 */,
+/* 445 */
 /***/ function(module, exports) {
 
-	module.exports = "title {\n恩 友 歌\n}\n\nsubtitle {\nWhat a Friend We Have in Jesus\n}\n\nlyrics {\nJ. Scriven 1855\n}\n\ncomposer {\nA. C. Converse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nphony {\n\tpolyphony\n}\n\nverse 1 soprano {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 2 soprano{\n有 否 煩 惱 壓 著 心 頭？ 有 否 遇 試 煉 引 誘？\n我 們 切 莫 灰 心 失 望， 仍 到 主 恩 座 前 求！\n何 處 得 此 忠 心 朋 友， 分 擔 一 切 苦 與 憂，\n我 們 弱 點 主 都 知 透， 放 心 到 主 座 前 求。\n}\n\nverse 1 alto {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 1 tenor {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 1 bass {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nchorus soprano {\n.5 5  (6,1 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (/1 5,1\\)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (/5 3\\) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (/1 1\\) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"
+	module.exports = "title {\n恩 友 歌\n}\n\nsubtitle {\nWhat a Friend We Have in Jesus\n}\n\nlyrics {\nJ. Scriven 1855\n}\n\ncomposer {\nA. C. Converse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nphony {\n\thomophony\n}\n\nverse 1 {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 2 {\n有 否 煩 惱 壓 著 心 頭？ 有 否 遇 試 煉 引 誘？\n我 們 切 莫 灰 心 失 望， 仍 到 主 恩 座 前 求！\n何 處 得 此 忠 心 朋 友， 分 擔 一 切 苦 與 憂，\n我 們 弱 點 主 都 知 透， 放 心 到 主 座 前 求。\n}\n\nverse 3 {\n勞 苦 多 愁 軟 弱 不 堪， 掛 慮 重 擔 壓 肩 頭，\n主 是 你 我 避 難 處 所， 快 到 主 恩 座 前 求！\n你 若 遭 遇 友 叛 親 離， 來 到 主 恩 座 前 求，\n在 主 懷 中 必 蒙 護 佑， 與 主 同 在 永 無 憂。\n}\n\nchorus soprano {\n.5 5  (6,1 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (/1 5,1\\)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (/5 3\\) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (/1 1\\) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"
 
 /***/ }
 /******/ ]);

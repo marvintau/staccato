@@ -22,8 +22,6 @@ function InsertHomoLyric(chorus, verses){
 
         })
     })
-
-    console.log(chorus.measures);
 }
 
 function InsertPolyLyric(chorus, verses, parts){
@@ -105,9 +103,10 @@ function OrganizeParts(sections){
     return score;
 }
 
-function Flatten(notes){
+function Flatten(notes, depth){
     return notes.reduce((notes, note) => {
-        return notes.concat( note.notes ? Flatten(note.notes) : note)
+        note.depth = depth;
+        return notes.concat( note.notes ? Flatten(note.notes, depth + 1) : note)
     }, [])
 }
 
@@ -118,7 +117,6 @@ function FlattenMeasure(measure){
 function TransposeMeasure(measure, parts) {
 
     let longestBeats = 0;
-    console.log(measure);
     for(let part of parts) {
         (longestBeats < measure[part].beats.length) && (longestBeats = measure[part].beats.length);
     }
@@ -232,27 +230,38 @@ function arrangePolyphonyMeasures(score){
     let longestMeasures = GetLongestMeasure(score);
     TransformMeasure(score, longestMeasures);
 
-    InsertPolyLyric(score.chorus, score.verses, score.parts);
-
     score.chorus.octaves = [];
-
-    score.chorus.measures = score.chorus.measures.map( measure => {
+    for(var measure of score.chorus.measures){
 
         delete measure.beatRanges
 
-        measure = Object.keys(measure).map(key => measure[key])
-
-        for(var part of measure){
-            for(var pitch of part.beats){
-                if (!!pitch.octave){
-                    console.log(pitch);
+        for(var part in measure){
+            for(var pitch of measure[part].beats){
+                if (pitch.octave){
                     score.chorus.octaves.push({index:pitch.index, octave:pitch.octave})
                 }
             }
         }
+    }
+
+    score.chorus.octaves.forEach((octave) => {
+        octave.offset = 0;
+        for(var underbar of score.chorus.underbars){
+            // console.log(octave.index + " " + underbar);
+            if (octave.num <0 && octave.index <= underbar.end && octave.index >= underbar.start){
+                octave.offset++;
+            }
+        }
+    })
+
+    InsertPolyLyric(score.chorus, score.verses, score.parts);
+
+    score.chorus.measures = score.chorus.measures.map( measure => {
+
+        measure = Object.keys(measure).map(key => measure[key])
+
 
         measure = measure.map(part => {
-
             var beats = [];
             for (var range of part.beatRanges) {
                 beats.push(GroupRangedBeat(range, part.beats))

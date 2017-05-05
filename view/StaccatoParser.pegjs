@@ -120,9 +120,21 @@ HalfedNote "duration"
     let p = notes.map(note => note[0]);
     p.forEach(note => note.duration = 1/notes.length);
 
+    // 获得下划线的起止位置
     let startIndex = p[0].underbar ? p[0].underbar.start : p[0].index;
     let endIndex = p[p.length - 1].underbar ? p[p.length - 1].underbar.end : p[p.length-1].index;
 
+    // 获得下划线的位置（第几行），它的高度总应该低于（实际在谱
+    // 中是高于）高度最低的下划线
+    let level = 0;
+    for(var n of p){
+        if(!!n.underbar && n.underbar.level > level){
+            level = n.underbar.level;
+        }
+    }
+    level += 1;
+
+    // 三连音，但是还没有实现
     let upperTuplet;
     if(p.length > 2){
         upperTuplet = {start:startIndex, end:endIndex};
@@ -130,7 +142,7 @@ HalfedNote "duration"
 
     return {
         notes: p,
-        underbar : {start:startIndex, end:endIndex}
+        underbar : {start:startIndex, end:endIndex, level:level}
     }
 }
 
