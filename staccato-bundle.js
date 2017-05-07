@@ -70,9 +70,9 @@
 
 	var _StaccatoModel = __webpack_require__(444);
 
-	var _What_A_Friend = __webpack_require__(445);
+	var _Lords_Prayer = __webpack_require__(447);
 
-	var _What_A_Friend2 = _interopRequireDefault(_What_A_Friend);
+	var _Lords_Prayer2 = _interopRequireDefault(_Lords_Prayer);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -93,14 +93,14 @@
 	        var scoreParsed = void 0;
 
 	        try {
-	            scoreParsed = (0, _StaccatoModel.processSections)((0, _StaccatoParser.parse)(_What_A_Friend2.default));
+	            scoreParsed = (0, _StaccatoModel.processSections)((0, _StaccatoParser.parse)(_Lords_Prayer2.default));
 	        } catch (err) {
 	            scoreParsed = "err";
 	            console.log(err);
 	        }
 
 	        _this.state = {
-	            text: _What_A_Friend2.default,
+	            text: _Lords_Prayer2.default,
 	            score: scoreParsed
 	        };
 	        return _this;
@@ -40678,8 +40678,8 @@
 
 	            let underbars = notes.map(note => note.underbar).filter(underbar => !!underbar);
 
-	            let ties = notes.map(note => note.tie).filter(tie => !!tie)
-
+	            let ties = notes.map(note => note.tie).filter(tie => !!tie).reduce((ties, tie) => ties.concat(tie), []);
+	            console.log(ties);
 	            return {
 	                beats : notes,
 	                beatRanges : beatRanges,
@@ -40740,9 +40740,15 @@
 	                upperTuplet = {start:startIndex, end:endIndex};
 	            }
 
+	            let ties = p.filter(n => !!n.tie).map(n => n.tie).reduce((ties, tie) => ties.concat(tie), []);
+	            ties.forEach(tie => {
+	                // console.log(tie)
+	            })
+
 	            return {
 	                notes: p,
-	                underbar : {start:startIndex, end:endIndex, level:level}
+	                underbar : {start:startIndex, end:endIndex, level:level},
+	                tie: ties
 	            }
 	        },
 	        peg$c43 = peg$otherExpectation("dotted"),
@@ -40779,7 +40785,7 @@
 
 	            if(tieOpen){
 	                // console.log({start: tieOpen, end:note.index})
-	                note.tie = {start: tieOpen, end:note.index}
+	                note.tie = [{start: tieOpen, end:note.index}]
 	                tieOpen = null;
 	            }
 
@@ -42669,6 +42675,10 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -42716,7 +42726,7 @@
 	    bottom: 0,
 	    opacity: 0,
 	    visibility: 'hidden',
-	    transition: 'opacity .3s ease-out, visibility .3s ease-out',
+	    transition: 'opacity .3s ease-out',
 	    backgroundColor: 'rgba(0,0,0,.3)'
 	  },
 	  dragHandle: {
@@ -42737,7 +42747,7 @@
 
 	    _this.state = {
 	      // the detected width of the sidebar in pixels
-	      sidebarWidth: props.defaultSidebarWidth,
+	      sidebarWidth: 0,
 
 	      // keep track of touching params
 	      touchIdentifier: null,
@@ -42755,7 +42765,6 @@
 	    _this.onTouchMove = _this.onTouchMove.bind(_this);
 	    _this.onTouchEnd = _this.onTouchEnd.bind(_this);
 	    _this.onScroll = _this.onScroll.bind(_this);
-	    _this.saveSidebarRef = _this.saveSidebarRef.bind(_this);
 	    return _this;
 	  }
 
@@ -42874,16 +42883,11 @@
 	  }, {
 	    key: 'saveSidebarWidth',
 	    value: function saveSidebarWidth() {
-	      var width = this.sidebar.offsetWidth;
+	      var width = _reactDom2.default.findDOMNode(this.refs.sidebar).offsetWidth;
 
 	      if (width !== this.state.sidebarWidth) {
 	        this.setState({ sidebarWidth: width });
 	      }
-	    }
-	  }, {
-	    key: 'saveSidebarRef',
-	    value: function saveSidebarRef(node) {
-	      this.sidebar = node;
 	    }
 
 	    // calculate the sidebarWidth based on current touch info
@@ -43017,7 +43021,7 @@
 	        rootProps,
 	        _react2.default.createElement(
 	          'div',
-	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: this.saveSidebarRef },
+	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: 'sidebar' },
 	          this.props.sidebar
 	        ),
 	        _react2.default.createElement('div', { className: this.props.overlayClassName,
@@ -43092,10 +43096,7 @@
 	  dragToggleDistance: _react2.default.PropTypes.number,
 
 	  // callback called when the overlay is clicked
-	  onSetOpen: _react2.default.PropTypes.func,
-
-	  // Intial sidebar width when page loads
-	  defaultSidebarWidth: _react2.default.PropTypes.number
+	  onSetOpen: _react2.default.PropTypes.func
 	};
 
 	Sidebar.defaultProps = {
@@ -43108,8 +43109,7 @@
 	  shadow: true,
 	  dragToggleDistance: 30,
 	  onSetOpen: function onSetOpen() {},
-	  styles: {},
-	  defaultSidebarWidth: 0
+	  styles: {}
 	};
 
 	exports.default = Sidebar;
@@ -43309,13 +43309,18 @@
 	        value: function UnderbarElems() {
 	            var _this4 = this;
 
+	            var scoreLeft = !!this.state.scoreBox ? this.state.scoreBox.left : 0,
+	                scoreTop = !!this.state.scoreBox ? this.state.scoreBox.top : 0;
+
+	            console.log(scoreTop);
+
 	            return this.state.underbars.map(function (underbar, index) {
 
-	                var barLeft = _this4.state.noteBoxes[underbar.start].left,
-	                    barRight = _this4.state.noteBoxes[underbar.end].right,
-	                    barTop = _this4.state.noteBoxes[underbar.start].bottom + (underbar.level - 1) * 3;
+	                var barLeft = _this4.state.noteBoxes[underbar.start].left - scoreLeft + 10,
+	                    barRight = _this4.state.noteBoxes[underbar.end].right - scoreLeft + 10,
+	                    barTop = _this4.state.noteBoxes[underbar.start].bottom + (underbar.level - 1) * 3 - 30;
 
-	                console.log(underbar.start + " " + barLeft + " " + underbar.end + " " + barRight);
+	                // console.log(underbar.start +" "+ barLeft + " " + underbar.end + " " + barRight);
 
 	                return (0, _General.Elem)(Underbar, { key: 1280 + index, left: barLeft, width: barRight - barLeft, top: barTop });
 	            });
@@ -43324,6 +43329,8 @@
 	        key: 'MeasureElems',
 	        value: function MeasureElems() {
 	            var _this5 = this;
+
+	            // console.log(this.props.chorus.measures);
 
 	            return [].concat(this.props.chorus.measures.map(function (measure, index) {
 	                if (!!measure.beats) {
@@ -43347,7 +43354,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return (0, _General.Elem)('div', { className: "score" }, this.MeasureElems());
+	            return (0, _General.Elem)('div', { className: "score", ref: "score" }, this.MeasureElems());
 	        }
 	    }, {
 	        key: 'Traverse',
@@ -43400,9 +43407,24 @@
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
 
-	            // console.log(this.props.chorus.underbars)
+	            var scoreBox = this.refs.score.getBoundingClientRect();
+	            delete this.refs.score;
+
+	            var printable = this.props.chorus.measures.map(function (measure) {
+	                return measure.beats.map(function (beat) {
+	                    return beat.map(function (slot) {
+	                        return slot.map(function (note) {
+	                            // console.log(beat)
+	                            if (note.pitch) return note.pitch;else if (note.verse) return note.verse.join();else return " ";
+	                        }).join(" ");
+	                    }).join(", ");
+	                });
+	            });
+
+	            // console.log(JSON.stringify(printable, null, 2));
 
 	            this.setState({
+	                scoreBox: scoreBox,
 	                noteBoxes: this.Permute(this.refs),
 	                underbars: this.props.chorus.underbars
 	            });
@@ -43494,11 +43516,14 @@
 
 	            var bars = [];
 
+	            // console.log(this.props.slot)
+
 	            this.props.slot[0].forEach(function (cell, index) {
-	                if (!!cell.pitch) {
+	                if (cell.pitch != undefined) {
 	                    bars.push((0, _General.Elem)('span', { key: index > _this2.props.slot.length / 2 ? index + 500 : index, className: "vertbar" }, " "));
 	                } else {
-	                    bars.push((0, _General.Elem)(_Lyric.Lyric, { lyric: Array(cell.verse.length).fill(" "), key: index + 250 }));
+	                    var lyric = cell.verse ? Array(cell.verse.length).fill(" ") : [" "];
+	                    bars.push((0, _General.Elem)(_Lyric.Lyric, { lyric: lyric, key: index + 250 }));
 	                }
 	            });
 
@@ -43526,10 +43551,11 @@
 	            var bars = [];
 
 	            this.props.slot[0].forEach(function (cell, index) {
-	                if (!!cell.pitch) {
+	                if (cell.pitch != undefined) {
 	                    bars.push((0, _General.Elem)('span', { key: index > _this4.props.slot.length / 2 ? index + 500 : index, className: "finalbar" }, " "));
 	                } else {
-	                    bars.push((0, _General.Elem)(_Lyric.Lyric, { lyric: Array(cell.verse.length).fill(" "), key: index + 250 }));
+	                    var lyric = cell.verse ? Array(cell.verse.length).fill(" ") : [" "];
+	                    bars.push((0, _General.Elem)(_Lyric.Lyric, { lyric: lyric, key: index + 250 }));
 	                }
 	            });
 
@@ -43606,6 +43632,7 @@
 	    _createClass(Lyric, [{
 	        key: 'LyricChars',
 	        value: function LyricChars(chars) {
+	            // console.log(chars);
 	            return chars.map(function (c, index) {
 	                return (0, _General.Elem)('div', { className: "lyricChar", key: index }, c);
 	            });
@@ -43760,6 +43787,8 @@
 	        key: 'BeatElems',
 	        value: function BeatElems() {
 
+	            // console.log(this.props.measure)
+
 	            return this.props.measure.beats.map(function (slots, index) {
 	                return (0, _General.Elem)(_Beat.Beat, { slots: slots, key: index, ref: "beat-" + index });
 	            });
@@ -43828,9 +43857,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-
-	            // let underbarElems = this.UnderbarElems(this.NoteElems().length);
-
+	            // console.log(this.props.slots);
 	            return (0, _General.Elem)('div', { className: "beat" }, this.SlotElems());
 	        }
 	    }, {
@@ -43901,8 +43928,12 @@
 	                index = 0;
 
 	            this.props.slot.forEach(function (cell, index) {
-
-	                if (!!cell.pitch) elems.push((0, _General.Elem)(_Note.Note, { note: cell, key: index, ref: "note-" + index }));else elems.push((0, _General.Elem)(_Lyric.Lyric, { lyric: cell.verse, key: index + 250 }));
+	                if (cell.pitch != undefined) {
+	                    elems.push((0, _General.Elem)(_Note.Note, { note: cell, key: index, ref: "note-" + index }));
+	                } else {
+	                    // console.log(cell);
+	                    elems.push((0, _General.Elem)(_Lyric.Lyric, { lyric: cell.verse ? cell.verse : [[" "]], key: index + 250 }));
+	                }
 	            });
 
 	            return elems;
@@ -44204,6 +44235,10 @@
 	        });
 	    }
 
+	    console.log(chorus.ties.map(function (tie) {
+	        return tie.start + " " + tie.end;
+	    }));
+
 	    var verseIndex = 0;
 	    chorus.measures.forEach(function (measure) {
 	        measure.beats.forEach(function (beat) {
@@ -44214,6 +44249,7 @@
 	            });
 
 	            if (validSlot && !withinTie) {
+	                // console.log(verses[verseIndex] + " " + beat[0].index)
 	                beat = beat.splice(Math.floor(beat.length / 2), 0, { verse: verses[verseIndex] });
 	                verseIndex++;
 	            } else {
@@ -44595,6 +44631,7 @@
 
 	                if (!!score.chorus[part].measures[i]) {
 	                    score.chorus.measures[i][part] = FlattenMeasure(score.chorus[part].measures[i]);
+	                    // console.log(score.chorus.measures[i][part].beats);
 	                }
 	            }
 	        } catch (err) {
@@ -44620,8 +44657,6 @@
 
 	function arrangeHomophonyMeasures(score) {
 
-	    ReformMarks(score);
-
 	    var longestMeasures = GetLongestMeasure(score);
 	    TransformMeasure(score, longestMeasures);
 
@@ -44629,6 +44664,7 @@
 	        score.chorus.measures[i] = TransposeMeasure(score.chorus.measures[i], score.parts);
 	    }
 
+	    ReformMarks(score);
 	    InsertHomoLyric(score.chorus, score.verses);
 	    GroupBeats(score.chorus.measures);
 
@@ -44851,10 +44887,12 @@
 	exports.processSections = processSections;
 
 /***/ },
-/* 445 */
+/* 445 */,
+/* 446 */,
+/* 447 */
 /***/ function(module, exports) {
 
-	module.exports = "title {\n恩 友 歌\n}\n\nsubtitle {\nWhat a Friend We Have in Jesus\n}\n\nlyrics {\nJ. Scriven 1855\n}\n\ncomposer {\nA. C. Converse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nphony {\n\thomophony\n}\n\nverse 1 {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 2 {\n有 否 煩 惱 壓 著 心 頭？ 有 否 遇 試 煉 引 誘？\n我 們 切 莫 灰 心 失 望， 仍 到 主 恩 座 前 求！\n何 處 得 此 忠 心 朋 友， 分 擔 一 切 苦 與 憂，\n我 們 弱 點 主 都 知 透， 放 心 到 主 座 前 求。\n}\n\nverse 3 {\n勞 苦 多 愁 軟 弱 不 堪， 掛 慮 重 擔 壓 肩 頭，\n主 是 你 我 避 難 處 所， 快 到 主 恩 座 前 求！\n你 若 遭 遇 友 叛 親 離， 來 到 主 恩 座 前 求，\n在 主 懷 中 必 蒙 護 佑， 與 主 同 在 永 無 憂。\n}\n\nchorus soprano {\n.5 5  (6,1 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (/1 5,1\\)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (/5 3\\) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (/1 1\\) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"
+	module.exports = "title {\r\n主 祷 文\r\n}\r\n\r\nsubtitle {\r\nLord's Prayer\r\n}\r\n\r\nlyrics {\r\n\r\n}\r\n\r\ncomposer {\r\n杨 劼\r\n邵家菁\r\n}\r\n\r\nbeats {\r\n1=C   4/4\r\n}\r\n\r\nparts {\r\n    soprano alto\r\n}\r\n\r\nphony {\r\n\thomophony\r\n}\r\n\r\nverse 1 {\r\n我 们 在 天 上 的 父，\r\n愿 人 都 尊 祢 名 为 圣。\r\n愿 祢 国 度 降 临，\r\n愿 祢 国 度 降 临，\r\n\r\n愿 祢 旨 意 行 在 地 上，\r\n如 同 行 在 天 上。\r\n我 们 日 用 的 饮 食 今 日 赐 给 我 们。\r\n免 了 我 们 的 债， 如 同 我 们 免 了 人 的 债。\r\n不 叫 我 们 遇 见 试 探； 救 我 们 脱 离 凶 恶。\r\n因 为 国 度， 权 柄， 荣 耀， 全 是 祢 的，\r\n直 到 永 远， 直 到 永 远， 直 到 永 远， 阿 们， 阿 们\r\n}\r\n\r\n\r\nchorus soprano {\r\n0 0 0 (3 4) | 5 5 5 6               | /5 4\\ - (2 3)             | 4 4 4 5           | (/4 3\\) 3 -\r\n(1 2)       | 3 3 - 6               | /5 4\\ - (2 1)             | /7,1 4\\ 3 #2      | 3 - -\r\n(3 4)       | 5 5 5 6               | (/5 4\\) 4 - (2 3)           | 4 - - 5           | 4 3 -\r\n(1 2)       | 3 3 - 6               | 5 4 - (2 1)               | /7,1 4\\ 3 2       | 1 - -\r\n(6 7)       | 1'1  1'1 - (/1'1 7\\)  | /7 6\\ - (6 1'1)           | 7 7 (7 6) (5 2)   | /4 3\\ -\r\n(6 7)       | 1'1  1'1 - (1'1 7)    | (/7 6\\) .6 6 (6 7)       | 1'1 6 /7 1'1\\     | /2'1 - -  2'1 | 2'1\\ - 0\r\n(/3 4\\)     | /5 5\\ 5 6             | 5 4 - (/2 3\\)             | 4 - 4   5  |(/4 3\\) 3 -\r\n(1 2)       | 3 3 - (6 7)           | 1'1 1'1 - (6 7)           | 1'1 1'1 /6 7\\ | 1'1 - 1'1 -| 1'1 - - ||\r\n}\r\n\r\nchorus alto {\r\n0 0 0 (1 2) | 3 3 3 4 | /3 2\\ - (7,1 1) | 2 2 2 3    | (/2 1\\) 1 -\r\n(6,1 7,1)   | 1 1 - 3 | /3 2\\ - (7 6) | /5,1 2\\ 1 7,1 | 1 - -\r\n(1 2)       | 3 3 3 4 | (/3 2\\) 2 - (7,1 1) | 2 - - 3    | 2 1 -\r\n(6,1 7,1)   | 1 1 - 3 | 3 2 - (7 6) | /5,1 2\\ 1 7,1 | 1 - -\r\n(4 5)       | 6  6 - (/6 5\\) | /5 4\\ - (4 6) | 5 5 (5 4) (3 2) | /4 3\\ -\r\n(4 5)       | 6  6 - (6 5) | (./5 4\\) .4 4 (4 5) | 6 4 /5 6\\ | /5 - -  5 | 5\\ - 0\r\n(/1 2\\)     | /3 3\\ 3 4 | 3 2 - (/7,1 1\\) | 2 - 2   3    | (/2 1\\) 1 -\r\n(6,1 7,1)   | 1 1 - (3 3) | 6 6 - (6 7) | 1'1 1'1 /6 7\\ | 1'1 - 4 -| 3 - - ||\r\n}\r\n"
 
 /***/ }
 /******/ ]);

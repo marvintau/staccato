@@ -14,9 +14,7 @@ class Beat extends React.Component{
     }
 
     render() {
-
-        // let underbarElems = this.UnderbarElems(this.NoteElems().length);
-
+        // console.log(this.props.slots);
         return Elem('div', {className: "beat"}, this.SlotElems());
     }
 

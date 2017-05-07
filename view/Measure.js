@@ -13,6 +13,8 @@ class Measure extends React.Component{
 
     BeatElems(){
 
+        // console.log(this.props.measure)
+
         return this.props.measure.beats
             .map((slots, index)=>Elem(Beat, {slots:slots, key : index, ref : "beat-" + index}))
     }

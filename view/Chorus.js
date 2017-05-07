@@ -93,19 +93,27 @@ class Chorus extends React.Component{
     }
 
     UnderbarElems(){
+
+        let scoreLeft = !!this.state.scoreBox ? this.state.scoreBox.left : 0,
+            scoreTop = !!this.state.scoreBox  ? this.state.scoreBox.top : 0;
+
+        console.log(scoreTop);
+
         return this.state.underbars.map((underbar, index) => {
 
-            let barLeft = this.state.noteBoxes[underbar.start].left,
-                barRight = this.state.noteBoxes[underbar.end].right,
-                barTop = this.state.noteBoxes[underbar.start].bottom + (underbar.level-1) * 3;
+            let barLeft = this.state.noteBoxes[underbar.start].left - scoreLeft + 10,
+                barRight = this.state.noteBoxes[underbar.end].right - scoreLeft + 10,
+                barTop = this.state.noteBoxes[underbar.start].bottom + (underbar.level-1) * 3 - 30;
 
-                console.log(underbar.start +" "+ barLeft + " " + underbar.end + " " + barRight);
+                // console.log(underbar.start +" "+ barLeft + " " + underbar.end + " " + barRight);
 
             return Elem(Underbar, {key: 1280 + index, left: barLeft, width: barRight - barLeft, top:barTop})
         })
     }
 
     MeasureElems(){
+
+        // console.log(this.props.chorus.measures);
 
         return []
             .concat(this.props.chorus.measures.map((measure,index) =>{
@@ -120,7 +128,7 @@ class Chorus extends React.Component{
                     let measureBarParts = measure.map((measurePart, index) => {
                         return this.MeasureBarElem(measurePart.type, index, measurePart.beats[0])
                     });
-                    
+
                     return [Elem(MeasureBlock, {ref: "measure-block-"+index, measure:measure, key:index*2}),
                             Elem('div', {key:index*2+1, className:"bar-block"}, measureBarParts)];
                 }
@@ -131,7 +139,7 @@ class Chorus extends React.Component{
     }
 
     render() {
-        return Elem('div', {className:"score"}, this.MeasureElems());
+        return Elem('div', {className:"score", ref:"score"}, this.MeasureElems());
     }
 
 
@@ -158,9 +166,29 @@ class Chorus extends React.Component{
 
     componentDidMount(){
 
-        // console.log(this.props.chorus.underbars)
+        let scoreBox = this.refs.score.getBoundingClientRect();
+        delete this.refs.score;
+
+        let printable = this.props.chorus.measures.map(measure => {
+            return measure.beats.map(beat => {
+                return beat.map(slot => {
+                    return slot.map(note => {
+                        // console.log(beat)
+                        if (note.pitch)
+                            return note.pitch;
+                        else if(note.verse)
+                            return note.verse.join();
+                        else
+                            return " ";
+                    }).join(" ");
+                }).join(", ");
+            });
+        })
+
+        // console.log(JSON.stringify(printable, null, 2));
 
         this.setState({
+            scoreBox : scoreBox,
             noteBoxes : this.Permute(this.refs),
             underbars : this.props.chorus.underbars
         })

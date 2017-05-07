@@ -19,11 +19,12 @@ class Slot extends React.Component{
         let elems = [], index = 0;
 
         this.props.slot.forEach((cell, index) => {
-
-            if(!!cell.pitch)
+            if(cell.pitch != undefined){
                 elems.push(Elem(Note, {note:cell, key:index, ref:"note-"+index}));
-            else
-                elems.push(Elem(Lyric, {lyric:cell.verse, key:index+250}));
+            } else {
+                // console.log(cell);
+                elems.push(Elem(Lyric, {lyric:(cell.verse ? cell.verse : [[" "]]), key:index+250}));
+            }
         })
 
         return elems;

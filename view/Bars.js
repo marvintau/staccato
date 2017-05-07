@@ -14,11 +14,14 @@ class Vertbar extends React.Component{
 
         let bars = [];
 
+        // console.log(this.props.slot)
+
         this.props.slot[0].forEach((cell, index) => {
-            if(!!cell.pitch){
+            if(cell.pitch != undefined){
                 bars.push(Elem('span', {key:index > this.props.slot.length/2 ? index + 500 : index , className:"vertbar"}, " "));
             } else {
-                bars.push(Elem(Lyric, {lyric:Array(cell.verse.length).fill(" "), key:index+250}));
+                let lyric = cell.verse ? Array(cell.verse.length).fill(" ") : [" "]
+                bars.push(Elem(Lyric, {lyric:lyric, key:index+250}));
             }
         });
 
@@ -35,10 +38,11 @@ class Finalbar extends React.Component{
         let bars = [];
 
         this.props.slot[0].forEach((cell, index) => {
-            if(!!cell.pitch){
+            if(cell.pitch != undefined){
                 bars.push(Elem('span', {key:index > this.props.slot.length/2 ? index + 500 : index , className:"finalbar"}, " "));
             } else {
-                bars.push(Elem(Lyric, {lyric:Array(cell.verse.length).fill(" "), key:index+250}));
+                let lyric = cell.verse ? Array(cell.verse.length).fill(" ") : [" "]
+                bars.push(Elem(Lyric, {lyric:lyric, key:index+250}));
             }
         });
 

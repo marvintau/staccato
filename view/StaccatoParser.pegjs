@@ -79,8 +79,8 @@ Measure "measure"
 
     let underbars = notes.map(note => note.underbar).filter(underbar => !!underbar);
 
-    let ties = notes.map(note => note.tie).filter(tie => !!tie)
-
+    let ties = notes.map(note => note.tie).filter(tie => !!tie).reduce((ties, tie) => ties.concat(tie), []);
+    console.log(ties);
     return {
         beats : notes,
         beatRanges : beatRanges,
@@ -140,9 +140,15 @@ HalfedNote "duration"
         upperTuplet = {start:startIndex, end:endIndex};
     }
 
+    let ties = p.filter(n => !!n.tie).map(n => n.tie).reduce((ties, tie) => ties.concat(tie), []);
+    ties.forEach(tie => {
+        // console.log(tie)
+    })
+
     return {
         notes: p,
-        underbar : {start:startIndex, end:endIndex, level:level}
+        underbar : {start:startIndex, end:endIndex, level:level},
+        tie: ties
     }
 }
 
@@ -176,7 +182,7 @@ FixedNote "fixed"
 
     if(tieOpen){
         // console.log({start: tieOpen, end:note.index})
-        note.tie = {start: tieOpen, end:note.index}
+        note.tie = [{start: tieOpen, end:note.index}]
         tieOpen = null;
     }
 

@@ -8,6 +8,7 @@ class Lyric extends React.Component{
     }
 
     LyricChars(chars){
+        // console.log(chars);
         return chars.map((c, index) => Elem('div', {className:"lyricChar", key:index}, c));
     }
 

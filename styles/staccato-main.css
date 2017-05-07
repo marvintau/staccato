@@ -156,6 +156,7 @@ body {
 
 .lyricChar {
     position:relative;
+    float:left;
     flex-wrap: wrap;
     font-weight: bold;
     font-size: 90%;
@@ -180,7 +181,7 @@ body {
 
 .pitch {
     margin : 0 3px;
-    border: 1px solid #888888;
+    /*border: 1px solid #888888;*/
 }
 
 .note {

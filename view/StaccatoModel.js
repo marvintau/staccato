@@ -6,6 +6,8 @@ function InsertHomoLyric(chorus, verses){
         verses = verses[0].map((x,i) => verses.map(x => !!x[i] ? x[i] : " "))
     }
 
+    console.log(chorus.ties.map(tie => tie.start + " " + tie.end));
+
     let verseIndex = 0;
     chorus.measures.forEach(function(measure){
         measure.beats.forEach(function(beat){
@@ -14,6 +16,7 @@ function InsertHomoLyric(chorus, verses){
             let withinTie = chorus.ties.some(tie => beat[0].index > tie.start && beat[0].index <= tie.end);
 
             if(validSlot && !withinTie){
+                // console.log(verses[verseIndex] + " " + beat[0].index)
                 beat = beat.splice(Math.floor(beat.length /2), 0, {verse:verses[verseIndex]});
                 verseIndex ++;
             } else {
@@ -195,6 +198,7 @@ function TransformMeasure(score, longestMeasures){
         for(var part of score.parts){
             if(!!score.chorus[part].measures[i]){
                 score.chorus.measures[i][part] = FlattenMeasure(score.chorus[part].measures[i]);
+                // console.log(score.chorus.measures[i][part].beats);
             }
         };
 
@@ -204,8 +208,6 @@ function TransformMeasure(score, longestMeasures){
 
 function arrangeHomophonyMeasures(score){
 
-    ReformMarks(score);
-
     let longestMeasures = GetLongestMeasure(score);
     TransformMeasure(score, longestMeasures);
 
@@ -213,6 +215,7 @@ function arrangeHomophonyMeasures(score){
         score.chorus.measures[i] = TransposeMeasure(score.chorus.measures[i], score.parts)
     }
 
+    ReformMarks(score);
     InsertHomoLyric(score.chorus, score.verses)
     GroupBeats(score.chorus.measures)
 
