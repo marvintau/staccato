@@ -21,13 +21,13 @@ class Note extends React.Component{
 
     AccidentalElem(){
         return this.props.note.accidental
-        ? [Elem(Accidental, {key:205, ref:"acc", acc:this.props.note.accidental})]
+        ? [Elem(Accidental, {key:205, acc:this.props.note.accidental})]
         : []
     }
 
     DotElem(){
         return this.props.note.dotted
-        ? [Elem(Dot, {key:204, ref:"dot"})]
+        ? [Elem(Dot, {key:204})]
         : []
     }
 

@@ -8,6 +8,8 @@ import {Connect} from "./Connect.js";
 
 import {Measure} from "./Measure.js";
 
+import {MeasureBlock} from "./MeasureBlock.js";
+
 
 class Underbar extends React.Component{
     constructor(props){
@@ -42,9 +44,9 @@ class Chorus extends React.Component{
     constructor(props){
         super(props);
 
-        this.notePoses = {},
-
         this.state = {
+            noteBoxes : [],
+            underbars : [],
             brackets : [],
             connects : []
         }
@@ -90,6 +92,19 @@ class Chorus extends React.Component{
         return elem;
     }
 
+    UnderbarElems(){
+        return this.state.underbars.map((underbar, index) => {
+
+            let barLeft = this.state.noteBoxes[underbar.start].left,
+                barRight = this.state.noteBoxes[underbar.end].right,
+                barTop = this.state.noteBoxes[underbar.start].bottom + (underbar.level-1) * 3;
+
+                console.log(underbar.start +" "+ barLeft + " " + underbar.end + " " + barRight);
+
+            return Elem(Underbar, {key: 1280 + index, left: barLeft, width: barRight - barLeft, top:barTop})
+        })
+    }
+
     MeasureElems(){
 
         return []
@@ -97,6 +112,7 @@ class Chorus extends React.Component{
                 if(!!measure.beats){
                     return [Elem(Measure, {ref:"measure-"+index, measure: measure, key:index, style:"measure"}), this.MeasureBarElem(measure.type, index, measure.beats[0])];
                 } else {
+
                     let measureParts = measure.map((measurePart, index) => {
                         return Elem(Measure, {ref:"measure-"+index, measure: measurePart, key:index, style:"measure-inner"});
                     })
@@ -105,10 +121,11 @@ class Chorus extends React.Component{
                         return this.MeasureBarElem(measurePart.type, index, measurePart.beats[0])
                     });
                     
-                    return [Elem('div', {ref: "measure-block-"+index*2, key:index*2, className:"measure-block"}, measureParts),
-                            Elem('div', {ref: "measure-block-"+(index*2+1), key:index*2+1, className:"bar-block"}, measureBarParts)];
+                    return [Elem(MeasureBlock, {ref: "measure-block-"+index, measure:measure, key:index*2}),
+                            Elem('div', {key:index*2+1, className:"bar-block"}, measureBarParts)];
                 }
             }))
+            .concat(this.UnderbarElems())
             // .concat(this.BracketElems())
             // .concat(this.ConnectElems())
     }
@@ -117,22 +134,36 @@ class Chorus extends React.Component{
         return Elem('div', {className:"score"}, this.MeasureElems());
     }
 
+
+    Traverse(system){
+
+        let listedSystem = Object.keys(system).map(key => system[key])
+
+        return listedSystem.reduce((boxes, note) => {
+            return boxes.concat( !!note.box ? {box:note.box, index:note.props.note.index} : this.Traverse(note.refs))
+        }, [])
+    }
+
+    Permute(system){
+
+        let traversed = this.Traverse(system);
+        let permuted = [];
+
+        for (var box of traversed){
+            permuted[box.index] = box.box;
+        }
+
+        return permuted;
+    }
+
     componentDidMount(){
 
-        // let scoreBox = this.refs.score.getBoundingClientRect()
+        // console.log(this.props.chorus.underbars)
 
-        // this.props.chorus.measures.forEach((measure, measureIndex) => {
-        //     console.log(this.refs["measure-"+measureIndex]);
-        // })
-
-        var refMeasureObject, refBeatObject;
-        for (var refMeasure in this.refs){
-            refMeasureObject = this.refs[refMeasure]
-            for(var refBeat in refMeasureObject.refs){
-                refBeatObject = refMeasureObject.refs[refBeat]
-                    console.log(refBeatObject);
-            }
-        }
+        this.setState({
+            noteBoxes : this.Permute(this.refs),
+            underbars : this.props.chorus.underbars
+        })
 
         // let conns = this.props.connections, connPoses = [];
         // Object.keys(conns).forEach(part =>{

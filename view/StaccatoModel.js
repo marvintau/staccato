@@ -272,8 +272,6 @@ function arrangePolyphonyMeasures(score){
         return measure;
     })
 
-    console.log(score.chorus.octaves);
-
     for(var part of score.parts){
         delete score.chorus[part];
     }

@@ -154,7 +154,7 @@ DottedNote "dotted"
     return {
         notes : [first, next],
         dotted: true,
-        underbar : {start:next.index, end:next.index},
+        underbar : {start:next.index, end:next.index, level:1},
         factor : 1
     }
 }

@@ -30,7 +30,7 @@ class Slot extends React.Component{
     }
 
     render(){
-        return Elem('div', {style:{}, ref:"slot", className:"slot"}, this.Elems());
+        return Elem('div', {style:{}, className:"slot"}, this.Elems());
     };
 }
 

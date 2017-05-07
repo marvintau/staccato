@@ -68,7 +68,7 @@
 
 	var _Chorus = __webpack_require__(434);
 
-	var _StaccatoModel = __webpack_require__(443);
+	var _StaccatoModel = __webpack_require__(444);
 
 	var _What_A_Friend = __webpack_require__(445);
 
@@ -40755,7 +40755,7 @@
 	            return {
 	                notes : [first, next],
 	                dotted: true,
-	                underbar : {start:next.index, end:next.index},
+	                underbar : {start:next.index, end:next.index, level:1},
 	                factor : 1
 	            }
 	        },
@@ -43185,6 +43185,8 @@
 
 	var _Measure = __webpack_require__(438);
 
+	var _MeasureBlock = __webpack_require__(443);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -43248,7 +43250,9 @@
 
 	        var _this3 = _possibleConstructorReturn(this, (Chorus.__proto__ || Object.getPrototypeOf(Chorus)).call(this, props));
 
-	        _this3.notePoses = {}, _this3.state = {
+	        _this3.state = {
+	            noteBoxes: [],
+	            underbars: [],
 	            brackets: [],
 	            connects: []
 	        };
@@ -43301,25 +43305,42 @@
 	            return elem;
 	        }
 	    }, {
+	        key: 'UnderbarElems',
+	        value: function UnderbarElems() {
+	            var _this4 = this;
+
+	            return this.state.underbars.map(function (underbar, index) {
+
+	                var barLeft = _this4.state.noteBoxes[underbar.start].left,
+	                    barRight = _this4.state.noteBoxes[underbar.end].right,
+	                    barTop = _this4.state.noteBoxes[underbar.start].bottom + (underbar.level - 1) * 3;
+
+	                console.log(underbar.start + " " + barLeft + " " + underbar.end + " " + barRight);
+
+	                return (0, _General.Elem)(Underbar, { key: 1280 + index, left: barLeft, width: barRight - barLeft, top: barTop });
+	            });
+	        }
+	    }, {
 	        key: 'MeasureElems',
 	        value: function MeasureElems() {
-	            var _this4 = this;
+	            var _this5 = this;
 
 	            return [].concat(this.props.chorus.measures.map(function (measure, index) {
 	                if (!!measure.beats) {
-	                    return [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measure, key: index, style: "measure" }), _this4.MeasureBarElem(measure.type, index, measure.beats[0])];
+	                    return [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measure, key: index, style: "measure" }), _this5.MeasureBarElem(measure.type, index, measure.beats[0])];
 	                } else {
+
 	                    var measureParts = measure.map(function (measurePart, index) {
 	                        return (0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measurePart, key: index, style: "measure-inner" });
 	                    });
 
 	                    var measureBarParts = measure.map(function (measurePart, index) {
-	                        return _this4.MeasureBarElem(measurePart.type, index, measurePart.beats[0]);
+	                        return _this5.MeasureBarElem(measurePart.type, index, measurePart.beats[0]);
 	                    });
 
-	                    return [(0, _General.Elem)('div', { ref: "measure-block-" + index * 2, key: index * 2, className: "measure-block" }, measureParts), (0, _General.Elem)('div', { ref: "measure-block-" + (index * 2 + 1), key: index * 2 + 1, className: "bar-block" }, measureBarParts)];
+	                    return [(0, _General.Elem)(_MeasureBlock.MeasureBlock, { ref: "measure-block-" + index, measure: measure, key: index * 2 }), (0, _General.Elem)('div', { key: index * 2 + 1, className: "bar-block" }, measureBarParts)];
 	                }
-	            }));
+	            })).concat(this.UnderbarElems());
 	            // .concat(this.BracketElems())
 	            // .concat(this.ConnectElems())
 	        }
@@ -43329,23 +43350,62 @@
 	            return (0, _General.Elem)('div', { className: "score" }, this.MeasureElems());
 	        }
 	    }, {
+	        key: 'Traverse',
+	        value: function Traverse(system) {
+	            var _this6 = this;
+
+	            var listedSystem = Object.keys(system).map(function (key) {
+	                return system[key];
+	            });
+
+	            return listedSystem.reduce(function (boxes, note) {
+	                return boxes.concat(!!note.box ? { box: note.box, index: note.props.note.index } : _this6.Traverse(note.refs));
+	            }, []);
+	        }
+	    }, {
+	        key: 'Permute',
+	        value: function Permute(system) {
+
+	            var traversed = this.Traverse(system);
+	            var permuted = [];
+
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = traversed[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var box = _step.value;
+
+	                    permuted[box.index] = box.box;
+	                }
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+
+	            return permuted;
+	        }
+	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
 
-	            // let scoreBox = this.refs.score.getBoundingClientRect()
+	            // console.log(this.props.chorus.underbars)
 
-	            // this.props.chorus.measures.forEach((measure, measureIndex) => {
-	            //     console.log(this.refs["measure-"+measureIndex]);
-	            // })
-
-	            var refMeasureObject, refBeatObject;
-	            for (var refMeasure in this.refs) {
-	                refMeasureObject = this.refs[refMeasure];
-	                for (var refBeat in refMeasureObject.refs) {
-	                    refBeatObject = refMeasureObject.refs[refBeat];
-	                    console.log(refBeatObject);
-	                }
-	            }
+	            this.setState({
+	                noteBoxes: this.Permute(this.refs),
+	                underbars: this.props.chorus.underbars
+	            });
 
 	            // let conns = this.props.connections, connPoses = [];
 	            // Object.keys(conns).forEach(part =>{
@@ -43693,28 +43753,10 @@
 	    function Measure(props) {
 	        _classCallCheck(this, Measure);
 
-	        var _this = _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
-
-	        _this.notePoses = {};
-	        _this.box = {};
-	        return _this;
+	        return _possibleConstructorReturn(this, (Measure.__proto__ || Object.getPrototypeOf(Measure)).call(this, props));
 	    }
 
 	    _createClass(Measure, [{
-	        key: 'GetNotePoses',
-	        value: function GetNotePoses() {
-	            var notePoses = {};
-
-	            for (var ithBeat in this.refs) {
-	                if (ithBeat != "measure") {
-	                    var elem = this.refs[ithBeat];
-	                    Object.assign(notePoses, elem.notePoses);
-	                }
-	            }
-
-	            return notePoses;
-	        }
-	    }, {
 	        key: 'BeatElems',
 	        value: function BeatElems() {
 
@@ -43726,11 +43768,6 @@
 	        key: 'render',
 	        value: function render() {
 	            return (0, _General.Elem)('div', { style: {}, className: this.props.style }, this.BeatElems());
-	        }
-	    }, {
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-	            // this.box = this.refs.measure.getBoundingClientRect();
 	        }
 	    }]);
 
@@ -43782,39 +43819,6 @@
 	    }
 
 	    _createClass(Beat, [{
-	        key: 'GetNotePoses',
-	        value: function GetNotePoses() {
-
-	            var notePoses = {};
-
-	            for (var ithNote in this.refs) {
-	                if (ithNote != "beat") {
-	                    notePoses[ithNote] = this.refs[ithNote].box;
-	                }
-	            }
-
-	            return notePoses;
-	        }
-	    }, {
-	        key: 'GetUnderbarPoses',
-	        value: function GetUnderbarPoses(notePoses, beatBox) {
-
-	            // by subtracting the score position from the underbar position,
-	            // we made the new undarbar position relative to score element.
-
-	            return this.props.underbar.map(function (elem) {
-	                return {
-	                    left: notePoses[elem.start].left - beatBox.left,
-	                    width: notePoses[elem.end].right - notePoses[elem.start].left,
-	                    top: notePoses[elem.start].bottom + elem.level * 3 - beatBox.top };
-	            });
-	        }
-
-	        // UnderbarElems(offset){
-	        //     return this.state.underbarPoses.map((elem, index) => Elem(Underbar, {key:index+offset, left:elem.left, width:elem.width, top:elem.top}))
-	        // }
-
-	    }, {
 	        key: 'SlotElems',
 	        value: function SlotElems() {
 	            return this.props.slots.map(function (slot, index) {
@@ -43827,16 +43831,11 @@
 
 	            // let underbarElems = this.UnderbarElems(this.NoteElems().length);
 
-	            return (0, _General.Elem)('div', { ref: "beat", className: "beat" }, this.SlotElems());
+	            return (0, _General.Elem)('div', { className: "beat" }, this.SlotElems());
 	        }
 	    }, {
 	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-
-	            // let beatBox = this.refs.beat.getBoundingClientRect();
-	            //
-	            // this.setState({underbarPoses: this.props.underbar ? this.GetUnderbarPoses(this.GetNotePoses(), beatBox) : []})
-	        }
+	        value: function componentDidMount() {}
 	    }]);
 
 	    return Beat;
@@ -43911,7 +43910,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return (0, _General.Elem)('div', { style: {}, ref: "slot", className: "slot" }, this.Elems());
+	            return (0, _General.Elem)('div', { style: {}, className: "slot" }, this.Elems());
 	        }
 	    }]);
 
@@ -43980,12 +43979,12 @@
 	    }, {
 	        key: 'AccidentalElem',
 	        value: function AccidentalElem() {
-	            return this.props.note.accidental ? [(0, _General.Elem)(_Signs.Accidental, { key: 205, ref: "acc", acc: this.props.note.accidental })] : [];
+	            return this.props.note.accidental ? [(0, _General.Elem)(_Signs.Accidental, { key: 205, acc: this.props.note.accidental })] : [];
 	        }
 	    }, {
 	        key: 'DotElem',
 	        value: function DotElem() {
-	            return this.props.note.dotted ? [(0, _General.Elem)(_Signs.Dot, { key: 204, ref: "dot" })] : [];
+	            return this.props.note.dotted ? [(0, _General.Elem)(_Signs.Dot, { key: 204 })] : [];
 	        }
 	    }, {
 	        key: 'render',
@@ -44121,6 +44120,71 @@
 
 /***/ },
 /* 443 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.MeasureBlock = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(433);
+
+	var _Beat = __webpack_require__(439);
+
+	var _Bars = __webpack_require__(435);
+
+	var _Measure = __webpack_require__(438);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var MeasureBlock = function (_React$Component) {
+	    _inherits(MeasureBlock, _React$Component);
+
+	    function MeasureBlock(props) {
+	        _classCallCheck(this, MeasureBlock);
+
+	        return _possibleConstructorReturn(this, (MeasureBlock.__proto__ || Object.getPrototypeOf(MeasureBlock)).call(this, props));
+	    }
+
+	    _createClass(MeasureBlock, [{
+	        key: 'MeasureElems',
+	        value: function MeasureElems() {
+	            return this.props.measure.map(function (measurePart, index) {
+	                return (0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measurePart, key: index, style: "measure-inner" });
+	            });
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return (0, _General.Elem)('div', { style: {}, className: "measure-block" }, this.MeasureElems());
+	        }
+	    }]);
+
+	    return MeasureBlock;
+	}(_react2.default.Component);
+
+	exports.MeasureBlock = MeasureBlock;
+
+/***/ },
+/* 444 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44731,8 +44795,6 @@
 	        return measure;
 	    });
 
-	    console.log(score.chorus.octaves);
-
 	    var _iteratorNormalCompletion15 = true;
 	    var _didIteratorError15 = false;
 	    var _iteratorError15 = undefined;
@@ -44789,7 +44851,6 @@
 	exports.processSections = processSections;
 
 /***/ },
-/* 444 */,
 /* 445 */
 /***/ function(module, exports) {
 
