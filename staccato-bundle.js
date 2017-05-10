@@ -70,7 +70,7 @@
 
 	var _StaccatoModel = __webpack_require__(444);
 
-	var _Lords_Prayer = __webpack_require__(447);
+	var _Lords_Prayer = __webpack_require__(445);
 
 	var _Lords_Prayer2 = _interopRequireDefault(_Lords_Prayer);
 
@@ -40669,19 +40669,18 @@
 	            let beatRanges = []
 	            notes.forEach(note => {
 	                if(note.dotted){
-	                    beatRanges.push(note.notes[0].index);
-	                    beatRanges.push(note.notes[1].index);
+	                    beatRanges.push(note.notes[0].index)
+	                    beatRanges.push(note.notes[1].index)
 	                } else {
-	                    beatRanges.push(note.underbar ? note.underbar : note.index)
+	                    beatRanges.push(note.range ? note.range : note.index)
 	                }
 	            });
 
-	            let underbars = notes.map(note => note.underbar).filter(underbar => !!underbar);
+	            let underbars = getSubProp(notes, "underbar");
+	            let ties      = getSubProp(notes, "tie");
 
-	            let ties = notes.map(note => note.tie).filter(tie => !!tie).reduce((ties, tie) => ties.concat(tie), []);
-	            console.log(ties);
 	            return {
-	                beats : notes,
+	                beats : getChildren(notes, "notes"),
 	                beatRanges : beatRanges,
 	                underbars : underbars,
 	                ties : ties,
@@ -40716,39 +40715,33 @@
 	        peg$c41 = peg$literalExpectation(")", false),
 	        peg$c42 = function(notes) {
 
-	            // 去掉空格，并确保不超过三个
 	            let p = notes.map(note => note[0]);
-	            p.forEach(note => note.duration = 1/notes.length);
-
-	            // 获得下划线的起止位置
-	            let startIndex = p[0].underbar ? p[0].underbar.start : p[0].index;
-	            let endIndex = p[p.length - 1].underbar ? p[p.length - 1].underbar.end : p[p.length-1].index;
 
 	            // 获得下划线的位置（第几行），它的高度总应该低于（实际在谱
 	            // 中是高于）高度最低的下划线
-	            let level = 0;
-	            for(var n of p){
-	                if(!!n.underbar && n.underbar.level > level){
-	                    level = n.underbar.level;
-	                }
-	            }
-	            level += 1;
+	            // let level = 0;
+	            // for(var n of p){
+	            //     if(n.underbar && n.underbar.level > level){
+	            //         level = n.underbar.level;
+	            //     }
+	            // }
+	            // level += 1;
+	            let subUnderbars = getSubProp(p, "underbar");
+	                subUnderbars.forEach(underbar => {
+	                    underbar.level ++;
+	                })
 
-	            // 三连音，但是还没有实现
-	            let upperTuplet;
-	            if(p.length > 2){
-	                upperTuplet = {start:startIndex, end:endIndex};
-	            }
+	            // 获得下划线的起止位置
+	            let ø = p.length - 1,
 
-	            let ties = p.filter(n => !!n.tie).map(n => n.tie).reduce((ties, tie) => ties.concat(tie), []);
-	            ties.forEach(tie => {
-	                // console.log(tie)
-	            })
+	                rangeStart = p[0].range ? p[0].range.start : p[0].index,
+	                rangeEnd   = p[ø].range ? p[ø].range.end   : p[ø].index;
 
 	            return {
-	                notes: p,
-	                underbar : {start:startIndex, end:endIndex, level:level},
-	                tie: ties
+	                notes: getChildren(p, "notes"),
+	                range : {start: rangeStart, end:rangeEnd},
+	                underbar : [{start:rangeStart, end:rangeEnd, level:1}].concat(subUnderbars),
+	                tie: getSubProp(p, "tie")
 	            }
 	        },
 	        peg$c43 = peg$otherExpectation("dotted"),
@@ -40761,8 +40754,9 @@
 	            return {
 	                notes : [first, next],
 	                dotted: true,
-	                underbar : {start:next.index, end:next.index, level:1},
-	                factor : 1
+	                range : {start:first.index, end:next.index},
+	                underbar : [{start:next.index, end:next.index, level:1}],
+	                tie: getSubProp([first, next], "tie")
 	            }
 	        },
 	        peg$c47 = peg$otherExpectation("fixed"),
@@ -42611,6 +42605,19 @@
 	        let noteCounter = 0;
 	        let tieOpen = null;
 
+	        function getSubProp(children, prop){
+	            let res = children.filter(n => !!n[prop]).map(n => n[prop]) .reduce((props, prop) => props.concat(prop), []);
+	            children.forEach(n => { delete n[prop]; })
+	            return res;
+	        };
+
+	        function getChildren(children, prop){
+	            let res = children.reduce((ps, p) => ps.concat(p[prop] ? p[prop] : p), []);
+	            children.forEach(p => {delete p[prop]})
+	            return res;
+	        }
+
+
 
 	    peg$result = peg$startRuleFunction();
 
@@ -43181,7 +43188,7 @@
 
 	var _Bars = __webpack_require__(435);
 
-	var _Connect = __webpack_require__(437);
+	var _Tie = __webpack_require__(446);
 
 	var _Measure = __webpack_require__(438);
 
@@ -43254,32 +43261,30 @@
 	            noteBoxes: [],
 	            underbars: [],
 	            brackets: [],
-	            connects: []
+	            ties: []
 	        };
 	        return _this3;
 	    }
 
 	    _createClass(Chorus, [{
-	        key: 'GetConnectPoses',
-	        value: function GetConnectPoses(scoreBox, startBox, endBox) {
+	        key: 'GetTiePoses',
+	        value: function GetTiePoses(startBox, endBox) {
+
+	            var scoreLeft = !!this.state.scoreBox ? this.state.scoreBox.left : 0,
+	                scoreTop = !!this.state.scoreBox ? this.state.scoreBox.top : 0;
+
+	            var height = 5;
 
 	            return {
-	                startLeft: startBox.left - scoreBox.left,
-	                startTop: startBox.top - scoreBox.top,
-	                startCLeft: startBox.left - scoreBox.left + 2,
-	                startCTop: startBox.top - scoreBox.top - 10,
-	                endCLeft: endBox.left - scoreBox.left - 2,
-	                endCTop: endBox.top - scoreBox.top - 10,
-	                endLeft: endBox.left - scoreBox.left,
-	                endTop: endBox.top - scoreBox.top
+	                startLeft: startBox.left - scoreLeft,
+	                startTop: startBox.top - scoreTop + height,
+	                startCLeft: startBox.left - scoreLeft + 2,
+	                startCTop: startBox.top - scoreTop - 10 + height,
+	                endCLeft: endBox.left - scoreLeft - 2,
+	                endCTop: endBox.top - scoreTop - 10 + height,
+	                endLeft: endBox.left - scoreLeft,
+	                endTop: endBox.top - scoreTop + height
 	            };
-	        }
-	    }, {
-	        key: 'ConnectElems',
-	        value: function ConnectElems() {
-	            return this.state.connects.map(function (elem, index) {
-	                return (0, _General.Elem)(_Connect.Connect, Object.assign(elem, { key: 206 + index }));
-	            });
 	        }
 	    }, {
 	        key: 'BracketElems',
@@ -43316,25 +43321,40 @@
 
 	            return this.state.underbars.map(function (underbar, index) {
 
-	                var barLeft = _this4.state.noteBoxes[underbar.start].left - scoreLeft + 10,
-	                    barRight = _this4.state.noteBoxes[underbar.end].right - scoreLeft + 10,
-	                    barTop = _this4.state.noteBoxes[underbar.start].bottom + (underbar.level - 1) * 3 - 30;
+	                var left = _this4.state.noteBoxes[underbar.start].left - scoreLeft + 30,
+	                    right = _this4.state.noteBoxes[underbar.end].right - scoreLeft + 30,
+	                    top = _this4.state.noteBoxes[underbar.start].bottom + (underbar.level - 1) * 3 - 35 + document.body.scrollTop;
 
-	                // console.log(underbar.start +" "+ barLeft + " " + underbar.end + " " + barRight);
+	                return (0, _General.Elem)(Underbar, { key: 1280 + index, left: left, width: right - left, top: top });
+	            });
+	        }
+	    }, {
+	        key: 'TieElems',
+	        value: function TieElems() {
+	            var _this5 = this;
 
-	                return (0, _General.Elem)(Underbar, { key: 1280 + index, left: barLeft, width: barRight - barLeft, top: barTop });
+	            var scoreLeft = !!this.state.scoreBox ? this.state.scoreBox.left : 0,
+	                scoreTop = !!this.state.scoreBox ? this.state.scoreBox.top : 0;
+
+	            return this.state.ties.map(function (tie, index) {
+
+	                var start = _this5.state.noteBoxes[tie.start],
+	                    end = _this5.state.noteBoxes[tie.end],
+	                    pos = _this5.GetTiePoses(start, end);
+
+	                return (0, _General.Elem)(_Tie.Tie, Object.assign(pos, { key: 206 + index }));
 	            });
 	        }
 	    }, {
 	        key: 'MeasureElems',
 	        value: function MeasureElems() {
-	            var _this5 = this;
+	            var _this6 = this;
 
 	            // console.log(this.props.chorus.measures);
 
 	            return [].concat(this.props.chorus.measures.map(function (measure, index) {
 	                if (!!measure.beats) {
-	                    return [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measure, key: index, style: "measure" }), _this5.MeasureBarElem(measure.type, index, measure.beats[0])];
+	                    return [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measure, key: index, style: "measure" }), _this6.MeasureBarElem(measure.type, index, measure.beats[0])];
 	                } else {
 
 	                    var measureParts = measure.map(function (measurePart, index) {
@@ -43342,14 +43362,14 @@
 	                    });
 
 	                    var measureBarParts = measure.map(function (measurePart, index) {
-	                        return _this5.MeasureBarElem(measurePart.type, index, measurePart.beats[0]);
+	                        return _this6.MeasureBarElem(measurePart.type, index, measurePart.beats[0]);
 	                    });
 
 	                    return [(0, _General.Elem)(_MeasureBlock.MeasureBlock, { ref: "measure-block-" + index, measure: measure, key: index * 2 }), (0, _General.Elem)('div', { key: index * 2 + 1, className: "bar-block" }, measureBarParts)];
 	                }
-	            })).concat(this.UnderbarElems());
+	            })).concat(this.UnderbarElems())
 	            // .concat(this.BracketElems())
-	            // .concat(this.ConnectElems())
+	            .concat(this.TieElems());
 	        }
 	    }, {
 	        key: 'render',
@@ -43359,14 +43379,14 @@
 	    }, {
 	        key: 'Traverse',
 	        value: function Traverse(system) {
-	            var _this6 = this;
+	            var _this7 = this;
 
 	            var listedSystem = Object.keys(system).map(function (key) {
 	                return system[key];
 	            });
 
 	            return listedSystem.reduce(function (boxes, note) {
-	                return boxes.concat(!!note.box ? { box: note.box, index: note.props.note.index } : _this6.Traverse(note.refs));
+	                return boxes.concat(!!note.box ? { box: note.box, index: note.props.note.index } : _this7.Traverse(note.refs));
 	            }, []);
 	        }
 	    }, {
@@ -43423,12 +43443,16 @@
 
 	            // console.log(JSON.stringify(printable, null, 2));
 
+	            this.props.chorus.underbars.forEach(function (underbar) {
+	                return console.log(underbar.start + " " + underbar.end + " " + underbar.level);
+	            });
+
 	            this.setState({
 	                scoreBox: scoreBox,
 	                noteBoxes: this.Permute(this.refs),
-	                underbars: this.props.chorus.underbars
+	                underbars: this.props.chorus.underbars,
+	                ties: this.props.chorus.ties
 	            });
-
 	            // let conns = this.props.connections, connPoses = [];
 	            // Object.keys(conns).forEach(part =>{
 	            //     conns[part].ranges.forEach(range => {
@@ -43440,7 +43464,7 @@
 	            //
 	            //             console.log(startBox);
 	            //
-	            //         connPoses.push(this.GetConnectPoses(scoreBox, startBox, endBox));
+	            //         connPoses.push(this.GetTiePoses(scoreBox, startBox, endBox));
 	            //     });
 	            // });
 	            //
@@ -43650,96 +43674,7 @@
 	exports.Lyric = Lyric;
 
 /***/ },
-/* 437 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.Connect = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _reactDom = __webpack_require__(32);
-
-	var _reactDom2 = _interopRequireDefault(_reactDom);
-
-	var _General = __webpack_require__(433);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var Connect = function (_React$Component) {
-	    _inherits(Connect, _React$Component);
-
-	    function Connect(props) {
-	        _classCallCheck(this, Connect);
-
-	        return _possibleConstructorReturn(this, (Connect.__proto__ || Object.getPrototypeOf(Connect)).call(this, props));
-	    }
-
-	    _createClass(Connect, [{
-	        key: 'GetSVGCurveText',
-	        value: function GetSVGCurveText(AX, AY, CAX, CAY, CBX, CBY, BX, BY, thickness) {
-	            return "M" + AX + " " + AY + "C" + CAX + " " + CAY + "," + CBX + " " + CBY + "," + BX + " " + BY + "C" + CBX + " " + (CBY + thickness) + "," + CAX + " " + (CAY + thickness) + "," + AX + " " + AY + "Z";
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-
-	            var startX = this.props.startLeft,
-	                startY = this.props.startTop,
-	                startCX = this.props.startCLeft,
-	                startCY = this.props.startCTop,
-	                endX = this.props.endLeft,
-	                endY = this.props.endTop,
-	                endCX = this.props.endCLeft,
-	                endCY = this.props.endCTop,
-	                fakeStartX = endX - 200,
-	                fakeEndX = startX + 200,
-	                fakeStartY = endY,
-	                fakeEndY = startY,
-	                fakeStartCX = endCX - 180,
-	                fakeEndCX = startCX + 180,
-	                fakeStartCY = endCY,
-	                fakeEndCY = startCY;
-
-	            var elem = void 0;
-	            if (startY == endY) {
-	                elem = (0, _General.Elem)('svg', {
-	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
-	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, endCX, endCY, endX, endY, 3),
-	                    fill: "black"
-	                }));
-	            } else {
-	                elem = (0, _General.Elem)('svg', {
-	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
-	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 2) + this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 2),
-	                    fill: "black"
-	                }));
-	            }
-
-	            return elem;
-	        }
-	    }]);
-
-	    return Connect;
-	}(_react2.default.Component);
-
-	exports.Connect = Connect;
-
-/***/ },
+/* 437 */,
 /* 438 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -44020,6 +43955,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
+	            // console.log(this.props.note);
 	            return (0, _General.Elem)('span', { style: {}, className: "note" }, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()));
 	        }
 	    }, {
@@ -44382,15 +44318,8 @@
 	    return score;
 	}
 
-	function Flatten(notes, depth) {
-	    return notes.reduce(function (notes, note) {
-	        note.depth = depth;
-	        return notes.concat(note.notes ? Flatten(note.notes, depth + 1) : note);
-	    }, []);
-	}
-
 	function FlattenMeasure(measure) {
-	    return !!measure ? Object.assign(measure, { beats: Flatten(measure.beats) }) : {};
+	    return !!measure ? Object.assign(measure, { beats: measure.beats }) : {};
 	}
 
 	function TransposeMeasure(measure, parts) {
@@ -44887,12 +44816,100 @@
 	exports.processSections = processSections;
 
 /***/ },
-/* 445 */,
-/* 446 */,
-/* 447 */
+/* 445 */
 /***/ function(module, exports) {
 
-	module.exports = "title {\r\n主 祷 文\r\n}\r\n\r\nsubtitle {\r\nLord's Prayer\r\n}\r\n\r\nlyrics {\r\n\r\n}\r\n\r\ncomposer {\r\n杨 劼\r\n邵家菁\r\n}\r\n\r\nbeats {\r\n1=C   4/4\r\n}\r\n\r\nparts {\r\n    soprano alto\r\n}\r\n\r\nphony {\r\n\thomophony\r\n}\r\n\r\nverse 1 {\r\n我 们 在 天 上 的 父，\r\n愿 人 都 尊 祢 名 为 圣。\r\n愿 祢 国 度 降 临，\r\n愿 祢 国 度 降 临，\r\n\r\n愿 祢 旨 意 行 在 地 上，\r\n如 同 行 在 天 上。\r\n我 们 日 用 的 饮 食 今 日 赐 给 我 们。\r\n免 了 我 们 的 债， 如 同 我 们 免 了 人 的 债。\r\n不 叫 我 们 遇 见 试 探； 救 我 们 脱 离 凶 恶。\r\n因 为 国 度， 权 柄， 荣 耀， 全 是 祢 的，\r\n直 到 永 远， 直 到 永 远， 直 到 永 远， 阿 们， 阿 们\r\n}\r\n\r\n\r\nchorus soprano {\r\n0 0 0 (3 4) | 5 5 5 6               | /5 4\\ - (2 3)             | 4 4 4 5           | (/4 3\\) 3 -\r\n(1 2)       | 3 3 - 6               | /5 4\\ - (2 1)             | /7,1 4\\ 3 #2      | 3 - -\r\n(3 4)       | 5 5 5 6               | (/5 4\\) 4 - (2 3)           | 4 - - 5           | 4 3 -\r\n(1 2)       | 3 3 - 6               | 5 4 - (2 1)               | /7,1 4\\ 3 2       | 1 - -\r\n(6 7)       | 1'1  1'1 - (/1'1 7\\)  | /7 6\\ - (6 1'1)           | 7 7 (7 6) (5 2)   | /4 3\\ -\r\n(6 7)       | 1'1  1'1 - (1'1 7)    | (/7 6\\) .6 6 (6 7)       | 1'1 6 /7 1'1\\     | /2'1 - -  2'1 | 2'1\\ - 0\r\n(/3 4\\)     | /5 5\\ 5 6             | 5 4 - (/2 3\\)             | 4 - 4   5  |(/4 3\\) 3 -\r\n(1 2)       | 3 3 - (6 7)           | 1'1 1'1 - (6 7)           | 1'1 1'1 /6 7\\ | 1'1 - 1'1 -| 1'1 - - ||\r\n}\r\n\r\nchorus alto {\r\n0 0 0 (1 2) | 3 3 3 4 | /3 2\\ - (7,1 1) | 2 2 2 3    | (/2 1\\) 1 -\r\n(6,1 7,1)   | 1 1 - 3 | /3 2\\ - (7 6) | /5,1 2\\ 1 7,1 | 1 - -\r\n(1 2)       | 3 3 3 4 | (/3 2\\) 2 - (7,1 1) | 2 - - 3    | 2 1 -\r\n(6,1 7,1)   | 1 1 - 3 | 3 2 - (7 6) | /5,1 2\\ 1 7,1 | 1 - -\r\n(4 5)       | 6  6 - (/6 5\\) | /5 4\\ - (4 6) | 5 5 (5 4) (3 2) | /4 3\\ -\r\n(4 5)       | 6  6 - (6 5) | (./5 4\\) .4 4 (4 5) | 6 4 /5 6\\ | /5 - -  5 | 5\\ - 0\r\n(/1 2\\)     | /3 3\\ 3 4 | 3 2 - (/7,1 1\\) | 2 - 2   3    | (/2 1\\) 1 -\r\n(6,1 7,1)   | 1 1 - (3 3) | 6 6 - (6 7) | 1'1 1'1 /6 7\\ | 1'1 - 4 -| 3 - - ||\r\n}\r\n"
+	module.exports = "title {\r\n主 祷 文\r\n}\r\n\r\nsubtitle {\r\nLord's Prayer\r\n}\r\n\r\nlyrics {\r\n\r\n}\r\n\r\ncomposer {\r\n杨 劼\r\n邵家菁\r\n}\r\n\r\nbeats {\r\n1=C   4/4\r\n}\r\n\r\nparts {\r\n    soprano alto\r\n}\r\n\r\nphony {\r\n\thomophony\r\n}\r\n\r\nverse 1 {\r\n我 们 在 天 上 的 父，\r\n愿 人 都 尊 祢 名 为 圣。\r\n愿 祢 国 度 降 临，\r\n愿 祢 国 度 降 临，\r\n\r\n愿 祢 旨 意 行 在 地 上，\r\n如 同 行 在 天 上。\r\n我 们 日 用 的 饮 食 今 日 赐 给 我 们。\r\n免 了 我 们 的 债， 如 同 我 们 免 了 人 的 债。\r\n不 叫 我 们 遇 见 试 探； 救 我 们 脱 离 凶 恶。\r\n因 为 国 度， 权 柄， 荣 耀， 全 是 祢 的，\r\n直 到 永 远， 直 到 永 远， 直 到 永 远， 阿 们， 阿 们\r\n}\r\n\r\n\r\nchorus soprano {\r\n0 0 0 (3 4) | 5 5 5 6               | /5 4\\ - (2 3)             | ((/4 4) 4\\) 4 4 5           | (/4 3\\) 3 -\r\n(1 2)       | 3 3 - 6               | /5 4\\ - (2 1)             | /7,1 4\\ 3 #2      | 3 - -\r\n(3 4)       | 5 5 5 6               | (/5 4\\) 4 - (2 3)           | 4 - - 5           | 4 3 -\r\n(1 2)       | 3 3 - 6               | 5 4 - (2 1)               | /7,1 4\\ 3 2       | 1 - -\r\n(6 7)       | 1'1  1'1 - (/1'1 7\\)  | /7 6\\ - (6 1'1)           | 7 7 (7 6) (5 2)   | /4 3\\ -\r\n(6 7)       | 1'1  1'1 - (1'1 7)    | (./7 6\\) .6 6 (6 7)       | 1'1 6 /7 1'1\\     | /2'1 - -  2'1 | 2'1\\ - 0\r\n(/3 4\\)     | /5 5\\ 5 6             | 5 4 - (/2 3\\)             | 4 - 4   5  |(/4 3\\) 3 -\r\n(1 2)       | 3 3 - (6 7)           | 1'1 1'1 - (6 7)           | 1'1 1'1 /6 7\\ | 1'1 - 1'1 -| 1'1 - - 0 ||\r\n}\r\n\r\nchorus alto {\r\n0 0 0 (1 2) | 3 3 3 4 | /3 2\\ - (7,1 1) | ((/2 2) 2\\) 2 2 3    | (/2 1\\) 1 -\r\n(6,1 7,1)   | 1 1 - 3 | /3 2\\ - (7 6) | /5,1 2\\ 1 7,1 | 1 - -\r\n(1 2)       | 3 3 3 4 | (/3 2\\) 2 - (7,1 1) | 2 - - 3    | 2 1 -\r\n(6,1 7,1)   | 1 1 - 3 | 3 2 - (7 6) | /5,1 2\\ 1 7,1 | 1 - -\r\n(4 5)       | 6  6 - (/6 5\\) | /5 4\\ - (4 6) | 5 5 (5 4) (3 2) | /4 3\\ -\r\n(4 5)       | 6  6 - (6 5) | (./5 4\\) .4 4 (4 5) | 6 4 /5 6\\ | /5 - -  5 | 5\\ - 0\r\n(/1 2\\)     | /3 3\\ 3 4 | 3 2 - (/7,1 1\\) | 2 - 2   3    | (/2 1\\) 1 -\r\n(6,1 7,1)   | 1 1 - (3 3) | 6 6 - (6 7) | 1'1 1'1 /6 7\\ | 1'1 - 4 -| 3 - - 0 ||\r\n}\r\n"
+
+/***/ },
+/* 446 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Tie = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(433);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Tie = function (_React$Component) {
+	    _inherits(Tie, _React$Component);
+
+	    function Tie(props) {
+	        _classCallCheck(this, Tie);
+
+	        return _possibleConstructorReturn(this, (Tie.__proto__ || Object.getPrototypeOf(Tie)).call(this, props));
+	    }
+
+	    _createClass(Tie, [{
+	        key: 'GetSVGCurveText',
+	        value: function GetSVGCurveText(AX, AY, CAX, CAY, CBX, CBY, BX, BY, thickness) {
+	            return "M" + AX + " " + AY + "C" + CAX + " " + CAY + "," + CBX + " " + CBY + "," + BX + " " + BY + "C" + CBX + " " + (CBY + thickness) + "," + CAX + " " + (CAY + thickness) + "," + AX + " " + AY + "Z";
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+
+	            var startX = this.props.startLeft,
+	                startY = this.props.startTop,
+	                startCX = this.props.startCLeft,
+	                startCY = this.props.startCTop,
+	                endX = this.props.endLeft,
+	                endY = this.props.endTop,
+	                endCX = this.props.endCLeft,
+	                endCY = this.props.endCTop,
+	                fakeStartX = endX - 200,
+	                fakeEndX = startX + 200,
+	                fakeStartY = endY,
+	                fakeEndY = startY,
+	                fakeStartCX = endCX - 180,
+	                fakeEndCX = startCX + 180,
+	                fakeStartCY = endCY,
+	                fakeEndCY = startCY;
+
+	            var elem = void 0;
+	            if (startY == endY) {
+	                elem = (0, _General.Elem)('svg', {
+	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
+	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, endCX, endCY, endX, endY, 3),
+	                    fill: "black"
+	                }));
+	            } else {
+	                elem = (0, _General.Elem)('svg', {
+	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
+	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 2) + this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 2),
+	                    fill: "black"
+	                }));
+	            }
+
+	            return elem;
+	        }
+	    }]);
+
+	    return Tie;
+	}(_react2.default.Component);
+
+	exports.Tie = Tie;
 
 /***/ }
 /******/ ]);

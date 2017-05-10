@@ -106,15 +106,8 @@ function OrganizeParts(sections){
     return score;
 }
 
-function Flatten(notes, depth){
-    return notes.reduce((notes, note) => {
-        note.depth = depth;
-        return notes.concat( note.notes ? Flatten(note.notes, depth + 1) : note)
-    }, [])
-}
-
 function FlattenMeasure(measure){
-    return (!!measure) ? Object.assign(measure, {beats: Flatten(measure.beats)}) : {}
+    return (!!measure) ? Object.assign(measure, {beats: measure.beats}) : {}
 }
 
 function TransposeMeasure(measure, parts) {

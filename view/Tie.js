@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Elem, SectionElem, Draw} from "./General.js";
 
-class Connect extends React.Component {
+class Tie extends React.Component {
     constructor(props){
         super(props);
     }
@@ -60,4 +60,4 @@ class Connect extends React.Component {
     }
 }
 
-export {Connect};
+export {Tie};

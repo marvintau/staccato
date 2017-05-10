@@ -2,6 +2,19 @@
 {
     let noteCounter = 0;
     let tieOpen = null;
+
+    function getSubProp(children, prop){
+        let res = children.filter(n => !!n[prop]).map(n => n[prop]) .reduce((props, prop) => props.concat(prop), []);
+        children.forEach(n => { delete n[prop]; })
+        return res;
+    };
+
+    function getChildren(children, prop){
+        let res = children.reduce((ps, p) => ps.concat(p[prop] ? p[prop] : p), []);
+        children.forEach(p => {delete p[prop]})
+        return res;
+    }
+
 }
 
 Sections "all sections"
@@ -70,19 +83,18 @@ Measure "measure"
     let beatRanges = []
     notes.forEach(note => {
         if(note.dotted){
-            beatRanges.push(note.notes[0].index);
-            beatRanges.push(note.notes[1].index);
+            beatRanges.push(note.notes[0].index)
+            beatRanges.push(note.notes[1].index)
         } else {
-            beatRanges.push(note.underbar ? note.underbar : note.index)
+            beatRanges.push(note.range ? note.range : note.index)
         }
     });
 
-    let underbars = notes.map(note => note.underbar).filter(underbar => !!underbar);
+    let underbars = getSubProp(notes, "underbar");
+    let ties      = getSubProp(notes, "tie");
 
-    let ties = notes.map(note => note.tie).filter(tie => !!tie).reduce((ties, tie) => ties.concat(tie), []);
-    console.log(ties);
     return {
-        beats : notes,
+        beats : getChildren(notes, "notes"),
         beatRanges : beatRanges,
         underbars : underbars,
         ties : ties,
@@ -116,39 +128,33 @@ Note "note"
 HalfedNote "duration"
 ="(" _ notes:(Note _)+ ")" {
 
-    // 去掉空格，并确保不超过三个
     let p = notes.map(note => note[0]);
-    p.forEach(note => note.duration = 1/notes.length);
-
-    // 获得下划线的起止位置
-    let startIndex = p[0].underbar ? p[0].underbar.start : p[0].index;
-    let endIndex = p[p.length - 1].underbar ? p[p.length - 1].underbar.end : p[p.length-1].index;
 
     // 获得下划线的位置（第几行），它的高度总应该低于（实际在谱
     // 中是高于）高度最低的下划线
-    let level = 0;
-    for(var n of p){
-        if(!!n.underbar && n.underbar.level > level){
-            level = n.underbar.level;
-        }
-    }
-    level += 1;
+    // let level = 0;
+    // for(var n of p){
+    //     if(n.underbar && n.underbar.level > level){
+    //         level = n.underbar.level;
+    //     }
+    // }
+    // level += 1;
+    let subUnderbars = getSubProp(p, "underbar");
+        subUnderbars.forEach(underbar => {
+            underbar.level ++;
+        })
 
-    // 三连音，但是还没有实现
-    let upperTuplet;
-    if(p.length > 2){
-        upperTuplet = {start:startIndex, end:endIndex};
-    }
+    // 获得下划线的起止位置
+    let ø = p.length - 1,
 
-    let ties = p.filter(n => !!n.tie).map(n => n.tie).reduce((ties, tie) => ties.concat(tie), []);
-    ties.forEach(tie => {
-        // console.log(tie)
-    })
+        rangeStart = p[0].range ? p[0].range.start : p[0].index,
+        rangeEnd   = p[ø].range ? p[ø].range.end   : p[ø].index;
 
     return {
-        notes: p,
-        underbar : {start:startIndex, end:endIndex, level:level},
-        tie: ties
+        notes: getChildren(p, "notes"),
+        range : {start: rangeStart, end:rangeEnd},
+        underbar : [{start:rangeStart, end:rangeEnd, level:1}].concat(subUnderbars),
+        tie: getSubProp(p, "tie")
     }
 }
 
@@ -160,8 +166,9 @@ DottedNote "dotted"
     return {
         notes : [first, next],
         dotted: true,
-        underbar : {start:next.index, end:next.index, level:1},
-        factor : 1
+        range : {start:first.index, end:next.index},
+        underbar : [{start:next.index, end:next.index, level:1}],
+        tie: getSubProp([first, next], "tie")
     }
 }
 

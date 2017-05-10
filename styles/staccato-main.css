@@ -91,7 +91,7 @@ body {
 
 .score{
     display: inline-flex;
-    margin-left: 10px;
+    margin-left: 30px;
     font-weight: bold;
     flex-direction: row;
     flex-wrap: wrap;
@@ -105,8 +105,8 @@ body {
     flex-direction: column;
     justify-content: space-around;
     margin-top:10px;
-    min-width: 20%;
-    max-width: 25%;
+    min-width: 23%;
+    max-width: 28%;
     position:relative;
     /*border: 1px solid #888888;*/
 }
@@ -155,12 +155,13 @@ body {
 
 
 .lyricChar {
+    /*border: 1px solid #888888;*/
     position:relative;
-    float:left;
+    /*float:left;*/
     flex-wrap: wrap;
     font-weight: bold;
-    font-size: 90%;
-    left :0;
+    font-size: 80%;
+    left :-2;
     white-space: pre;
 }
 
@@ -180,12 +181,14 @@ body {
 }
 
 .pitch {
-    margin : 0 3px;
+    margin : 0 2px;
     /*border: 1px solid #888888;*/
 }
 
 .note {
     position: relative;
+    display : flex;
+    justify-content: center;
     /*border: 1px solid #888888;*/
 }
 
@@ -242,13 +245,6 @@ body {
     /*border-right: dotted 9px orange;*/
 }
 
-.dot{
-    position: absolute;
-    width: 5px;
-    height:5px;
-    border-radius: 50%;
-}
-
 .underbar{
     padding: 0 3px;
     position:absolute;
@@ -259,7 +255,7 @@ body {
 }
 
 .dot{
-    margin : -2px;
+    margin : 0 -2px;
 }
 
 .accidental{

@@ -4,7 +4,7 @@ import {Elem, SectionElem, Draw} from "./General.js";
 
 import {Vertbar, Finalbar, Repeatbar} from "./Bars.js";
 
-import {Connect} from "./Connect.js";
+import {Tie} from "./Tie.js";
 
 import {Measure} from "./Measure.js";
 
@@ -48,26 +48,27 @@ class Chorus extends React.Component{
             noteBoxes : [],
             underbars : [],
             brackets : [],
-            connects : []
+            ties : []
         }
     }
 
-    GetConnectPoses(scoreBox, startBox, endBox){
+    GetTiePoses(startBox, endBox){
+
+        let scoreLeft = !!this.state.scoreBox ? this.state.scoreBox.left : 0,
+            scoreTop = !!this.state.scoreBox  ? this.state.scoreBox.top : 0;
+
+        let height = 5;
 
         return {
-            startLeft   : startBox.left - scoreBox.left,
-            startTop    : startBox.top - scoreBox.top,
-            startCLeft  : startBox.left - scoreBox.left + 2,
-            startCTop   : startBox.top - scoreBox.top - 10,
-            endCLeft    : endBox.left - scoreBox.left - 2,
-            endCTop     : endBox.top - scoreBox.top - 10,
-            endLeft     : endBox.left - scoreBox.left,
-            endTop      : endBox.top - scoreBox.top
+            startLeft   : startBox.left - scoreLeft,
+            startTop    : startBox.top - scoreTop + height,
+            startCLeft  : startBox.left - scoreLeft + 2,
+            startCTop   : startBox.top - scoreTop - 10 + height,
+            endCLeft    : endBox.left - scoreLeft - 2,
+            endCTop     : endBox.top - scoreTop - 10 + height,
+            endLeft     : endBox.left - scoreLeft,
+            endTop      : endBox.top - scoreTop + height
         }
-    }
-
-    ConnectElems(){
-        return this.state.connects.map((elem, index) => Elem(Connect, Object.assign(elem, {key:206+index})))
     }
 
     BracketElems(){
@@ -101,14 +102,28 @@ class Chorus extends React.Component{
 
         return this.state.underbars.map((underbar, index) => {
 
-            let barLeft = this.state.noteBoxes[underbar.start].left - scoreLeft + 10,
-                barRight = this.state.noteBoxes[underbar.end].right - scoreLeft + 10,
-                barTop = this.state.noteBoxes[underbar.start].bottom + (underbar.level-1) * 3 - 30;
+            let left = this.state.noteBoxes[underbar.start].left - scoreLeft + 30,
+                right = this.state.noteBoxes[underbar.end].right - scoreLeft + 30,
+                top = this.state.noteBoxes[underbar.start].bottom + (underbar.level-1) * 3 - 35 + document.body.scrollTop;
 
-                // console.log(underbar.start +" "+ barLeft + " " + underbar.end + " " + barRight);
-
-            return Elem(Underbar, {key: 1280 + index, left: barLeft, width: barRight - barLeft, top:barTop})
+            return Elem(Underbar, {key: 1280 + index, left: left, width: right - left, top:top})
         })
+    }
+
+    TieElems(){
+
+        let scoreLeft = !!this.state.scoreBox ? this.state.scoreBox.left : 0,
+            scoreTop = !!this.state.scoreBox  ? this.state.scoreBox.top : 0;
+
+        return this.state.ties.map((tie, index) => {
+
+            let start = this.state.noteBoxes[tie.start],
+                end   = this.state.noteBoxes[tie.end],
+                pos   = this.GetTiePoses(start, end)
+
+            return Elem(Tie, Object.assign(pos, {key:206+index}))
+        })
+
     }
 
     MeasureElems(){
@@ -135,7 +150,7 @@ class Chorus extends React.Component{
             }))
             .concat(this.UnderbarElems())
             // .concat(this.BracketElems())
-            // .concat(this.ConnectElems())
+            .concat(this.TieElems())
     }
 
     render() {
@@ -187,12 +202,14 @@ class Chorus extends React.Component{
 
         // console.log(JSON.stringify(printable, null, 2));
 
+        this.props.chorus.underbars.forEach(underbar => console.log(underbar.start + " " + underbar.end + " " + underbar.level))
+
         this.setState({
             scoreBox : scoreBox,
             noteBoxes : this.Permute(this.refs),
-            underbars : this.props.chorus.underbars
+            underbars : this.props.chorus.underbars,
+            ties : this.props.chorus.ties
         })
-
         // let conns = this.props.connections, connPoses = [];
         // Object.keys(conns).forEach(part =>{
         //     conns[part].ranges.forEach(range => {
@@ -204,7 +221,7 @@ class Chorus extends React.Component{
         //
         //             console.log(startBox);
         //
-        //         connPoses.push(this.GetConnectPoses(scoreBox, startBox, endBox));
+        //         connPoses.push(this.GetTiePoses(scoreBox, startBox, endBox));
         //     });
         // });
         //

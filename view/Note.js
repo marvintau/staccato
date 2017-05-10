@@ -32,6 +32,7 @@ class Note extends React.Component{
     }
 
     render(){
+        // console.log(this.props.note);
         return Elem('span', {style:{}, className:"note"}, [this.PitchElem()].concat(this.DotElem()).concat(this.AccidentalElem()))
     }
 
