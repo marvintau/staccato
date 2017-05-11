@@ -70,9 +70,9 @@
 
 	var _StaccatoModel = __webpack_require__(444);
 
-	var _Lords_Prayer = __webpack_require__(445);
+	var _What_A_Friend_ = __webpack_require__(445);
 
-	var _Lords_Prayer2 = _interopRequireDefault(_Lords_Prayer);
+	var _What_A_Friend_2 = _interopRequireDefault(_What_A_Friend_);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -93,14 +93,14 @@
 	        var scoreParsed = void 0;
 
 	        try {
-	            scoreParsed = (0, _StaccatoModel.processSections)((0, _StaccatoParser.parse)(_Lords_Prayer2.default));
+	            scoreParsed = (0, _StaccatoModel.processSections)((0, _StaccatoParser.parse)(_What_A_Friend_2.default));
 	        } catch (err) {
 	            scoreParsed = "err";
 	            console.log(err);
 	        }
 
 	        _this.state = {
-	            text: _Lords_Prayer2.default,
+	            text: _What_A_Friend_2.default,
 	            score: scoreParsed
 	        };
 	        return _this;
@@ -40717,15 +40717,13 @@
 
 	            let p = notes.map(note => note[0]);
 
-	            // 获得下划线的位置（第几行），它的高度总应该低于（实际在谱
-	            // 中是高于）高度最低的下划线
-	            // let level = 0;
-	            // for(var n of p){
-	            //     if(n.underbar && n.underbar.level > level){
-	            //         level = n.underbar.level;
-	            //     }
-	            // }
-	            // level += 1;
+	            p.forEach(n => {
+	                if(n.octave){
+	                    console.log(n.octave);
+	                    n.octave.level ++;
+	                }
+	            })
+
 	            let subUnderbars = getSubProp(p, "underbar");
 	                subUnderbars.forEach(underbar => {
 	                    underbar.level ++;
@@ -40814,7 +40812,7 @@
 	        peg$c64 = peg$classExpectation([["1", "3"]], false, false),
 	        peg$c65 = function() {
 
-	            return (text()[0] == ',') ? - parseInt(text()[1]) : parseInt(text()[1])
+	            return {dots:(text()[0] == ',') ? - parseInt(text()[1]) : parseInt(text()[1]), level:0}
 
 	        },
 	        peg$c66 = peg$otherExpectation("accidental"),
@@ -42682,10 +42680,6 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactDom = __webpack_require__(32);
-
-	var _reactDom2 = _interopRequireDefault(_reactDom);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -42733,7 +42727,7 @@
 	    bottom: 0,
 	    opacity: 0,
 	    visibility: 'hidden',
-	    transition: 'opacity .3s ease-out',
+	    transition: 'opacity .3s ease-out, visibility .3s ease-out',
 	    backgroundColor: 'rgba(0,0,0,.3)'
 	  },
 	  dragHandle: {
@@ -42754,7 +42748,7 @@
 
 	    _this.state = {
 	      // the detected width of the sidebar in pixels
-	      sidebarWidth: 0,
+	      sidebarWidth: props.defaultSidebarWidth,
 
 	      // keep track of touching params
 	      touchIdentifier: null,
@@ -42772,6 +42766,7 @@
 	    _this.onTouchMove = _this.onTouchMove.bind(_this);
 	    _this.onTouchEnd = _this.onTouchEnd.bind(_this);
 	    _this.onScroll = _this.onScroll.bind(_this);
+	    _this.saveSidebarRef = _this.saveSidebarRef.bind(_this);
 	    return _this;
 	  }
 
@@ -42890,11 +42885,16 @@
 	  }, {
 	    key: 'saveSidebarWidth',
 	    value: function saveSidebarWidth() {
-	      var width = _reactDom2.default.findDOMNode(this.refs.sidebar).offsetWidth;
+	      var width = this.sidebar.offsetWidth;
 
 	      if (width !== this.state.sidebarWidth) {
 	        this.setState({ sidebarWidth: width });
 	      }
+	    }
+	  }, {
+	    key: 'saveSidebarRef',
+	    value: function saveSidebarRef(node) {
+	      this.sidebar = node;
 	    }
 
 	    // calculate the sidebarWidth based on current touch info
@@ -43028,7 +43028,7 @@
 	        rootProps,
 	        _react2.default.createElement(
 	          'div',
-	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: 'sidebar' },
+	          { className: this.props.sidebarClassName, style: sidebarStyle, ref: this.saveSidebarRef },
 	          this.props.sidebar
 	        ),
 	        _react2.default.createElement('div', { className: this.props.overlayClassName,
@@ -43103,7 +43103,10 @@
 	  dragToggleDistance: _react2.default.PropTypes.number,
 
 	  // callback called when the overlay is clicked
-	  onSetOpen: _react2.default.PropTypes.func
+	  onSetOpen: _react2.default.PropTypes.func,
+
+	  // Intial sidebar width when page loads
+	  defaultSidebarWidth: _react2.default.PropTypes.number
 	};
 
 	Sidebar.defaultProps = {
@@ -43116,7 +43119,8 @@
 	  shadow: true,
 	  dragToggleDistance: 30,
 	  onSetOpen: function onSetOpen() {},
-	  styles: {}
+	  styles: {},
+	  defaultSidebarWidth: 0
 	};
 
 	exports.default = Sidebar;
@@ -43188,7 +43192,7 @@
 
 	var _Bars = __webpack_require__(435);
 
-	var _Tie = __webpack_require__(446);
+	var _Tie = __webpack_require__(437);
 
 	var _Measure = __webpack_require__(438);
 
@@ -43238,11 +43242,27 @@
 	    }
 
 	    _createClass(Bracket, [{
+	        key: 'GetSVGCurveText',
+	        value: function GetSVGCurveText(height, width) {
+	            return 'M2 ' + height + 'L2 12 ' + 'C10 10 14 6 16 0 ' + 'C14 6 12 10 6 12 ' + 'L6 ' + (height - 12) + 'C8 ' + (height - 12) + ' 12 ' + (height - 12) + ' 16 ' + height + 'C12 ' + (height - 8) + ' 10 ' + (height - 10) + ' 2 ' + (height - 12) + ' Z';
+	        }
+	    }, {
+	        key: 'GetElem',
+	        value: function GetElem(height, width) {
+	            return (0, _General.Elem)('svg', { key: 1,
+	                xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
+	                d: this.GetSVGCurveText(height, width),
+	                fill: "black"
+	            }));
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var x = this.props.pos.bottom - this.props.pos.top,
-	                y = Math.ceil(57983 + (x - 168) * 1.95);
-	            return (0, _General.Elem)('span', { style: this.props.pos, className: "bracket" }, String.fromCharCode(y));
+	            console.log(this.props.pos);
+	            var pos = this.props.pos;
+	            pos.width = 15;
+	            pos.height = pos.bottom - pos.top;
+	            return (0, _General.Elem)('span', { style: pos, className: "bracket" }, [this.GetElem(pos.height, pos.width)]);
 	        }
 	    }]);
 
@@ -43290,7 +43310,7 @@
 	        key: 'BracketElems',
 	        value: function BracketElems() {
 	            return this.state.brackets.map(function (bracket, index) {
-	                return (0, _General.Elem)(Bracket, { pos: { top: bracket.top, left: bracket.left, bottom: bracket.bottom }, key: 502 + index });
+	                return (0, _General.Elem)(Bracket, { pos: { top: bracket.top, left: bracket.left, bottom: bracket.bottom }, key: 5200 + index });
 	            });
 	        }
 	    }, {
@@ -43354,7 +43374,7 @@
 
 	            return [].concat(this.props.chorus.measures.map(function (measure, index) {
 	                if (!!measure.beats) {
-	                    return [(0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measure, key: index, style: "measure" }), _this6.MeasureBarElem(measure.type, index, measure.beats[0])];
+	                    return [(0, _General.Elem)(_MeasureBlock.MeasureBlock, { ref: "measure-block-" + index, measure: measure, key: index * 2 }), _this6.MeasureBarElem(measure.type, index, measure.beats[0])];
 	                } else {
 
 	                    var measureParts = measure.map(function (measurePart, index) {
@@ -43367,9 +43387,7 @@
 
 	                    return [(0, _General.Elem)(_MeasureBlock.MeasureBlock, { ref: "measure-block-" + index, measure: measure, key: index * 2 }), (0, _General.Elem)('div', { key: index * 2 + 1, className: "bar-block" }, measureBarParts)];
 	                }
-	            })).concat(this.UnderbarElems())
-	            // .concat(this.BracketElems())
-	            .concat(this.TieElems());
+	            })).concat(this.UnderbarElems()).concat(this.BracketElems()).concat(this.TieElems());
 	        }
 	    }, {
 	        key: 'render',
@@ -43380,6 +43398,10 @@
 	        key: 'Traverse',
 	        value: function Traverse(system) {
 	            var _this7 = this;
+
+	            if (system == {} || !system) {
+	                return [];
+	            }
 
 	            var listedSystem = Object.keys(system).map(function (key) {
 	                return system[key];
@@ -43426,20 +43448,26 @@
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
+	            var _this8 = this;
 
 	            var scoreBox = this.refs.score.getBoundingClientRect();
 	            delete this.refs.score;
 
-	            var printable = this.props.chorus.measures.map(function (measure) {
-	                return measure.beats.map(function (beat) {
-	                    return beat.map(function (slot) {
-	                        return slot.map(function (note) {
-	                            // console.log(beat)
-	                            if (note.pitch) return note.pitch;else if (note.verse) return note.verse.join();else return " ";
-	                        }).join(" ");
-	                    }).join(", ");
-	                });
-	            });
+	            // let printable = this.props.chorus.measures.map(measure => {
+	            //     return measure.beats.map(beat => {
+	            //         return beat.map(slot => {
+	            //             return slot.map(note => {
+	            //                 // console.log(beat)
+	            //                 if (note.pitch)
+	            //                     return note.pitch;
+	            //                 else if(note.verse)
+	            //                     return note.verse.join();
+	            //                 else
+	            //                     return " ";
+	            //             }).join(" ");
+	            //         }).join(", ");
+	            //     });
+	            // })
 
 	            // console.log(JSON.stringify(printable, null, 2));
 
@@ -43447,42 +43475,30 @@
 	                return console.log(underbar.start + " " + underbar.end + " " + underbar.level);
 	            });
 
+	            var bracketsBoxes = this.props.chorus.measures.map(function (_, i) {
+
+	                var box = _this8.refs["measure-block-" + i].blockBox;
+
+	                var offset = Math.floor(box.bottom) - Math.floor(box.top);
+	                return {
+	                    left: box.left - scoreBox.left,
+	                    top: box.top,
+	                    bottom: box.bottom
+	                };
+	            }).reduce(function (rv, x) {
+	                (rv[x["left"]] = rv[x["left"]] || []).push(x);return rv;
+	            }, {}),
+	                bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
+
+	            console.log(this.props.chorus.octaves);
+
 	            this.setState({
 	                scoreBox: scoreBox,
 	                noteBoxes: this.Permute(this.refs),
 	                underbars: this.props.chorus.underbars,
+	                brackets: bracketsBoxesLeftmost,
 	                ties: this.props.chorus.ties
 	            });
-	            // let conns = this.props.connections, connPoses = [];
-	            // Object.keys(conns).forEach(part =>{
-	            //     conns[part].ranges.forEach(range => {
-	            //
-	            //         let start    = range.start,
-	            //             end      = range.end,
-	            //             startBox = this.refs["measure-"+start.measure].refs["slot-"+start.beat].refs[part].refs[start.note].box,
-	            //             endBox   = this.refs["measure-"+end.measure].refs["slot-"+end.beat].refs[part].refs[end.note].box;
-	            //
-	            //             console.log(startBox);
-	            //
-	            //         connPoses.push(this.GetTiePoses(scoreBox, startBox, endBox));
-	            //     });
-	            // });
-	            //
-	            // let bracketsBoxes = this.props.measures.map((_, i) => {
-	            //
-	            //     let offset = (Math.floor(this.refs["measure-"+i].box.bottom) - Math.floor(this.refs["measure-"+i].box.top))/2 - 40;
-	            //     return {
-	            //         left:Math.floor(this.refs["measure-"+i].box.left - scoreBox.left),
-	            //         top:Math.floor(this.refs["measure-"+i].box.top + offset),
-	            //         bottom:Math.floor(this.refs["measure-"+i].box.bottom)
-	            //     }
-	            // }).groupBy("left"),
-	            //     bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
-	            //
-	            // this.setState({
-	            //     brackets : bracketsBoxesLeftmost,
-	            //     connects : connPoses
-	            // })
 	        }
 	    }]);
 
@@ -43674,7 +43690,96 @@
 	exports.Lyric = Lyric;
 
 /***/ },
-/* 437 */,
+/* 437 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Tie = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _General = __webpack_require__(433);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Tie = function (_React$Component) {
+	    _inherits(Tie, _React$Component);
+
+	    function Tie(props) {
+	        _classCallCheck(this, Tie);
+
+	        return _possibleConstructorReturn(this, (Tie.__proto__ || Object.getPrototypeOf(Tie)).call(this, props));
+	    }
+
+	    _createClass(Tie, [{
+	        key: 'GetSVGCurveText',
+	        value: function GetSVGCurveText(AX, AY, CAX, CAY, CBX, CBY, BX, BY, thickness) {
+	            return "M" + AX + " " + AY + "C" + CAX + " " + CAY + "," + CBX + " " + CBY + "," + BX + " " + BY + "C" + CBX + " " + (CBY + thickness) + "," + CAX + " " + (CAY + thickness) + "," + AX + " " + AY + "Z";
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+
+	            var startX = this.props.startLeft,
+	                startY = this.props.startTop,
+	                startCX = this.props.startCLeft,
+	                startCY = this.props.startCTop,
+	                endX = this.props.endLeft,
+	                endY = this.props.endTop,
+	                endCX = this.props.endCLeft,
+	                endCY = this.props.endCTop,
+	                fakeStartX = endX - 200,
+	                fakeEndX = startX + 200,
+	                fakeStartY = endY,
+	                fakeEndY = startY,
+	                fakeStartCX = endCX - 180,
+	                fakeEndCX = startCX + 180,
+	                fakeStartCY = endCY,
+	                fakeEndCY = startCY;
+
+	            var elem = void 0;
+	            if (startY == endY) {
+	                elem = (0, _General.Elem)('svg', {
+	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
+	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, endCX, endCY, endX, endY, 3),
+	                    fill: "black"
+	                }));
+	            } else {
+	                elem = (0, _General.Elem)('svg', {
+	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
+	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 2) + this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 2),
+	                    fill: "black"
+	                }));
+	            }
+
+	            return elem;
+	        }
+	    }]);
+
+	    return Tie;
+	}(_react2.default.Component);
+
+	exports.Tie = Tie;
+
+/***/ },
 /* 438 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -43927,6 +44032,10 @@
 	        var _this = _possibleConstructorReturn(this, (Note.__proto__ || Object.getPrototypeOf(Note)).call(this, props));
 
 	        _this.box = { left: 0, right: 0 };
+
+	        _this.state = {
+	            octavePos: {}
+	        };
 	        return _this;
 	    }
 
@@ -44128,20 +44237,33 @@
 	    function MeasureBlock(props) {
 	        _classCallCheck(this, MeasureBlock);
 
-	        return _possibleConstructorReturn(this, (MeasureBlock.__proto__ || Object.getPrototypeOf(MeasureBlock)).call(this, props));
+	        var _this = _possibleConstructorReturn(this, (MeasureBlock.__proto__ || Object.getPrototypeOf(MeasureBlock)).call(this, props));
+
+	        _this.blockBox = {};
+	        return _this;
 	    }
 
 	    _createClass(MeasureBlock, [{
 	        key: 'MeasureElems',
 	        value: function MeasureElems() {
-	            return this.props.measure.map(function (measurePart, index) {
-	                return (0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measurePart, key: index, style: "measure-inner" });
-	            });
+
+	            if (this.props.measure.constructor === Array) {
+	                return this.props.measure.map(function (measurePart, index) {
+	                    return (0, _General.Elem)(_Measure.Measure, { ref: "measure-" + index, measure: measurePart, key: index, style: "measure-inner" });
+	                });
+	            } else {
+	                return (0, _General.Elem)(_Measure.Measure, { ref: "measure-" + this.props.index, measure: this.props.measure, key: this.props.index, style: "measure-inner" });
+	            }
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return (0, _General.Elem)('div', { style: {}, className: "measure-block" }, this.MeasureElems());
+	            return (0, _General.Elem)('div', { style: {}, ref: "block", className: "measure-block" }, this.MeasureElems());
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            this.blockBox = this.refs.block.getBoundingClientRect();
 	        }
 	    }]);
 
@@ -44819,97 +44941,7 @@
 /* 445 */
 /***/ function(module, exports) {
 
-	module.exports = "title {\r\n主 祷 文\r\n}\r\n\r\nsubtitle {\r\nLord's Prayer\r\n}\r\n\r\nlyrics {\r\n\r\n}\r\n\r\ncomposer {\r\n杨 劼\r\n邵家菁\r\n}\r\n\r\nbeats {\r\n1=C   4/4\r\n}\r\n\r\nparts {\r\n    soprano alto\r\n}\r\n\r\nphony {\r\n\thomophony\r\n}\r\n\r\nverse 1 {\r\n我 们 在 天 上 的 父，\r\n愿 人 都 尊 祢 名 为 圣。\r\n愿 祢 国 度 降 临，\r\n愿 祢 国 度 降 临，\r\n\r\n愿 祢 旨 意 行 在 地 上，\r\n如 同 行 在 天 上。\r\n我 们 日 用 的 饮 食 今 日 赐 给 我 们。\r\n免 了 我 们 的 债， 如 同 我 们 免 了 人 的 债。\r\n不 叫 我 们 遇 见 试 探； 救 我 们 脱 离 凶 恶。\r\n因 为 国 度， 权 柄， 荣 耀， 全 是 祢 的，\r\n直 到 永 远， 直 到 永 远， 直 到 永 远， 阿 们， 阿 们\r\n}\r\n\r\n\r\nchorus soprano {\r\n0 0 0 (3 4) | 5 5 5 6               | /5 4\\ - (2 3)             | ((/4 4) 4\\) 4 4 5           | (/4 3\\) 3 -\r\n(1 2)       | 3 3 - 6               | /5 4\\ - (2 1)             | /7,1 4\\ 3 #2      | 3 - -\r\n(3 4)       | 5 5 5 6               | (/5 4\\) 4 - (2 3)           | 4 - - 5           | 4 3 -\r\n(1 2)       | 3 3 - 6               | 5 4 - (2 1)               | /7,1 4\\ 3 2       | 1 - -\r\n(6 7)       | 1'1  1'1 - (/1'1 7\\)  | /7 6\\ - (6 1'1)           | 7 7 (7 6) (5 2)   | /4 3\\ -\r\n(6 7)       | 1'1  1'1 - (1'1 7)    | (./7 6\\) .6 6 (6 7)       | 1'1 6 /7 1'1\\     | /2'1 - -  2'1 | 2'1\\ - 0\r\n(/3 4\\)     | /5 5\\ 5 6             | 5 4 - (/2 3\\)             | 4 - 4   5  |(/4 3\\) 3 -\r\n(1 2)       | 3 3 - (6 7)           | 1'1 1'1 - (6 7)           | 1'1 1'1 /6 7\\ | 1'1 - 1'1 -| 1'1 - - 0 ||\r\n}\r\n\r\nchorus alto {\r\n0 0 0 (1 2) | 3 3 3 4 | /3 2\\ - (7,1 1) | ((/2 2) 2\\) 2 2 3    | (/2 1\\) 1 -\r\n(6,1 7,1)   | 1 1 - 3 | /3 2\\ - (7 6) | /5,1 2\\ 1 7,1 | 1 - -\r\n(1 2)       | 3 3 3 4 | (/3 2\\) 2 - (7,1 1) | 2 - - 3    | 2 1 -\r\n(6,1 7,1)   | 1 1 - 3 | 3 2 - (7 6) | /5,1 2\\ 1 7,1 | 1 - -\r\n(4 5)       | 6  6 - (/6 5\\) | /5 4\\ - (4 6) | 5 5 (5 4) (3 2) | /4 3\\ -\r\n(4 5)       | 6  6 - (6 5) | (./5 4\\) .4 4 (4 5) | 6 4 /5 6\\ | /5 - -  5 | 5\\ - 0\r\n(/1 2\\)     | /3 3\\ 3 4 | 3 2 - (/7,1 1\\) | 2 - 2   3    | (/2 1\\) 1 -\r\n(6,1 7,1)   | 1 1 - (3 3) | 6 6 - (6 7) | 1'1 1'1 /6 7\\ | 1'1 - 4 -| 3 - - 0 ||\r\n}\r\n"
-
-/***/ },
-/* 446 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.Tie = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _reactDom = __webpack_require__(32);
-
-	var _reactDom2 = _interopRequireDefault(_reactDom);
-
-	var _General = __webpack_require__(433);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var Tie = function (_React$Component) {
-	    _inherits(Tie, _React$Component);
-
-	    function Tie(props) {
-	        _classCallCheck(this, Tie);
-
-	        return _possibleConstructorReturn(this, (Tie.__proto__ || Object.getPrototypeOf(Tie)).call(this, props));
-	    }
-
-	    _createClass(Tie, [{
-	        key: 'GetSVGCurveText',
-	        value: function GetSVGCurveText(AX, AY, CAX, CAY, CBX, CBY, BX, BY, thickness) {
-	            return "M" + AX + " " + AY + "C" + CAX + " " + CAY + "," + CBX + " " + CBY + "," + BX + " " + BY + "C" + CBX + " " + (CBY + thickness) + "," + CAX + " " + (CAY + thickness) + "," + AX + " " + AY + "Z";
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-
-	            var startX = this.props.startLeft,
-	                startY = this.props.startTop,
-	                startCX = this.props.startCLeft,
-	                startCY = this.props.startCTop,
-	                endX = this.props.endLeft,
-	                endY = this.props.endTop,
-	                endCX = this.props.endCLeft,
-	                endCY = this.props.endCTop,
-	                fakeStartX = endX - 200,
-	                fakeEndX = startX + 200,
-	                fakeStartY = endY,
-	                fakeEndY = startY,
-	                fakeStartCX = endCX - 180,
-	                fakeEndCX = startCX + 180,
-	                fakeStartCY = endCY,
-	                fakeEndCY = startCY;
-
-	            var elem = void 0;
-	            if (startY == endY) {
-	                elem = (0, _General.Elem)('svg', {
-	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
-	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, endCX, endCY, endX, endY, 3),
-	                    fill: "black"
-	                }));
-	            } else {
-	                elem = (0, _General.Elem)('svg', {
-	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
-	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 2) + this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 2),
-	                    fill: "black"
-	                }));
-	            }
-
-	            return elem;
-	        }
-	    }]);
-
-	    return Tie;
-	}(_react2.default.Component);
-
-	exports.Tie = Tie;
+	module.exports = "title {\n恩 友 歌\n}\n\nsubtitle {\nWhat a Friend We Have in Jesus\n}\n\nlyrics {\nJ. Scriven 1855\n}\n\ncomposer {\nA. C. Converse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nphony {\n\tpolyphony\n}\n\nverse 1 soprano {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 1 alto {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 1 tenor {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 1 bass {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nchorus soprano {\n.5 5  ((/6,1 5\\) 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (5 3) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"
 
 /***/ }
 /******/ ]);

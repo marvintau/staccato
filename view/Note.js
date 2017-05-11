@@ -7,6 +7,10 @@ class Note extends React.Component{
     constructor(props){
         super(props);
         this.box = { left : 0, right : 0 }
+
+        this.state = {
+            octavePos : {}
+        }
     }
 
     PitchElem(){

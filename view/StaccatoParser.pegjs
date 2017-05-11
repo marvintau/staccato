@@ -130,15 +130,13 @@ HalfedNote "duration"
 
     let p = notes.map(note => note[0]);
 
-    // 获得下划线的位置（第几行），它的高度总应该低于（实际在谱
-    // 中是高于）高度最低的下划线
-    // let level = 0;
-    // for(var n of p){
-    //     if(n.underbar && n.underbar.level > level){
-    //         level = n.underbar.level;
-    //     }
-    // }
-    // level += 1;
+    p.forEach(n => {
+        if(n.octave){
+            console.log(n.octave);
+            n.octave.level ++;
+        }
+    })
+
     let subUnderbars = getSubProp(p, "underbar");
         subUnderbars.forEach(underbar => {
             underbar.level ++;
@@ -224,7 +222,7 @@ ModifiedPitch "modified_pitch"
 Octave "octave"
 = [,'][1-3] {
 
-    return (text()[0] == ',') ? - parseInt(text()[1]) : parseInt(text()[1])
+    return {dots:(text()[0] == ',') ? - parseInt(text()[1]) : parseInt(text()[1]), level:0}
 
 }
 
