@@ -70,9 +70,9 @@
 
 	var _StaccatoModel = __webpack_require__(444);
 
-	var _What_A_Friend_ = __webpack_require__(445);
+	var _Like_A_Lamb = __webpack_require__(445);
 
-	var _What_A_Friend_2 = _interopRequireDefault(_What_A_Friend_);
+	var _Like_A_Lamb2 = _interopRequireDefault(_Like_A_Lamb);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -93,14 +93,14 @@
 	        var scoreParsed = void 0;
 
 	        try {
-	            scoreParsed = (0, _StaccatoModel.processSections)((0, _StaccatoParser.parse)(_What_A_Friend_2.default));
+	            scoreParsed = (0, _StaccatoModel.processSections)((0, _StaccatoParser.parse)(_Like_A_Lamb2.default));
 	        } catch (err) {
 	            scoreParsed = "err";
 	            console.log(err);
 	        }
 
 	        _this.state = {
-	            text: _What_A_Friend_2.default,
+	            text: _Like_A_Lamb2.default,
 	            score: scoreParsed
 	        };
 	        return _this;
@@ -165,9 +165,8 @@
 	                className: "editor-wrapper noprint"
 	            }, editor);
 
-	            var preview = (0, _General.Elem)(_reactBootstrap.Col, {
+	            var preview = (0, _General.Elem)('div', {
 	                key: 'viewer',
-	                md: 7,
 	                id: 'preview',
 	                className: 'preview'
 	            }, (0, _General.Elem)('div', { ref: "preview", id: 'page', className: 'page' }, sectionElems));
@@ -40719,7 +40718,6 @@
 
 	            p.forEach(n => {
 	                if(n.octave){
-	                    console.log(n.octave);
 	                    n.octave.level ++;
 	                }
 	            })
@@ -40749,6 +40747,10 @@
 
 	            first.dotted = true;
 
+	            if(next.octave){
+	                next.octave.level ++;
+	            }
+
 	            return {
 	                notes : [first, next],
 	                dotted: true,
@@ -40776,7 +40778,6 @@
 	            note.index = noteCounter++;
 
 	            if(tieOpen){
-	                // console.log({start: tieOpen, end:note.index})
 	                note.tie = [{start: tieOpen, end:note.index}]
 	                tieOpen = null;
 	            }
@@ -42601,7 +42602,7 @@
 
 
 	        let noteCounter = 0;
-	        let tieOpen = null;
+	        let tieOpen = false;
 
 	        function getSubProp(children, prop){
 	            let res = children.filter(n => !!n[prop]).map(n => n[prop]) .reduce((props, prop) => props.concat(prop), []);
@@ -43198,6 +43199,8 @@
 
 	var _MeasureBlock = __webpack_require__(443);
 
+	var _Signs = __webpack_require__(442);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -43258,7 +43261,6 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            console.log(this.props.pos);
 	            var pos = this.props.pos;
 	            pos.width = 15;
 	            pos.height = pos.bottom - pos.top;
@@ -43281,7 +43283,8 @@
 	            noteBoxes: [],
 	            underbars: [],
 	            brackets: [],
-	            ties: []
+	            ties: [],
+	            octaves: []
 	        };
 	        return _this3;
 	    }
@@ -43315,24 +43318,41 @@
 	        }
 	    }, {
 	        key: 'MeasureBarElem',
-	        value: function MeasureBarElem(type, index, slot) {
+	        value: function MeasureBarElem(type, index, slot, pagination) {
 	            var elem = void 0;
 	            if (type == "normal") {
-	                elem = [(0, _General.Elem)(_Bars.Vertbar, { key: 5300 + index - 1, slot: slot })];
+	                elem = [(0, _General.Elem)(_Bars.Vertbar, { style: { marginTop: pagination }, key: 5300 + index - 1, slot: slot })];
 	            } else if (type == "rep_start") {
-	                elem = [(0, _General.Elem)(_Bars.Repeatbar, { key: 5300 + index - 1, direction: "open", slot: slot })];
+	                elem = [(0, _General.Elem)(_Bars.Repeatbar, { style: { marginTop: pagination }, key: 5300 + index - 1, direction: "open", slot: slot })];
 	            } else if (type == "rep_fin") {
-	                elem = [(0, _General.Elem)(_Bars.Repeatbar, { key: 5300 + index - 1, direction: "close", slot: slot })];
+	                elem = [(0, _General.Elem)(_Bars.Repeatbar, { style: { marginTop: pagination }, key: 5300 + index - 1, direction: "close", slot: slot })];
 	            } else if (type == "fin") {
-	                elem = [(0, _General.Elem)(_Bars.Finalbar, { key: 6300, slot: slot })];
+	                elem = [(0, _General.Elem)(_Bars.Finalbar, { style: { marginTop: pagination }, key: 6300, slot: slot })];
 	            }
 
 	            return elem;
 	        }
 	    }, {
+	        key: 'OctaveDotElems',
+	        value: function OctaveDotElems() {
+	            var _this4 = this;
+
+	            console.log(this.state);
+	            return this.state.octaves.map(function (octave, index) {
+
+	                var box = _this4.state.noteBoxes[octave.index],
+	                    pos = {
+	                    left: box.left + box.width / 2 - _this4.state.scoreBox.left + 27,
+	                    top: box.bottom + 3 * octave.octave.level - 15
+	                };
+
+	                return (0, _General.Elem)(_Signs.OctaveDot, { key: 1 + index, ref: "dot-" + index, pos: pos });
+	            });
+	        }
+	    }, {
 	        key: 'UnderbarElems',
 	        value: function UnderbarElems() {
-	            var _this4 = this;
+	            var _this5 = this;
 
 	            var scoreLeft = !!this.state.scoreBox ? this.state.scoreBox.left : 0,
 	                scoreTop = !!this.state.scoreBox ? this.state.scoreBox.top : 0;
@@ -43341,9 +43361,9 @@
 
 	            return this.state.underbars.map(function (underbar, index) {
 
-	                var left = _this4.state.noteBoxes[underbar.start].left - scoreLeft + 30,
-	                    right = _this4.state.noteBoxes[underbar.end].right - scoreLeft + 30,
-	                    top = _this4.state.noteBoxes[underbar.start].bottom + (underbar.level - 1) * 3 - 35 + document.body.scrollTop;
+	                var left = _this5.state.noteBoxes[underbar.start].left - scoreLeft + 30,
+	                    right = _this5.state.noteBoxes[underbar.end].right - scoreLeft + 30,
+	                    top = _this5.state.noteBoxes[underbar.start].bottom + (underbar.level - 1) * 3 - 15 + document.body.scrollTop;
 
 	                return (0, _General.Elem)(Underbar, { key: 1280 + index, left: left, width: right - left, top: top });
 	            });
@@ -43351,30 +43371,36 @@
 	    }, {
 	        key: 'TieElems',
 	        value: function TieElems() {
-	            var _this5 = this;
+	            var _this6 = this;
 
 	            var scoreLeft = !!this.state.scoreBox ? this.state.scoreBox.left : 0,
 	                scoreTop = !!this.state.scoreBox ? this.state.scoreBox.top : 0;
 
 	            return this.state.ties.map(function (tie, index) {
 
-	                var start = _this5.state.noteBoxes[tie.start],
-	                    end = _this5.state.noteBoxes[tie.end],
-	                    pos = _this5.GetTiePoses(start, end);
+	                var start = _this6.state.noteBoxes[tie.start],
+	                    end = _this6.state.noteBoxes[tie.end],
+	                    pos = _this6.GetTiePoses(start, end);
 
-	                return (0, _General.Elem)(_Tie.Tie, Object.assign(pos, { key: 206 + index }));
+	                return (0, _General.Elem)(_Tie.Tie, Object.assign(pos, { key: 2147483647 + index }));
 	            });
 	        }
 	    }, {
 	        key: 'MeasureElems',
 	        value: function MeasureElems() {
-	            var _this6 = this;
+	            var _this7 = this;
 
 	            // console.log(this.props.chorus.measures);
 
+
 	            return [].concat(this.props.chorus.measures.map(function (measure, index) {
+
+	                var pagination = Math.ceil(index / 4) % 4 == 0 ? 50 : 0;
+
+	                console.log(pagination);
+
 	                if (!!measure.beats) {
-	                    return [(0, _General.Elem)(_MeasureBlock.MeasureBlock, { ref: "measure-block-" + index, measure: measure, key: index * 2 }), _this6.MeasureBarElem(measure.type, index, measure.beats[0])];
+	                    return [(0, _General.Elem)(_MeasureBlock.MeasureBlock, { style: { marginTop: pagination }, ref: "measure-block-" + index, measure: measure, key: index * 2 }), _this7.MeasureBarElem(measure.type, index, measure.beats[0], pagination)];
 	                } else {
 
 	                    var measureParts = measure.map(function (measurePart, index) {
@@ -43382,12 +43408,12 @@
 	                    });
 
 	                    var measureBarParts = measure.map(function (measurePart, index) {
-	                        return _this6.MeasureBarElem(measurePart.type, index, measurePart.beats[0]);
+	                        return _this7.MeasureBarElem(measurePart.type, index, measurePart.beats[0]);
 	                    });
 
-	                    return [(0, _General.Elem)(_MeasureBlock.MeasureBlock, { ref: "measure-block-" + index, measure: measure, key: index * 2 }), (0, _General.Elem)('div', { key: index * 2 + 1, className: "bar-block" }, measureBarParts)];
+	                    return [(0, _General.Elem)(_MeasureBlock.MeasureBlock, { style: { marginTop: pagination }, ref: "measure-block-" + index, measure: measure, key: index * 2 }), (0, _General.Elem)('div', { key: index * 2 + 1, className: "bar-block" }, measureBarParts)];
 	                }
-	            })).concat(this.UnderbarElems()).concat(this.BracketElems()).concat(this.TieElems());
+	            })).concat(this.UnderbarElems()).concat(this.BracketElems()).concat(this.TieElems()).concat(this.OctaveDotElems());
 	        }
 	    }, {
 	        key: 'render',
@@ -43397,7 +43423,7 @@
 	    }, {
 	        key: 'Traverse',
 	        value: function Traverse(system) {
-	            var _this7 = this;
+	            var _this8 = this;
 
 	            if (system == {} || !system) {
 	                return [];
@@ -43408,7 +43434,7 @@
 	            });
 
 	            return listedSystem.reduce(function (boxes, note) {
-	                return boxes.concat(!!note.box ? { box: note.box, index: note.props.note.index } : _this7.Traverse(note.refs));
+	                return boxes.concat(!!note.box ? { box: note.box, index: note.props.note.index } : _this8.Traverse(note.refs));
 	            }, []);
 	        }
 	    }, {
@@ -43448,36 +43474,14 @@
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            var _this8 = this;
+	            var _this9 = this;
 
 	            var scoreBox = this.refs.score.getBoundingClientRect();
 	            delete this.refs.score;
 
-	            // let printable = this.props.chorus.measures.map(measure => {
-	            //     return measure.beats.map(beat => {
-	            //         return beat.map(slot => {
-	            //             return slot.map(note => {
-	            //                 // console.log(beat)
-	            //                 if (note.pitch)
-	            //                     return note.pitch;
-	            //                 else if(note.verse)
-	            //                     return note.verse.join();
-	            //                 else
-	            //                     return " ";
-	            //             }).join(" ");
-	            //         }).join(", ");
-	            //     });
-	            // })
-
-	            // console.log(JSON.stringify(printable, null, 2));
-
-	            this.props.chorus.underbars.forEach(function (underbar) {
-	                return console.log(underbar.start + " " + underbar.end + " " + underbar.level);
-	            });
-
 	            var bracketsBoxes = this.props.chorus.measures.map(function (_, i) {
 
-	                var box = _this8.refs["measure-block-" + i].blockBox;
+	                var box = _this9.refs["measure-block-" + i].blockBox;
 
 	                var offset = Math.floor(box.bottom) - Math.floor(box.top);
 	                return {
@@ -43490,14 +43494,13 @@
 	            }, {}),
 	                bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
 
-	            console.log(this.props.chorus.octaves);
-
 	            this.setState({
 	                scoreBox: scoreBox,
 	                noteBoxes: this.Permute(this.refs),
 	                underbars: this.props.chorus.underbars,
 	                brackets: bracketsBoxesLeftmost,
-	                ties: this.props.chorus.ties
+	                ties: this.props.chorus.ties,
+	                octaves: this.props.chorus.octaves
 	            });
 	        }
 	    }]);
@@ -43765,7 +43768,7 @@
 	            } else {
 	                elem = (0, _General.Elem)('svg', {
 	                    xmlns: "http://www.w3.org/2000/svg" }, (0, _General.Elem)('path', {
-	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 2) + this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 2),
+	                    d: this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 3) + this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 3),
 	                    fill: "black"
 	                }));
 	            }
@@ -44043,13 +44046,6 @@
 	        key: 'PitchElem',
 	        value: function PitchElem() {
 	            return (0, _General.Elem)(_Signs.Pitch, { key: 0, ref: "note", className: "note", pitch: this.props.note.pitch });
-	        }
-	    }, {
-	        key: 'OctaveDotElem',
-	        value: function OctaveDotElem() {
-	            return this.state.octaveDotPoses.map(function (elem, index) {
-	                return (0, _General.Elem)(_Signs.OctaveDot, { key: 1 + index, ref: "dot-" + index, pos: elem });
-	            });
 	        }
 	    }, {
 	        key: 'AccidentalElem',
@@ -44711,24 +44707,68 @@
 	    var longestMeasures = GetLongestMeasure(score);
 	    TransformMeasure(score, longestMeasures);
 
-	    for (var i = 0; i < longestMeasures; i++) {
-	        score.chorus.measures[i] = TransposeMeasure(score.chorus.measures[i], score.parts);
-	    }
-
-	    ReformMarks(score);
-	    InsertHomoLyric(score.chorus, score.verses);
-	    GroupBeats(score.chorus.measures);
-
-	    // 删掉原先曲谱的chorus部分，它现在已经没用了
+	    score.chorus.octaves = [];
 	    var _iteratorNormalCompletion11 = true;
 	    var _didIteratorError11 = false;
 	    var _iteratorError11 = undefined;
 
 	    try {
-	        for (var _iterator11 = score.parts[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-	            var part = _step11.value;
+	        for (var _iterator11 = score.chorus.measures[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+	            var measure = _step11.value;
 
-	            delete score.chorus[part];
+
+	            // delete measure.beatRanges
+
+	            var _iteratorNormalCompletion13 = true;
+	            var _didIteratorError13 = false;
+	            var _iteratorError13 = undefined;
+
+	            try {
+	                for (var _iterator13 = score.parts[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+	                    var part = _step13.value;
+
+	                    // console.log(measure[part].beats);
+	                    var _iteratorNormalCompletion14 = true;
+	                    var _didIteratorError14 = false;
+	                    var _iteratorError14 = undefined;
+
+	                    try {
+	                        for (var _iterator14 = measure[part].beats[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+	                            var pitch = _step14.value;
+
+	                            if (pitch.octave) {
+	                                score.chorus.octaves.push({ index: pitch.index, octave: pitch.octave });
+	                            }
+	                        }
+	                    } catch (err) {
+	                        _didIteratorError14 = true;
+	                        _iteratorError14 = err;
+	                    } finally {
+	                        try {
+	                            if (!_iteratorNormalCompletion14 && _iterator14.return) {
+	                                _iterator14.return();
+	                            }
+	                        } finally {
+	                            if (_didIteratorError14) {
+	                                throw _iteratorError14;
+	                            }
+	                        }
+	                    }
+	                }
+	            } catch (err) {
+	                _didIteratorError13 = true;
+	                _iteratorError13 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion13 && _iterator13.return) {
+	                        _iterator13.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError13) {
+	                        throw _iteratorError13;
+	                    }
+	                }
+	            }
 	        }
 	    } catch (err) {
 	        _didIteratorError11 = true;
@@ -44745,55 +44785,24 @@
 	        }
 	    }
 
-	    return score;
-	}
-
-	function arrangePolyphonyMeasures(score) {
+	    for (var i = 0; i < longestMeasures; i++) {
+	        score.chorus.measures[i] = TransposeMeasure(score.chorus.measures[i], score.parts);
+	    }
 
 	    ReformMarks(score);
-	    var longestMeasures = GetLongestMeasure(score);
-	    TransformMeasure(score, longestMeasures);
+	    InsertHomoLyric(score.chorus, score.verses);
+	    GroupBeats(score.chorus.measures);
 
-	    score.chorus.octaves = [];
+	    // 删掉原先曲谱的chorus部分，它现在已经没用了
 	    var _iteratorNormalCompletion12 = true;
 	    var _didIteratorError12 = false;
 	    var _iteratorError12 = undefined;
 
 	    try {
-	        for (var _iterator12 = score.chorus.measures[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
-	            var measure = _step12.value;
+	        for (var _iterator12 = score.parts[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+	            var part = _step12.value;
 
-
-	            delete measure.beatRanges;
-
-	            for (var part in measure) {
-	                var _iteratorNormalCompletion16 = true;
-	                var _didIteratorError16 = false;
-	                var _iteratorError16 = undefined;
-
-	                try {
-	                    for (var _iterator16 = measure[part].beats[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
-	                        var pitch = _step16.value;
-
-	                        if (pitch.octave) {
-	                            score.chorus.octaves.push({ index: pitch.index, octave: pitch.octave });
-	                        }
-	                    }
-	                } catch (err) {
-	                    _didIteratorError16 = true;
-	                    _iteratorError16 = err;
-	                } finally {
-	                    try {
-	                        if (!_iteratorNormalCompletion16 && _iterator16.return) {
-	                            _iterator16.return();
-	                        }
-	                    } finally {
-	                        if (_didIteratorError16) {
-	                            throw _iteratorError16;
-	                        }
-	                    }
-	                }
-	            }
+	            delete score.chorus[part];
 	        }
 	    } catch (err) {
 	        _didIteratorError12 = true;
@@ -44810,87 +44819,55 @@
 	        }
 	    }
 
-	    score.chorus.octaves.forEach(function (octave) {
-	        octave.offset = 0;
-	        var _iteratorNormalCompletion13 = true;
-	        var _didIteratorError13 = false;
-	        var _iteratorError13 = undefined;
+	    return score;
+	}
 
-	        try {
-	            for (var _iterator13 = score.chorus.underbars[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
-	                var underbar = _step13.value;
+	function arrangePolyphonyMeasures(score) {
 
-	                // console.log(octave.index + " " + underbar);
-	                if (octave.num < 0 && octave.index <= underbar.end && octave.index >= underbar.start) {
-	                    octave.offset++;
-	                }
-	            }
-	        } catch (err) {
-	            _didIteratorError13 = true;
-	            _iteratorError13 = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion13 && _iterator13.return) {
-	                    _iterator13.return();
-	                }
-	            } finally {
-	                if (_didIteratorError13) {
-	                    throw _iteratorError13;
-	                }
-	            }
-	        }
-	    });
+	    ReformMarks(score);
+	    var longestMeasures = GetLongestMeasure(score);
+	    TransformMeasure(score, longestMeasures);
 
-	    InsertPolyLyric(score.chorus, score.verses, score.parts);
-
-	    score.chorus.measures = score.chorus.measures.map(function (measure) {
-
-	        measure = Object.keys(measure).map(function (key) {
-	            return measure[key];
-	        });
-
-	        measure = measure.map(function (part) {
-	            var beats = [];
-	            var _iteratorNormalCompletion14 = true;
-	            var _didIteratorError14 = false;
-	            var _iteratorError14 = undefined;
-
-	            try {
-	                for (var _iterator14 = part.beatRanges[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
-	                    var range = _step14.value;
-
-	                    beats.push(GroupRangedBeat(range, part.beats));
-	                }
-	            } catch (err) {
-	                _didIteratorError14 = true;
-	                _iteratorError14 = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion14 && _iterator14.return) {
-	                        _iterator14.return();
-	                    }
-	                } finally {
-	                    if (_didIteratorError14) {
-	                        throw _iteratorError14;
-	                    }
-	                }
-	            }
-
-	            return { beats: beats, type: part.type };
-	        });
-
-	        return measure;
-	    });
-
+	    score.chorus.octaves = [];
 	    var _iteratorNormalCompletion15 = true;
 	    var _didIteratorError15 = false;
 	    var _iteratorError15 = undefined;
 
 	    try {
-	        for (var _iterator15 = score.parts[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
-	            var part = _step15.value;
+	        for (var _iterator15 = score.chorus.measures[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
+	            var measure = _step15.value;
 
-	            delete score.chorus[part];
+
+	            delete measure.beatRanges;
+
+	            for (var part in measure) {
+	                var _iteratorNormalCompletion18 = true;
+	                var _didIteratorError18 = false;
+	                var _iteratorError18 = undefined;
+
+	                try {
+	                    for (var _iterator18 = measure[part].beats[Symbol.iterator](), _step18; !(_iteratorNormalCompletion18 = (_step18 = _iterator18.next()).done); _iteratorNormalCompletion18 = true) {
+	                        var pitch = _step18.value;
+
+	                        if (pitch.octave) {
+	                            score.chorus.octaves.push({ index: pitch.index, octave: pitch.octave });
+	                        }
+	                    }
+	                } catch (err) {
+	                    _didIteratorError18 = true;
+	                    _iteratorError18 = err;
+	                } finally {
+	                    try {
+	                        if (!_iteratorNormalCompletion18 && _iterator18.return) {
+	                            _iterator18.return();
+	                        }
+	                    } finally {
+	                        if (_didIteratorError18) {
+	                            throw _iteratorError18;
+	                        }
+	                    }
+	                }
+	            }
 	        }
 	    } catch (err) {
 	        _didIteratorError15 = true;
@@ -44903,6 +44880,72 @@
 	        } finally {
 	            if (_didIteratorError15) {
 	                throw _iteratorError15;
+	            }
+	        }
+	    }
+
+	    InsertPolyLyric(score.chorus, score.verses, score.parts);
+
+	    score.chorus.measures = score.chorus.measures.map(function (measure) {
+
+	        measure = Object.keys(measure).map(function (key) {
+	            return measure[key];
+	        });
+
+	        measure = measure.map(function (part) {
+	            var beats = [];
+	            var _iteratorNormalCompletion16 = true;
+	            var _didIteratorError16 = false;
+	            var _iteratorError16 = undefined;
+
+	            try {
+	                for (var _iterator16 = part.beatRanges[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
+	                    var range = _step16.value;
+
+	                    beats.push(GroupRangedBeat(range, part.beats));
+	                }
+	            } catch (err) {
+	                _didIteratorError16 = true;
+	                _iteratorError16 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion16 && _iterator16.return) {
+	                        _iterator16.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError16) {
+	                        throw _iteratorError16;
+	                    }
+	                }
+	            }
+
+	            return { beats: beats, type: part.type };
+	        });
+
+	        return measure;
+	    });
+
+	    var _iteratorNormalCompletion17 = true;
+	    var _didIteratorError17 = false;
+	    var _iteratorError17 = undefined;
+
+	    try {
+	        for (var _iterator17 = score.parts[Symbol.iterator](), _step17; !(_iteratorNormalCompletion17 = (_step17 = _iterator17.next()).done); _iteratorNormalCompletion17 = true) {
+	            var part = _step17.value;
+
+	            delete score.chorus[part];
+	        }
+	    } catch (err) {
+	        _didIteratorError17 = true;
+	        _iteratorError17 = err;
+	    } finally {
+	        try {
+	            if (!_iteratorNormalCompletion17 && _iterator17.return) {
+	                _iterator17.return();
+	            }
+	        } finally {
+	            if (_didIteratorError17) {
+	                throw _iteratorError17;
 	            }
 	        }
 	    }
@@ -44941,7 +44984,7 @@
 /* 445 */
 /***/ function(module, exports) {
 
-	module.exports = "title {\n恩 友 歌\n}\n\nsubtitle {\nWhat a Friend We Have in Jesus\n}\n\nlyrics {\nJ. Scriven 1855\n}\n\ncomposer {\nA. C. Converse 1868\n}\n\nbeats {\n1=F   4/4\n}\n\nparts {\n    soprano alto tenor bass\n}\n\nphony {\n\tpolyphony\n}\n\nverse 1 soprano {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 1 alto {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 1 tenor {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nverse 1 bass {\n何 等 恩 友 慈 仁 救 主， 负 我 罪 愆 担 我 忧？\n何 等 权 利 能 将 万 事， 带 到 耶 稣 座 前 求！\n多 少 平 安 我 们 坐 失， 多 少 痛 苦 冤 枉 受？\n都 是 因 为 未 将 万 事， 带 到 耶 稣 座 前 求。\n}\n\nchorus soprano {\n.5 5  ((/6,1 5\\) 5) (3 1)  | 1 - 6,1 - | .5,1 1  (3 1) (5 3) | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - |\n.2 #1 (2 3) (4 2)  | 3 - 5 -   | .6 6 (5 3) (4 3)    | 2 - - - |\n.5  5 (6 5) (3 1)  | 1 - 6,1 - | .5,1 1 (3 2) (1 7,1)| 1 - - - ||\n}\n\nchorus alto {\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (1 1)     | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (1 5,1) (5,1 5,1)   | 5,1 - - - |\n.7,1 #6,1 (7,1 1) (2 7,1) | 1 - 1   -   | .1 1 (1 1) (2 1)              | 7,1 - - - |\n.1 1  (1 1) (1 5,1)       | 6,1 - 4,1 - | .5,1 5,1  (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n\nchorus tenor {\n.3 3 (4 3) (5 3) | 4 - 1 - | .3 3 (3 3) (3 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - |\n.5 5 (5 5) (5 5) | 5 - 3 - | .4 4 (5 5) (5 5) | 5 - - - |\n.3 3 (4 3) (5 3) | 4 - 1 - | .1 3 (5 4) (3 2) | 3 - - - ||\n}\n\nchorus bass {\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .1 1 (1 1) (1 3) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 5,1 - - - |\n.5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - 1 - | .4 4 (3 1) (7,1 1) | 5 - - - |\n.1 1 (1 1) (1 1) | 4,1 - 4,1 - | .5,1 5,1 (5,1 5,1) (5,1 5,1) | 1 - - - ||\n}\n"
+	module.exports = "title {\r\n如 羔 羊\r\n}\r\n\r\nsubtitle {\r\nLike A Lamb - Arranged for SATB Acapella Choir\r\n}\r\n\r\ncomposer {\r\nWords & Music by Mary Kay Beall\r\n陶马文 编曲\r\n}\r\n\r\nlyric {\r\n区美贤 译\r\n}\r\n\r\nbeats {\r\n1=F   4/4\r\n}\r\n\r\nparts {\r\n    soprano alto tenor bass\r\n}\r\n\r\nphony {\r\n\tpolyphony\r\n}\r\n\r\nchorus soprano {\r\n/3 1 2\\ 0      |     /3 1 2\\ 0   | /3 5 .#4 2    | 1\\ - - - |\r\n/3 1 2\\ 0      |     /3 1 2\\ 0   | /3 5 .#4 2    | 1\\ - - ((0 /4,1) (4,1 4,1\\)) |\r\n2 - - -        |\r\n(6,1 3) 3 (0 3) (2 3) | (1 /6,1) 6,1\\ - - | (6,1 3) 3 (0 3) (5 2) | 3 - - - |\r\n(6,1 3) 3 (0 3) (2 3) | (1 /6,1) 6,1\\ - - | (6,1 6,1) (6,1 6,1) (7,1 7,1) (5,1 5,1) | 6,1 - - - |\r\n\r\n(6,1 3) 3 (0 3) (2 3) | (1 /6,1) 6,1\\ - - | (6,1 3) 3 (0 3) (5 2) | 3 - - - |\r\n(6,1 3) 3 (0 3) (2 3) | (1 /6,1) 6,1\\ - - | (6,1 6,1) (6,1 6,1) (7,1 7,1) (5,1 5,1) | 6,1 - - - |\r\n\r\n}\r\n\r\nchorus alto {\r\n/1 6,1 7,1\\ 0   | /1 6,1 7,1\\ 0   | /1 3 .2 7     | 6\\ - - - |\r\n/1 6,1 7,1\\ 0   | /1 6,1 7,1\\ 0   | /1 3 .2 7     | 6\\ - - ((0 0) (/6,1 6,1\\)) |\r\n7,1 - - -      |\r\n/1 6,1 7,1\\ 0   | /1 6,1 7,1\\ 0   | /1 3 .2 7     | 6\\ - - - |\r\n/1 6,1 7,1\\ 0   | /1 6,1 7,1\\ 0   | /1 3 .2 7     | 6\\ - - - |\r\n\r\n(0 /3,1) (6,1\\ 0) (0 /3,1) (#5,1\\ 0) | 0 (6,1 5,1) 6,1 - | (0 /3,1) (4,1\\ 0) (0 /4,1) (3,1\\ 0) |  2,1 2,1 3,1 3,3 |\r\n(0 /3,1) (6,1\\ 0) (0 /3,1) (#5,1\\ 0) | 0 (6,1 5,1) 6,1 - | (3,1 3,1) (3,1 3,1) (5,1 5,1) (2,1 2,1) | 3,1 - - -    |\r\n\r\n}\r\n\r\nchorus tenor {\r\n/6,1 4,1 5,1\\ 0 | /6,1 4,1 5,1\\ 0 | /6,1 1 .7,1 5 | 4\\ - - - |\r\n/6,1 4,1 5,1\\ 0 | /6,1 4,1 5,1\\ 0 | /6,1 1 .7,1 5 | 4\\ - - - ((0 0) (0 1))|\r\n5,1 - - -      |\r\n/6,1 4,1 5,1\\ 0 | /6,1 4,1 5,1\\ 0 | /6,1 1 .7,1 5 | 4\\ - - - |\r\n/6,1 4,1 5,1\\ 0 | /6,1 4,1 5,1\\ 0 | /6,1 1 .7,1 5 | 4\\ - - - |\r\n\r\n(0 /1) (3\\ 0) (0 /7,1) (3\\ 0)  | 0 (5 5) #4 - | (0 /3) (4\\ 0) (0 /4) (3\\ 0) |  1 1 7,1 7,1 |\r\n(0 /1) (3\\ 0) (0 /7,1) (3\\ 0)  | 0 (5 5) #4 - | 4 1 2 5  | 6 - - - |\r\n}\r\n\r\nchorus bass {\r\n/6,1 6,1 6,1\\ (/3,1 2\\) | /6,1 6,1 6,1\\ (/3,1 2\\)  | /6,1 6,1 6,1\\ (/3,1 2\\)  | /6,1 6,1 6,1\\ (/3,1 2\\)  |\r\n/6,1 6,1 6,1\\ (/3,1 2\\) | /6,1 6,1 6,1\\ (/3,1 2\\)  | /6,1 6,1 6,1\\ (/3,1 2\\)  | /6,1 6,1 6,1\\ (/3,1 2\\)  | /6,1 6,1 6,1\\ (/3,1 2\\) |\r\n/6,1 6,1 6,1\\ (/3,1 2\\) | /6,1 6,1 6,1\\ (/3,1 2\\)  | /6,1 6,1 6,1\\ (/3,1 2\\)  | /6,1 6,1 6,1\\ (/3,1 2\\)  |\r\n/6,1 6,1 6,1\\ (/3,1 2\\) | /6,1 6,1 6,1\\ (/3,1 2\\)  | /6,1 6,1 6,1\\ (/3,1 2\\)  | /6,1 6,1 6,1\\ (/3,1 2\\)  |\r\n\r\n.6,1 6,1 .#5,1 #5,1 | .5,1 5,1 .#4,1 #4,1  | .4,1 4,1 .3,1 3,1  | .2,1 2,1 .3,1 3,1  |\r\n.6,1 6,1 .#5,1 #5,1 | .5,1 5,1 .#4,1 #4,1  | /2,1 2,1 3,1 5,1\\ | 6,1 - - -  |\r\n\r\n}\r\n\r\nverse 1 soprano {\r\n啊 - -     啊          啊\r\n啊         啊          啊 啊\r\n啊\r\n如 羔 羊, 他 要 被 宰 殺, 如 羔 羊, 默 然 无 声,\r\n如 羔 羊, 他 要 被 宰 殺, 十 架 上  遵 行 天 父 旨 意\r\n\r\n如 羔 羊, 为 赎 我 过 犯, 如 羔 羊, 付 上 重 价,\r\n如 羔 羊, 为 赎 我 过 犯, 十 架 上  牺 牲 完 全 献 上\r\n}\r\n\r\nverse 1 alto {\r\n啊         啊          啊\r\n啊         啊          啊 啊\r\n啊\r\n\r\n啊         啊          啊\r\n啊         啊          啊\r\n\r\n  Du-A        Du-A       如 羔 羊    Du-A        Du-A       付 上 重 价\r\n  Du-A        Du-A       如 羔 羊    十 架 上  牺 牲 完 全 献 上\r\n}\r\n\r\nverse 1 tenor {\r\n啊         啊          啊\r\n啊         啊          啊 啊\r\n啊\r\n啊         啊          啊\r\n啊         啊          啊\r\n\r\n  Du-A        Du-A       如 羔 羊    Du-A        Du-A       付 上 重 价\r\n  Du-A        Du-A       如 羔 羊    全 牺 牲 献 上\r\n}\r\n\r\nverse 1 bass {\r\nDem      Ba Dem      Ba Dem      Ba Dem      Ba \r\nDem      Ba Dem      Ba Dem      Ba Dem      Ba \r\nDem      Ba\r\nDem      Ba Dem      Ba Dem      Ba Dem      Ba \r\nDem      Ba Dem      Ba Dem      Ba Dem      Ba \r\n\r\nDem      Dem Dem      Dem Dem      Dem Dem      Dem Dem      Dem Dem      Dem Dem      Dem Dem      Dem \r\nDem      Dem Dem      Dem Dem      Dem Dem      Dem Wu       Ah\r\n}"
 
 /***/ }
 /******/ ]);

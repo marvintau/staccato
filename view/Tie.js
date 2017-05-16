@@ -49,8 +49,8 @@ class Tie extends React.Component {
             elem = Elem('svg', {
                 xmlns:"http://www.w3.org/2000/svg"},
                 Elem('path', {
-                    d:  this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 2) +
-                        this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 2),
+                    d:  this.GetSVGCurveText(startX, startY, startCX, startCY, fakeEndCX, fakeEndCY, fakeEndX, fakeEndY, 3) +
+                        this.GetSVGCurveText(fakeStartX, fakeStartY, fakeStartCX, fakeStartCY, endCX, endCY, endX, endY, 3),
                     fill : "black"
                 }
             ))

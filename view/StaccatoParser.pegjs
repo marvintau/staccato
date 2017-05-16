@@ -1,7 +1,7 @@
 
 {
     let noteCounter = 0;
-    let tieOpen = null;
+    let tieOpen = false;
 
     function getSubProp(children, prop){
         let res = children.filter(n => !!n[prop]).map(n => n[prop]) .reduce((props, prop) => props.concat(prop), []);
@@ -132,7 +132,6 @@ HalfedNote "duration"
 
     p.forEach(n => {
         if(n.octave){
-            console.log(n.octave);
             n.octave.level ++;
         }
     })
@@ -161,6 +160,10 @@ DottedNote "dotted"
 
     first.dotted = true;
 
+    if(next.octave){
+        next.octave.level ++;
+    }
+
     return {
         notes : [first, next],
         dotted: true,
@@ -186,7 +189,6 @@ FixedNote "fixed"
     note.index = noteCounter++;
 
     if(tieOpen){
-        // console.log({start: tieOpen, end:note.index})
         note.tie = [{start: tieOpen, end:note.index}]
         tieOpen = null;
     }

@@ -10,6 +10,7 @@ import {Measure} from "./Measure.js";
 
 import {MeasureBlock} from "./MeasureBlock.js";
 
+import {OctaveDot} from "./Signs.js";
 
 class Underbar extends React.Component{
     constructor(props){
@@ -54,7 +55,6 @@ class Bracket extends React.Component{
     }
 
     render(){
-        console.log(this.props.pos)
         let pos = this.props.pos;
         pos.width = 15;
         pos.height = pos.bottom - pos.top;
@@ -71,7 +71,8 @@ class Chorus extends React.Component{
             noteBoxes : [],
             underbars : [],
             brackets : [],
-            ties : []
+            ties : [],
+            octaves : []
         }
     }
 
@@ -101,20 +102,36 @@ class Chorus extends React.Component{
     }
 
 
-    MeasureBarElem(type, index, slot){
+    MeasureBarElem(type, index, slot, pagination){
         let elem;
         if(type == "normal"){
-            elem = [Elem(Vertbar, {key:5300+index-1, slot:slot })]
+            elem = [Elem(Vertbar, {style:{marginTop:pagination},key:5300+index-1, slot:slot })]
         } else if (type == "rep_start"){
-            elem = [Elem(Repeatbar, {key:5300+index-1, direction:"open", slot:slot })]
+            elem = [Elem(Repeatbar, {style:{marginTop:pagination},key:5300+index-1, direction:"open", slot:slot })]
         } else if (type == "rep_fin"){
-            elem = [Elem(Repeatbar, {key:5300+index-1, direction:"close", slot:slot })]
+            elem = [Elem(Repeatbar, {style:{marginTop:pagination},key:5300+index-1, direction:"close", slot:slot })]
         } else if (type == "fin"){
-            elem = [Elem(Finalbar, {key:6300, slot:slot })]
+            elem = [Elem(Finalbar, {style:{marginTop:pagination},key:6300, slot:slot })]
         }
 
         return elem;
     }
+
+    OctaveDotElems(){
+        console.log(this.state);
+        return this.state.octaves.map((octave, index) =>{
+            
+            let box = this.state.noteBoxes[octave.index],
+                pos = {
+                    left : box.left + box.width/2 - this.state.scoreBox.left + 27,
+                    top :  box.bottom + 3 * octave.octave.level - 15
+                }
+
+            return Elem(OctaveDot, {key:1+index, ref:"dot-"+index, pos:pos})
+
+        })
+    }
+
 
     UnderbarElems(){
 
@@ -127,7 +144,7 @@ class Chorus extends React.Component{
 
             let left = this.state.noteBoxes[underbar.start].left - scoreLeft + 30,
                 right = this.state.noteBoxes[underbar.end].right - scoreLeft + 30,
-                top = this.state.noteBoxes[underbar.start].bottom + (underbar.level-1) * 3 - 35 + document.body.scrollTop;
+                top = this.state.noteBoxes[underbar.start].bottom + (underbar.level-1) * 3 - 15 + document.body.scrollTop;
 
             return Elem(Underbar, {key: 1280 + index, left: left, width: right - left, top:top})
         })
@@ -144,7 +161,7 @@ class Chorus extends React.Component{
                 end   = this.state.noteBoxes[tie.end],
                 pos   = this.GetTiePoses(start, end)
 
-            return Elem(Tie, Object.assign(pos, {key:206+index}))
+            return Elem(Tie, Object.assign(pos, {key:2147483647+index}))
         })
 
     }
@@ -152,13 +169,19 @@ class Chorus extends React.Component{
     MeasureElems(){
 
         // console.log(this.props.chorus.measures);
+        
 
         return []
             .concat(this.props.chorus.measures.map((measure,index) =>{
+
+                let pagination = Math.ceil(index / 4) % 4 == 0 ? 50 : 0;
+
+                console.log(pagination)
+
                 if(!!measure.beats){
                     return [
-                        Elem(MeasureBlock, {ref: "measure-block-"+index, measure:measure, key:index*2}),
-                        this.MeasureBarElem(measure.type, index, measure.beats[0])
+                        Elem(MeasureBlock, {style:{marginTop:pagination}, ref: "measure-block-"+index, measure:measure, key:index*2}),
+                        this.MeasureBarElem(measure.type, index, measure.beats[0], pagination)
                     ];
                 } else {
 
@@ -170,13 +193,14 @@ class Chorus extends React.Component{
                         return this.MeasureBarElem(measurePart.type, index, measurePart.beats[0])
                     });
 
-                    return [Elem(MeasureBlock, {ref: "measure-block-"+index, measure:measure, key:index*2}),
+                    return [Elem(MeasureBlock, {style:{marginTop:pagination}, ref: "measure-block-"+index, measure:measure, key:index*2}),
                             Elem('div', {key:index*2+1, className:"bar-block"}, measureBarParts)];
                 }
             }))
             .concat(this.UnderbarElems())
             .concat(this.BracketElems())
             .concat(this.TieElems())
+            .concat(this.OctaveDotElems())
     }
 
     render() {
@@ -214,26 +238,6 @@ class Chorus extends React.Component{
         let scoreBox = this.refs.score.getBoundingClientRect();
         delete this.refs.score;
 
-        // let printable = this.props.chorus.measures.map(measure => {
-        //     return measure.beats.map(beat => {
-        //         return beat.map(slot => {
-        //             return slot.map(note => {
-        //                 // console.log(beat)
-        //                 if (note.pitch)
-        //                     return note.pitch;
-        //                 else if(note.verse)
-        //                     return note.verse.join();
-        //                 else
-        //                     return " ";
-        //             }).join(" ");
-        //         }).join(", ");
-        //     });
-        // })
-
-        // console.log(JSON.stringify(printable, null, 2));
-
-        this.props.chorus.underbars.forEach(underbar => console.log(underbar.start + " " + underbar.end + " " + underbar.level))
-
         let bracketsBoxes = this.props.chorus.measures.map((_, i) => {
         
             let box = this.refs["measure-block-"+i].blockBox;
@@ -248,14 +252,13 @@ class Chorus extends React.Component{
 
             bracketsBoxesLeftmost = bracketsBoxes[Object.keys(bracketsBoxes)[0]];
 
-        console.log(this.props.chorus.octaves);
-
         this.setState({
             scoreBox : scoreBox,
             noteBoxes : this.Permute(this.refs),
             underbars : this.props.chorus.underbars,
             brackets : bracketsBoxesLeftmost,
-            ties : this.props.chorus.ties
+            ties : this.props.chorus.ties,
+            octaves : this.props.chorus.octaves
         })
 
     }

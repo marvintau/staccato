@@ -204,6 +204,22 @@ function arrangeHomophonyMeasures(score){
     let longestMeasures = GetLongestMeasure(score);
     TransformMeasure(score, longestMeasures);
 
+    score.chorus.octaves = [];
+    for(var measure of score.chorus.measures){
+
+        // delete measure.beatRanges
+
+        for(var part of score.parts){
+            // console.log(measure[part].beats);
+            for(var pitch of measure[part].beats){
+                if (pitch.octave){
+                    score.chorus.octaves.push({index:pitch.index, octave:pitch.octave})
+                }
+            }
+        }
+    }
+
+
     for (var i = 0; i < longestMeasures; i++) {
         score.chorus.measures[i] = TransposeMeasure(score.chorus.measures[i], score.parts)
     }
@@ -239,16 +255,6 @@ function arrangePolyphonyMeasures(score){
             }
         }
     }
-
-    score.chorus.octaves.forEach((octave) => {
-        octave.offset = 0;
-        for(var underbar of score.chorus.underbars){
-            // console.log(octave.index + " " + underbar);
-            if (octave.num <0 && octave.index <= underbar.end && octave.index >= underbar.start){
-                octave.offset++;
-            }
-        }
-    })
 
     InsertPolyLyric(score.chorus, score.verses, score.parts);
 

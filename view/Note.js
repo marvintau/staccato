@@ -17,12 +17,6 @@ class Note extends React.Component{
         return Elem(Pitch, {key:0, ref:"note", className:"note", pitch:this.props.note.pitch})
     }
 
-    OctaveDotElem(){
-        return this.state.octaveDotPoses.map((elem, index) =>
-            Elem(OctaveDot, {key:1+index, ref:"dot-"+index, pos:elem})
-        )
-    }
-
     AccidentalElem(){
         return this.props.note.accidental
         ? [Elem(Accidental, {key:205, acc:this.props.note.accidental})]

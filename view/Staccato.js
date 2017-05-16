@@ -13,7 +13,7 @@ import {Chorus} from "./Chorus.js";
 
 import {processSections} from "./StaccatoModel.js";
 
-import scoreText from '../What_A_Friend_2.txt';
+import scoreText from '../Like_A_Lamb.txt';
 
 class Container extends React.Component {
 
@@ -86,9 +86,8 @@ class Container extends React.Component {
             className:"editor-wrapper noprint"
         }, editor)
 
-        let preview = Elem(Col, {
+        let preview = Elem('div', {
             key : 'viewer',
-            md  :  7,
             id  : 'preview',
             className:'preview',
         }, Elem('div', {ref:"preview", id:'page', className:'page'}, sectionElems))

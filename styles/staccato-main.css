@@ -1,6 +1,17 @@
-@media print
-{
-.noprint {display:none;}
+@page{
+    margin : 0.4cm;
+}
+
+@page:right{
+  @bottom-right {
+    content: counter(page);
+  }
+}
+
+@page:left{
+  @bottom-left {
+    content: counter(page);
+  }
 }
 
 @font-face {
@@ -11,6 +22,11 @@
 @font-face {
     font-family: brace;
     src: url(../Resources/Fonts/emmentaler-brace.woff);
+}
+
+#header, #nav, .noprint
+{
+display: none;
 }
 
 body {
@@ -27,6 +43,7 @@ body {
 
 .preview{
     /*margin-left: 20px;*/
+    width : 600px;
 	background-color : #FFFFFF;
 	font-family: "Optima", "Songti TC";
     font-size: 110%;
@@ -37,11 +54,9 @@ body {
 }
 
 .page{
-	margin: 10px 0px 50px;
+	margin: -10px 0px 50px;
     position : relative;
     width : 100%;
-	height: 150%;
-    text-align: justify;
 }
 
 .logo {
@@ -70,11 +85,14 @@ body {
 
 
 .lyrics{
+    white-space: pre;
+    text-align: right;
     display : inline-block;
     font-size: 80%;
 }
 
 .composer {
+    white-space: pre;
     position:absolute;
     right : 0px;
     /*right : 10px;*/
@@ -98,25 +116,24 @@ body {
     justify-content: flex-start;
     /*border: 1px solid #888888;*/
 
+    page-break-inside: always;
+
 }
 
 .measure-block {
     display:flex;
     flex-direction: column;
     /*justify-content: space-between;*/
-    margin-top:10px;
+    margin-top:20px;
     min-width: 23%;
     max-width: 28%;
     position:relative;
     /*border: 1px solid #888888;*/
-}
 
-.sub-measure-block {
-    display:flex;
-    flex-direction: row;
-    justify-content:space-between;
-    position:relative;
-    /*border: 1px solid #888888;*/
+    page-break-before: always;
+    page-break-after: always;
+    page-break-inside: avoid;
+
 }
 
 .measure {
@@ -128,6 +145,10 @@ body {
     margin-top:0px;
     text-align: center;
 
+    page-break-before:always;
+    page-break-after:always;
+    page-break-inside: avoid;
+
     position:relative;
     /*border: 1px solid #888888;*/
 }
@@ -136,7 +157,7 @@ body {
     display:inline-flex;
     flex-direction: row;
     justify-content: space-around;
-    /*margin-top:10px;*/
+    margin-top:-2px;
     text-align: center;
     width : 100%;
     position:relative;
@@ -149,7 +170,7 @@ body {
     justify-content: space-between;
     align-items: flex-start;
     flex-wrap: wrap;
-    margin: 0 -1px 0;
+    /*margin: 0 -1px 0;*/
     /*border: 1px solid #888888;*/
 }
 
@@ -157,7 +178,8 @@ body {
 .lyricChar {
     /*border: 1px solid #888888;*/
     position:relative;
-    /*float:left;*/
+    float:left;
+    margin-right : -20px;
     flex-wrap: wrap;
     font-weight: bold;
     font-size: 80%;
@@ -201,6 +223,11 @@ body {
     margin: 0px 2px 0px;
     width: 6px;
     /*border: 1px solid;*/
+
+    page-break-before:always;
+    page-break-after:always;
+    page-break-inside: avoid;
+
 }
 
 .vertbar{
@@ -215,9 +242,14 @@ body {
     display:flex;
     flex-direction: column;
     /*justify-content: space-around;*/
-    margin-top:10px;
+    margin-top:15px;
     position:relative;
     /*border: 1px solid #888888;*/
+
+    page-break-before:always;
+    page-break-after:always;
+    page-break-inside: avoid;
+
 }
 
 
@@ -272,7 +304,7 @@ body {
     position: absolute;
     /*background: url(../Resources/Fonts/bracket.svg);*/
     background-repeat: no-repeat;
-    margin-top : -10px;
+    margin-top : -20px;
     margin-left : 10px;
     /*background-size: 100% auto;*/
     /*border: 1px solid #888888;*/
@@ -280,7 +312,8 @@ body {
 
 .octavedot{
     position: absolute;
-    /*margin : -1px;*/
+    /*height : 5px;*/
+    margin : -10px 0 ;
     /*border: 1px solid #888888;*/
 }
 
@@ -295,7 +328,7 @@ body {
 svg{
     position:absolute;
     margin-left : 5px;
-    width : 100%;
+    width : 94%;
     height : 100%;
 }
 
